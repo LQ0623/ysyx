@@ -26,11 +26,11 @@ int main(int argc, char** argv) {
     top->trace(tfp, 0); // 0 是自定义的起始时间
     tfp->open("simx.fst");
     
-    nvboard_bind_all_pins(&dut);
-    nvboard_init();
+    // nvboard_bind_all_pins(&dut);
+    // nvboard_init();
 
     while (1) {
-    	nvboard_update();
+    	// nvboard_update();
         contextp->timeInc(1);
         int a = rand() & 1;
         int b = rand() & 1;
