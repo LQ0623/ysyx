@@ -8,9 +8,9 @@
 //#include "verilated_vcd_c.h"
 #include "verilated_fst_c.h"
 
-static TOP_NAME dut;
+// static TOP_NAME dut;
 
-void nvboard_bind_all_pins(TOP_NAME* top);
+// void nvboard_bind_all_pins(TOP_NAME* top);
 
 
 int main(int argc, char** argv) {
