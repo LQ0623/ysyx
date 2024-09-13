@@ -10,6 +10,11 @@ BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
 
+SIM_SRC = ./vsrc/top.v ./csrc/main.cpp
+VERILATOR_FLAGS = -Wall --cc --exe --build
+
+MODE ?= cdc  # 默认模式为 cdc
+
 default: $(BIN)
 
 $(shell mkdir -p $(BUILD_DIR))
@@ -50,11 +55,15 @@ clean:
 all:
 	@echo "Write this Makefile by your self."
 
+
+# 根据模式选择不同的 trace 参数
+TRACE_FLAG = $(if $(filter fst,$(MODE)),--trace-fst,--trace)
+
 sim:
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
-
-	verilator -Wall --trace --cc --exe --build ./vsrc/top.v ./csrc/main.cpp
+	@echo "Simulating in $(MODE) mode"
+	verilator $(VERILATOR_FLAGS) $(TRACE_FLAG) $(SIM_SRC) -o build/sim
 
 include ../Makefile
 
