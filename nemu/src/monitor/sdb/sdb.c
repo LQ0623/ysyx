@@ -45,12 +45,14 @@ static char* rl_gets() {
 static int cmd_c(char *args) {
   // 表示要执行的指令的数量,-1表示运行所有的指令,
   // 负数会变为一个很大的数，这样就能运行完所有的指令,-1会变为18446744073709551615
+  // 负数会被当作无符号整数处理，所以负数的补码都被认为是无符号的整数了
   cpu_exec(0);
   return 0;
 }
 
 
 static int cmd_q(char *args) {
+  exit(0); // 使用 exit(0) 退出程序
   return -1;
 }
 
