@@ -43,7 +43,7 @@ static char* rl_gets() {
 }
 
 static int cmd_c(char *args) {
-  cpu_exec(-1);
+  cpu_exec(1);
   return 0;
 }
 
@@ -54,6 +54,7 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+// handler最后返回一个int类型的数据
 static struct {
   const char *name;
   const char *description;
@@ -123,6 +124,7 @@ void sdb_mainloop() {
 #endif
 
     int i;
+    // 与指令表中的指令进行对比
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(cmd, cmd_table[i].name) == 0) {
         if (cmd_table[i].handler(args) < 0) { return; }
