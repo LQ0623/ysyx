@@ -44,7 +44,7 @@ static char* rl_gets() {
 
 static int cmd_c(char *args) {
   // 表示要执行的指令的数量
-  cpu_exec(2);
+  cpu_exec(0);
   return 0;
 }
 
