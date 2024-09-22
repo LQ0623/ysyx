@@ -44,7 +44,7 @@ static char* rl_gets() {
 
 static int cmd_c(char *args) {
   // 表示要执行的指令的数量,-1表示运行所有的指令
-  cpu_exec(-1);
+  cpu_exec(-2);
   return 0;
 }
 
