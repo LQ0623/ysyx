@@ -43,8 +43,9 @@ static char* rl_gets() {
 }
 
 static int cmd_c(char *args) {
-  // 表示要执行的指令的数量,-1表示运行所有的指令
-  cpu_exec(-2);
+  // 表示要执行的指令的数量,-1表示运行所有的指令,
+  // 负数会变为一个很大的数，这样就能运行完所有的指令,-1会变为
+  cpu_exec(-1);
   return 0;
 }
 
