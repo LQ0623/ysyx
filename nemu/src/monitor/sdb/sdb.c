@@ -93,10 +93,10 @@ static int cmd_x(char *args){
   else{
     int num = arg[0];
     uint64_t addr = arg[1];
-    word_t data;
+    //word_t data;
     for(;i < num; i++){
-      data = paddr_read(addr,4);
-      printf("%x\n",data);
+      //data = paddr_read(addr,4);
+      printf("%lx\n",addr);
     }
     return 0;
   }
