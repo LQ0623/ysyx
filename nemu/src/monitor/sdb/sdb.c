@@ -83,14 +83,18 @@ static int cmd_info(char *args){
 
 static int cmd_x(char *args){
   char *arg = strtok(NULL, " ");
-  //int i = 0;
+  int i = 0;
 
   if(arg == NULL){
-    printf("请输入表达式expr以及步长N");
+    printf("请输入表达式expr以及步长N\n");
     return 0;
   }
   else{
-    printf("输出指定的字节");
+    int mem = arg[1];
+    for(;i<arg[0];i++){
+      printf("%x\n",mem);
+      mem = mem + 4;
+    }
     return 0;
   }
 }
