@@ -98,10 +98,10 @@ static int cmd_x(char *args){
     int num = atoi(N);
     expr = expr + 2;  // delete 0x
     uint64_t addr = strtoull(expr,NULL,16);
-    //word_t data;
+    word_t data;
     for(int i = 0;i < num; i++){
-      //data = paddr_read(addr,4);
-      printf("%lx\n",addr);
+      data = paddr_read(addr,4);
+      printf("addr: %lx,data: %x\n",addr,data);
     }
     return 0;
   }
