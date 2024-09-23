@@ -68,6 +68,19 @@ static int cmd_si(char *args){
   return 0;
 }
 
+static int cmd_info(char *args){
+  if(args == NULL){
+    printf("请输入要执行的操作r或者w\n");
+    return 0;
+  }
+  char SubCmd = args[0];
+  if(SubCmd == 'r'){
+    isa_reg_display();
+    return 0;
+  }
+  return 0;
+}
+
 // handler最后返回一个int类型的数据
 static struct {
   const char *name;
@@ -80,6 +93,7 @@ static struct {
 
   /* TODO: Add more commands */
   { "si", "单步执行", cmd_si },
+  { "info", "打印程序状态", cmd_info},
 
 };
 
