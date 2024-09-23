@@ -101,7 +101,7 @@ static int cmd_x(char *args){
     word_t data;
     for(int i = 0;i < num; i++){
       data = paddr_read(addr,4);
-      printf("addr: %lx,data: %x\n",addr,data);
+      printf("addr: %lx,data: %08x\n",addr,data);
       addr = addr + 4;
     }
     return 0;
