@@ -27,7 +27,7 @@ void isa_reg_display() {
   // 使用for循环输出所有的寄存器的名称以及对应的值
   int i = 0;
   for(i = 0;i < sizeof(regs) / sizeof(regs[0]); i++){
-    printf("%s = %d\n",regs[i],*regs[i]+1);
+    printf("%s = %d\n",regs[i],*regs[i]-1);
   }
 }
 
