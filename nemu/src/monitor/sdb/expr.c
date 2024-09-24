@@ -90,9 +90,9 @@ static bool make_token(char *e) {
       // 1表示只存储一个匹配结果
       // rm_so表示匹配项在输入字符串中的起始偏移量;
       // rm_eo表示匹配项在输入字符串中的结束偏移量
-      if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == position) {
+      if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
         char *substr_start = e + position;
-        int substr_len = pmatch.rm_eo - pmatch.rm_so;
+        int substr_len = pmatch.rm_eo;
 
         Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
             i, rules[i].regex, position, substr_len, substr_len, substr_start);
