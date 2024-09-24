@@ -105,7 +105,7 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
-          case TK_NOTYPE: continue;
+          case TK_NOTYPE: break;
           case TK_EQ:
           case TK_ADD:
           case TK_SUB:
@@ -115,16 +115,14 @@ static bool make_token(char *e) {
           case TK_RIGHT:
             tokens[nr_token].type = rules[i].token_type;
             nr_token++;
-            continue;
+            break;
           case TK_NUM:
             tokens[nr_token].type = rules[i].token_type;
             strncpy(tokens[nr_token].str, substr_start, substr_len);
             tokens[nr_token].str[substr_len-1] = '\0'; // 确保字符串以空字符结尾
             nr_token++;
-            continue;
-          default: 
-            tokens[nr_token].type = 0;
-            continue;
+            break;
+          default: TODO();
         }
 
         break;
