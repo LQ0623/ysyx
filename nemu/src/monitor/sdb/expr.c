@@ -24,7 +24,7 @@ enum {
   TK_NOTYPE = 256, TK_EQ,
 
   /* TODO: Add more token types */
-
+  TK_ADD,TK_SUB,TK_MUL,TK_DIV,TK_LEFT,TK_RIGHT,TK_NUM,
 };
 
 static struct rule {
@@ -37,8 +37,15 @@ static struct rule {
    */
 
   {" +", TK_NOTYPE},    // spaces
-  {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
+  {"\\+", TK_ADD},         // plus
+  {"-", TK_SUB},           // sub
+  {"\\*", TK_MUL},         // mul
+  {"/", TK_DIV},           // div
+  {"\\(", TK_LEFT},           // (
+  {"\\)", TK_RIGHT},           // )
+  {"\\d+",TK_NUM},       // 0-9
+
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -80,9 +87,12 @@ static bool make_token(char *e) {
   while (e[position] != '\0') {
     /* Try all rules one by one. */
     for (i = 0; i < NR_REGEX; i ++) {
-      if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
+      // 1表示只存储一个匹配结果
+      // rm_so表示匹配项在输入字符串中的起始偏移量;
+      // rm_eo表示匹配项在输入字符串中的结束偏移量
+      if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == position) {
         char *substr_start = e + position;
-        int substr_len = pmatch.rm_eo;
+        int substr_len = pmatch.rm_eo - pmatch.rm_so;
 
         Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
             i, rules[i].regex, position, substr_len, substr_len, substr_start);
@@ -95,7 +105,26 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
-          default: TODO();
+          case TK_NOTYPE: continue;
+          case TK_EQ:
+          case TK_ADD:
+          case TK_SUB:
+          case TK_MUL:
+          case TK_DIV:
+          case TK_LEFT:
+          case TK_RIGHT:
+            tokens[nr_token].type = rules[i].token_type;
+            nr_token++;
+            continue;
+          case TK_NUM:
+            tokens[nr_token].type = rules[i].token_type;
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
+            tokens[nr_token].str[substr_len-1] = '\0'; // 确保字符串以空字符结尾
+            nr_token++;
+            continue;
+          default: 
+            tokens[nr_token].type = 0;
+            continue;
         }
 
         break;
@@ -117,7 +146,8 @@ word_t expr(char *e, bool *success) {
     *success = false;
     return 0;
   }
-
+  assert(*success == true);
+  printf("it success");
   /* TODO: Insert codes to evaluate the expression. */
   TODO();
 

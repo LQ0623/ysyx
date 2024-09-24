@@ -85,19 +85,21 @@ static int cmd_info(char *args){
 static int cmd_x(char *args){
   /* extract the first argument */
   char *N = strtok(NULL, " ");
-  char *expr = strtok(NULL," ");
+  char *expr_x = strtok(NULL," ");
 
   if(N == NULL){
     printf("请输入步长N\n");
     return 0;
-  } else if(expr == NULL){
+  } else if(expr_x == NULL){
     printf("请输入表达式expr\n");
     return 0;
   }
   else{
     int num = atoi(N);
-    expr = expr + 2;  // delete 0x
-    uint64_t addr = strtoull(expr,NULL,16);
+    expr_x = expr_x + 2;  // delete 0x
+    bool success = false;
+    expr(expr_x,&success);
+    uint64_t addr = strtoull(expr_x,NULL,16);
     word_t data;
     for(int i = 0;i < num; i++){
       data = paddr_read(addr,4);
