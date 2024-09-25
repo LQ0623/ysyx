@@ -88,7 +88,7 @@ static bool make_token(char *e) {
     /* Try all rules one by one. */
     for (i = 0; i < NR_REGEX; i ++) {
       // 1表示只存储一个匹配结果
-      // rm_so表示匹配项在输入字符串中的起始偏移量;
+      // rm_so表示匹配项在输入字符串中的起始偏移量
       // rm_eo表示匹配项在输入字符串中的结束偏移量
       if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
         char *substr_start = e + position;
@@ -138,6 +138,94 @@ static bool make_token(char *e) {
   return true;
 }
 
+// 递归求值
+bool check_parentheses(int p,int q){
+  if(tokens[p].type == TK_LEFT && tokens[q].type == TK_RIGHT){
+    return true;
+  }
+  return false;
+}
+
+int eval(int p,int q){
+  if(p > q){
+    return -1;
+  }else if(p == q){
+    return atoi(tokens[p].str);
+  }else if(check_parentheses(p,q)){
+    return eval(p+1, q-1);
+  }else{
+    int op = -1;
+    char op_type = ' ';
+    int flag = 0; // 判断是否遇到了括号，遇到左括号加1，遇到右括号减1
+    // find the position of 主运算符 in the token expression
+    for(int i = p;i <= q;i++){
+      if(flag == 0){
+        switch(tokens[i].type){
+          case TK_ADD:
+            if(op == -1){
+              op = i;
+              op_type = '+';
+              break;
+            }
+            else{
+              continue;
+            }
+          case TK_SUB:
+            if(op == -1){
+              op = i;
+              op_type = '-';
+              break;
+            }
+            else {
+              continue;
+            }
+          case TK_MUL:
+            if(op == -1 || (op_type == '+' || op_type == '-')){
+              op = i;
+              op_type = '*';
+              break;
+            }else {
+              continue;
+            }
+          case TK_DIV:
+            if(op == -1 || (op_type == '+' || op_type == '-')){
+              op = i;
+              op_type = '/';
+              break;
+            }else{
+              continue;
+            }
+          default: panic("cannot find main op\n");
+        }
+      }else{  // flag != 0
+        if(tokens[i].type == TK_LEFT){
+          flag ++;
+        }
+        else if(tokens[i].type == TK_RIGHT){
+          flag --;
+        }
+      }
+    }
+    if(flag != 0){
+      panic("输入表达式错误，请检查\n");
+    }
+    int val1 = eval(p,op - 1);
+    int val2 = eval(op + 1,q);
+    switch (op_type)
+    {
+      case '+': return val1 + val2;
+      case '-': return val1 - val2;
+      case '*': return val1 * val2;
+      case '/': 
+        if(val2 == 0){
+          panic("val2 == 0\n");
+        }
+        return val1 / val2;
+      default: panic("cal failure\n");
+    }
+  }
+  return 0;
+}
 
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
@@ -147,7 +235,9 @@ word_t expr(char *e, bool *success) {
   assert(*success == true);
   printf("it success");
   /* TODO: Insert codes to evaluate the expression. */
-  TODO();
+  // TODO();
+  int val = eval(0,nr_token);
+  printf("%d\n",val);
 
   return 0;
 }
