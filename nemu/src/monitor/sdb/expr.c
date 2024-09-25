@@ -154,7 +154,7 @@ int eval(int p,int q){
   }else if(check_parentheses(p,q)){
     return eval(p+1, q-1);
   }else{
-    int op = -1;
+    int op = p;
     char op_type = ' ';
     int flag = 0; // 判断是否遇到了括号，遇到左括号加1，遇到右括号减1
     // find the position of 主运算符 in the token expression
