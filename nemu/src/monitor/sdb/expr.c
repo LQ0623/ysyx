@@ -170,7 +170,7 @@ int eval(int p,int q){
             op_type = '-';
             break;
           case TK_MUL:
-            if(op_type == '*' || op_type == '/'){
+            if(op_type == '*' || op_type == '/' || op_type == ' '){
               op = i;
               op_type = '*';
               break;
@@ -178,7 +178,7 @@ int eval(int p,int q){
               continue;
             }
           case TK_DIV:
-            if(op_type == '*' || op_type == '/'){
+            if(op_type == '*' || op_type == '/' || op_type == ' '){
               op = i;
               op_type = '/';
               break;
