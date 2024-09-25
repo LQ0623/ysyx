@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
       panic("Cal Error");
     }
   }
+  fclose(file);
 
 
   return is_exit_status_bad();
