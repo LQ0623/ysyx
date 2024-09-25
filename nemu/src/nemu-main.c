@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
   /* Start engine. */
   //engine_start();
 
-  FILE *file = fopen("./input", "r");
+  FILE *file = fopen("./input.txt", "r");
   if (!file) {
     panic("Failed to open file");
     return 1;
