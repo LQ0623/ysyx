@@ -85,7 +85,8 @@ static int cmd_info(char *args){
 static int cmd_x(char *args){
   /* extract the first argument */
   char *N = strtok(NULL, " ");
-  char *expr_x = strtok(NULL," ");
+  // 获取剩余的字符串，即表达式部分
+  char *expr_x = strtok(NULL,"\0");
 
   if(N == NULL){
     printf("请输入步长N\n");
@@ -110,6 +111,11 @@ static int cmd_x(char *args){
   }
 }
 
+static int cmd_p(char *args){
+
+  return 0;
+}
+
 // handler最后返回一个int类型的数据
 static struct {
   const char *name;
@@ -124,6 +130,7 @@ static struct {
   { "si", "单步执行", cmd_si },
   { "info", "打印程序状态", cmd_info},
   { "x", "扫描内存", cmd_x},
+  { "p", "表达式的求值", cmd_p},
 
 };
 
