@@ -162,25 +162,15 @@ int eval(int p,int q){
       if(flag == 0){
         switch(tokens[i].type){
           case TK_ADD:
-            if(op == -1){
-              op = i;
-              op_type = '+';
-              break;
-            }
-            else{
-              continue;
-            }
+            op = i;
+            op_type = '+';
+            break;
           case TK_SUB:
-            if(op == -1){
-              op = i;
-              op_type = '-';
-              break;
-            }
-            else {
-              continue;
-            }
+            op = i;
+            op_type = '-';
+            break;
           case TK_MUL:
-            if(op == -1 || (op_type == '+' || op_type == '-')){
+            if(op_type == '*' || op_type == '/'){
               op = i;
               op_type = '*';
               break;
@@ -188,7 +178,7 @@ int eval(int p,int q){
               continue;
             }
           case TK_DIV:
-            if(op == -1 || (op_type == '+' || op_type == '-')){
+            if(op_type == '*' || op_type == '/'){
               op = i;
               op_type = '/';
               break;
