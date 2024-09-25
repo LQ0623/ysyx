@@ -195,7 +195,7 @@ int eval(int p,int q){
             }else{
               continue;
             }
-          default: panic("cannot find main op\n");
+          default: continue;
         }
       }else{  // flag != 0
         if(tokens[i].type == TK_LEFT){
