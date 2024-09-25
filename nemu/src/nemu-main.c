@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
   }
 
   char line[65536];
+  int flag = 0;
   while (fgets(line, sizeof(line), file)) {
     // 去掉换行符
     line[strcspn(line, "\n")] = 0;
@@ -52,8 +53,13 @@ int main(int argc, char *argv[]) {
     bool success;
     int eval_result = expr(e,&success);
     if(atoi(result) != eval_result){
+      fclose(file);
       panic("Cal Error");
+      flag = 1;
     }
+  }
+  if(flag == 0){
+    printf("success\n");
   }
   fclose(file);
 
