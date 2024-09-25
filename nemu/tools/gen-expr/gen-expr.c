@@ -31,30 +31,39 @@ static char *code_format =
 "  return 0; "
 "}";
 
+static int recursion_depth = 0;
 static int position = 0;
   __uint32_t choose(int n){
   return rand() % n;
 }
 void gen_num(){
   __uint32_t num = choose(80000000);
-  sprintf(buf + position, "%d", num);
+  if (position + 10 > 65536) return; // 防止溢出
+  sprintf(buf + position, "%u", num);
   position += strlen(buf+position);
 }
 
 void gen_rand_op(){
     char *ops[] = {"+", "-", "*", "/"};
     char *op = ops[choose(4)];
+    if (position + 1 > 65536) return; // 防止溢出
     sprintf(buf + position, "%s", op);
     position += strlen(buf + position);
 }
 
-static void gen_rand_expr() {
+static void gen_rand_expr(int depth) {
+  if (depth > 10) return; // 限制递归深度
+  recursion_depth = depth;
   switch (choose(4)) {
-    case 0: gen_num(); break;
+    case 0: 
+      gen_num();
+      break;
     case 1: 
+      if (position + 1 > 65536) return; // 防止溢出
       sprintf(buf + position,"(");
       position++;
-      gen_rand_expr();
+      gen_rand_expr(depth + 1);
+      if (position + 1 > 65536) return; // 防止溢出
       sprintf(buf + position,")");
       position++;
       break;
@@ -62,9 +71,9 @@ static void gen_rand_expr() {
       sprintf(buf + position," ");
       break;
     default: 
-      gen_rand_expr();
+      gen_rand_expr(depth + 1);
       gen_rand_op();
-      gen_rand_expr();
+      gen_rand_expr(depth + 1);
       break;
   }
   buf[position] = '\0';
