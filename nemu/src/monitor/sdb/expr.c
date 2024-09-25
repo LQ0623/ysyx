@@ -119,10 +119,10 @@ static bool make_token(char *e) {
           case TK_NUM:
             tokens[nr_token].type = rules[i].token_type;
             strncpy(tokens[nr_token].str, substr_start, substr_len);
-            //tokens[nr_token].str[substr_len-1] = '\0'; // 确保字符串以空字符结尾
+            tokens[nr_token].str[substr_len] = '\0'; // 确保字符串以空字符结尾
             nr_token++;
             break;
-          default: TODO();
+          default: panic("cannot split token");
         }
 
         break;
