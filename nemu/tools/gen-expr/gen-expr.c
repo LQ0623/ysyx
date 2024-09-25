@@ -25,20 +25,18 @@ static char buf[65536] = {};
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
-"int main() { "
+"unsigned main() { "
 "  unsigned result = %s; "
-"  printf(\"%%u\", result); "
+"  printf(\"%%u\\n\", result); "
 "  return 0; "
 "}";
 
-static int recursion_depth = 0;
 static int position = 0;
-  __uint32_t choose(int n){
+__uint32_t choose(int n){
   return rand() % n;
 }
 void gen_num(){
-  __uint32_t num = choose(80000000);
-  if (position + 10 > 65536) return; // 防止溢出
+  __uint32_t num = choose(800);
   sprintf(buf + position, "%u", num);
   position += strlen(buf+position);
 }
@@ -46,34 +44,26 @@ void gen_num(){
 void gen_rand_op(){
     char *ops[] = {"+", "-", "*", "/"};
     char *op = ops[choose(4)];
-    if (position + 1 > 65536) return; // 防止溢出
     sprintf(buf + position, "%s", op);
     position += strlen(buf + position);
 }
 
-static void gen_rand_expr(int depth) {
-  if (depth > 10) return; // 限制递归深度
-  recursion_depth = depth;
-  switch (choose(4)) {
+static void gen_rand_expr() {
+  switch (choose(3)) {
     case 0: 
       gen_num();
       break;
     case 1: 
-      if (position + 1 > 65536) return; // 防止溢出
       sprintf(buf + position,"(");
       position++;
-      gen_rand_expr(depth + 1);
-      if (position + 1 > 65536) return; // 防止溢出
+      gen_rand_expr();
       sprintf(buf + position,")");
       position++;
       break;
-    case 2:
-      sprintf(buf + position," ");
-      break;
     default: 
-      gen_rand_expr(depth + 1);
+      gen_rand_expr();
       gen_rand_op();
-      gen_rand_expr(depth + 1);
+      gen_rand_expr();
       break;
   }
   buf[position] = '\0';
@@ -88,6 +78,9 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
+    // 每次的新的表达式都需要清空buf数组和将position置为0
+    memset(buf,0,65536);
+    position = 0;
     gen_rand_expr();
 
     sprintf(code_buf, code_format, buf);
