@@ -112,8 +112,15 @@ static int cmd_x(char *args){
 }
 
 static int cmd_p(char *args){
-
-  return 0;
+  bool success = false;
+  //int result = -1;
+  //result = expr(args,&success);
+  expr(args,&success);
+  if(success){
+    return 0;
+  }else{
+    return -1;
+  }
 }
 
 // handler最后返回一个int类型的数据
