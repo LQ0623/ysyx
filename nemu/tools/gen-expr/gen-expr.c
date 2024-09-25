@@ -32,17 +32,42 @@ static char *code_format =
 "}";
 
 static int position = 0;
-__uint32_t choose(int n){
+  __uint32_t choose(int n){
   return rand() % n;
+}
+void gen_num(){
+  __uint32_t num = choose(80000000);
+  sprintf(buf + position, "%d", num);
+  position += strlen(buf+position);
+}
+
+void gen_rand_op(){
+    char *ops[] = {"+", "-", "*", "/"};
+    char *op = ops[choose(4)];
+    sprintf(buf + position, "%s", op);
+    position += strlen(buf + position);
 }
 
 static void gen_rand_expr() {
-  switch (choose(3)) {
+  switch (choose(4)) {
     case 0: gen_num(); break;
-    case 1: gen('('); gen_rand_expr(); gen(')'); break;
-    default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
+    case 1: 
+      sprintf(buf + position,"(");
+      position++;
+      gen_rand_expr();
+      sprintf(buf + position,")");
+      position++;
+      break;
+    case 2:
+      sprintf(buf + position," ");
+      break;
+    default: 
+      gen_rand_expr();
+      gen_rand_op();
+      gen_rand_expr();
+      break;
   }
-  buf[0] = '\0';
+  buf[position] = '\0';
 }
 
 int main(int argc, char *argv[]) {
