@@ -159,6 +159,12 @@ int eval(int p,int q){
     int flag = 0; // 判断是否遇到了括号，遇到左括号加1，遇到右括号减1
     // find the position of 主运算符 in the token expression
     for(int i = p;i <= q;i++){
+      if(tokens[i].type == TK_LEFT){
+        flag ++;
+      }
+      else if(tokens[i].type == TK_RIGHT){
+        flag --;
+      }
       if(flag == 0){
         switch(tokens[i].type){
           case TK_ADD:
@@ -186,13 +192,6 @@ int eval(int p,int q){
               continue;
             }
           default: continue;
-        }
-      }else{  // flag != 0
-        if(tokens[i].type == TK_LEFT){
-          flag ++;
-        }
-        else if(tokens[i].type == TK_RIGHT){
-          flag --;
         }
       }
     }
