@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
   /* Start engine. */
   //engine_start();
 
-  FILE *file = fopen("input.txt", "r");
+  FILE *file = fopen("/home/lq/ysyx-workbench/nemu/tools/gen-expr/input.txt", "r");
   if (!file) {
     panic("Failed to open file");
     return 1;
