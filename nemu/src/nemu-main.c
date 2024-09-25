@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
   /* Start engine. */
   //engine_start();
 
-  FILE *file = fopen("../tools/gen-expr/input", "r");
+  FILE *file = fopen("./input", "r");
   if (!file) {
     panic("Failed to open file");
     return 1;
