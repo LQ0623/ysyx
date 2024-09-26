@@ -14,6 +14,10 @@
 ***************************************************************************************/
 
 #include <common.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "./monitor/sdb/sdb.h"
 
 void init_monitor(int, char *[]);
 void am_init_monitor();
@@ -30,6 +34,41 @@ int main(int argc, char *argv[]) {
 
   /* Start engine. */
   engine_start();
+
+
+  /**
+   * 测试表达式求值
+   */
+  // FILE *file = fopen("/home/lq/ysyx-workbench/nemu/tools/gen-expr/input", "r");
+  // if (!file) {
+  //   panic("Failed to open file");
+  //   return 1;
+  // }
+
+  // char line[65536];
+  // int flag = 0;
+  // while (fgets(line, sizeof(line), file)) {
+  //   // 去掉换行符
+  //   line[strcspn(line, "\n")] = 0;
+
+  //   // 分割字符串并处理表达式
+  //   char *result = strtok(line, " ");
+  //   char *e = strtok(line,"\0");
+  //   bool success;
+  //   uint32_t eval_result = expr(e,&success);
+  //   unsigned int re;
+  //   sscanf(result, "%u", &re);
+  //   if(re != eval_result){
+  //     fclose(file);
+  //     panic("Cal Error");
+  //     flag = 1;
+  //   }
+  // }
+  // if(flag == 0){
+  //   printf("success\n");
+  // }
+  // fclose(file);
+
 
   return is_exit_status_bad();
 }

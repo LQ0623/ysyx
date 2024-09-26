@@ -24,8 +24,21 @@ const char *regs[] = {
 };
 
 void isa_reg_display() {
+  // 使用for循环输出所有的寄存器的名称以及对应的值
+  // 寄存器的值保存在cpu这个全局变量的gpr数组中
+  int i = 0;
+  for(i = 0;i < sizeof(regs) / sizeof(regs[0]); i++){
+    printf("%s = %d\n",regs[i],cpu.gpr[i]);
+  }
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
+  for(int i = 0;i < sizeof(regs) / sizeof(regs[0]);i++){
+    if(strcmp(regs[i], s) == 0){
+      *success = true;
+      return cpu.gpr[i];
+    }
+  }
+  *success = false;
   return 0;
 }

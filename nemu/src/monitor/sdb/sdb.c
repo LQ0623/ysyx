@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/paddr.h>
 
 static int is_batch_mode = false;
 
@@ -43,17 +44,86 @@ static char* rl_gets() {
 }
 
 static int cmd_c(char *args) {
+  // 表示要执行的指令的数量,-1表示运行所有的指令,
+  // 负数会变为一个很大的数，这样就能运行完所有的指令,-1会变为18446744073709551615
+  // 负数会被当作无符号整数处理，所以负数的补码都被认为是无符号的整数了
   cpu_exec(-1);
   return 0;
 }
 
 
 static int cmd_q(char *args) {
+  // cmd_q 函数只是简单的返回-1,但是并没有实现完整的退出逻辑
+  exit(0); // 使用 exit(0) 退出程序
   return -1;
 }
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args){
+  int step = 1;
+  if(args != NULL){
+    step = atoi(args);
+  }
+  cpu_exec(step);
+  return 0;
+}
+
+static int cmd_info(char *args){
+  if(args == NULL){
+    printf("请输入要执行的操作r或者w\n");
+    return 0;
+  }
+  char SubCmd = args[0];
+  if(SubCmd == 'r'){
+    isa_reg_display();
+    return 0;
+  }
+  return 0;
+}
+
+static int cmd_x(char *args){
+  /* extract the first argument */
+  char *N = strtok(NULL, " ");
+  // 获取剩余的字符串，即表达式部分
+  char *expr_x = strtok(NULL,"\0");
+
+  if(N == NULL){
+    printf("请输入步长N\n");
+    return 0;
+  } else if(expr_x == NULL){
+    printf("请输入表达式expr\n");
+    return 0;
+  }
+  else{
+    int num = atoi(N);
+    //expr_x = expr_x + 2;  // delete 0x
+    bool success = false;
+    expr(expr_x,&success);
+    uint64_t addr = strtoull(expr_x,NULL,16);
+    word_t data;
+    for(int i = 0;i < num; i++){
+      data = paddr_read(addr,4);
+      printf("addr: %lx,data: %08x\n",addr,data);
+      addr = addr + 4;
+    }
+    return 0;
+  }
+}
+
+static int cmd_p(char *args){
+  bool success = false;
+  //int result = -1;
+  //result = expr(args,&success);
+  expr(args,&success);
+  if(success){
+    return 0;
+  }else{
+    return -1;
+  }
+}
+
+// handler最后返回一个int类型的数据
 static struct {
   const char *name;
   const char *description;
@@ -64,6 +134,10 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
+  { "si", "单步执行", cmd_si },
+  { "info", "打印程序状态", cmd_info},
+  { "x", "扫描内存", cmd_x},
+  { "p", "表达式的求值", cmd_p},
 
 };
 
@@ -123,6 +197,7 @@ void sdb_mainloop() {
 #endif
 
     int i;
+    // 与指令表中的指令进行对比
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(cmd, cmd_table[i].name) == 0) {
         if (cmd_table[i].handler(args) < 0) { return; }

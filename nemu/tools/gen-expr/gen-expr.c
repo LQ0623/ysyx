@@ -25,14 +25,48 @@ static char buf[65536] = {};
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
-"int main() { "
+"unsigned main() { "
 "  unsigned result = %s; "
-"  printf(\"%%u\", result); "
+"  printf(\"%%u\\n\", result); "
 "  return 0; "
 "}";
 
+static int position = 0;
+__uint32_t choose(int n){
+  return rand() % n;
+}
+void gen_num(){
+  __uint32_t num = choose(800);
+  sprintf(buf + position, "%u", num);
+  position += strlen(buf+position);
+}
+
+void gen_rand_op(){
+    char *ops[] = {"+", "-", "*", "/"};
+    char *op = ops[choose(4)];
+    sprintf(buf + position, "%s", op);
+    position += strlen(buf + position);
+}
+
 static void gen_rand_expr() {
-  buf[0] = '\0';
+  switch (choose(3)) {
+    case 0: 
+      gen_num();
+      break;
+    case 1: 
+      sprintf(buf + position,"(");
+      position++;
+      gen_rand_expr();
+      sprintf(buf + position,")");
+      position++;
+      break;
+    default: 
+      gen_rand_expr();
+      gen_rand_op();
+      gen_rand_expr();
+      break;
+  }
+  buf[position] = '\0';
 }
 
 int main(int argc, char *argv[]) {
@@ -44,6 +78,9 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
+    // 每次的新的表达式都需要清空buf数组和将position置为0
+    memset(buf,0,65536);
+    position = 0;
     gen_rand_expr();
 
     sprintf(code_buf, code_format, buf);
