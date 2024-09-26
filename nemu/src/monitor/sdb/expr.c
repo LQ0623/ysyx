@@ -210,9 +210,11 @@ uint32_t eval(int p,int q){
     for(int i = p;i <= q;i++){
       if(tokens[i].type == TK_LEFT){
         flag ++;
+        continue;
       }
       else if(tokens[i].type == TK_RIGHT){
         flag --;
+        continue;
       }
       if(flag == 0){
         switch(tokens[i].type){
@@ -275,8 +277,8 @@ uint32_t eval(int p,int q){
     if(flag != 0){
       panic("输入表达式错误，请检查\n");
     }
-    int val1 = eval(p,op - 1);
-    int val2 = eval(op + 1,q);
+    uint32_t val1 = eval(p,op - 1);
+    uint32_t val2 = eval(op + 1,q);
     switch (op_type)
     {
       // f 表示解引用，因为解引用是针对后面的表达式，所以解的地址是val2存储
@@ -317,7 +319,7 @@ word_t expr(char *e, bool *success) {
       tokens[i].type = TK_DEREF;
     }
   }
-  int val = eval(0,nr_token-1);
+  uint32_t val = eval(0,nr_token-1);
   *success = true;
   printf("%d\n",val);
   return val;
