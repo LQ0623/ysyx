@@ -97,7 +97,7 @@ static int cmd_x(char *args){
   }
   else{
     int num = atoi(N);
-    expr_x = expr_x + 2;  // delete 0x
+    //expr_x = expr_x + 2;  // delete 0x
     bool success = false;
     expr(expr_x,&success);
     uint64_t addr = strtoull(expr_x,NULL,16);

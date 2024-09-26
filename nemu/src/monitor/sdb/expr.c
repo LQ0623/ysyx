@@ -24,7 +24,8 @@ enum {
   TK_NOTYPE = 256, TK_EQ,
 
   /* TODO: Add more token types */
-  TK_ADD,TK_SUB,TK_MUL,TK_DIV,TK_LEFT,TK_RIGHT,TK_NUM,
+  TK_ADD,TK_SUB,TK_MUL,TK_DIV,TK_LEFT,TK_RIGHT,TK_DEC,
+  TK_HEX,TK_REG,TK_NEQ,TK_AND,TK_LESS,TK_DEREF,
 };
 
 static struct rule {
@@ -44,8 +45,13 @@ static struct rule {
   {"/", TK_DIV},           // div
   {"\\(", TK_LEFT},           // (
   {"\\)", TK_RIGHT},           // )
-  {"[0-9]+",TK_NUM},       // 0-9
-
+  {"[0-9]+", TK_DEC},       // 0-9
+  {"$[a-z]+", TK_REG},      // REG
+  {"0[x,X][0-9,a-f,A-F]+", TK_HEX},   // 0-f
+  {"!=", TK_NEQ},            // not equal
+  {"&&", TK_AND},            // AND
+  {"<=", TK_LESS},           // less than   
+  
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -113,10 +119,24 @@ static bool make_token(char *e) {
           case TK_DIV:
           case TK_LEFT:
           case TK_RIGHT:
+          case TK_NEQ:
+          case TK_AND:
+          case TK_LESS:
             tokens[nr_token].type = rules[i].token_type;
             nr_token++;
             break;
-          case TK_NUM:
+          case TK_REG:
+            tokens[nr_token].type = rules[i].token_type;
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
+            tokens[nr_token].str[substr_len] = '\0'; // 确保字符串以空字符结尾
+            nr_token++;
+          case TK_DEC:
+            tokens[nr_token].type = rules[i].token_type;
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
+            tokens[nr_token].str[substr_len] = '\0'; // 确保字符串以空字符结尾
+            nr_token++;
+            break;
+          case TK_HEX:
             tokens[nr_token].type = rules[i].token_type;
             strncpy(tokens[nr_token].str, substr_start, substr_len);
             tokens[nr_token].str[substr_len] = '\0'; // 确保字符串以空字符结尾
@@ -148,9 +168,27 @@ bool check_parentheses(int p,int q){
 
 int eval(int p,int q){
   if(p > q){
-    return -1;
+    panic("p > q");
+    return 0;
   }else if(p == q){
-    return atoi(tokens[p].str);
+    switch (tokens[p].type)
+    {
+    case TK_DEC: return atoi(tokens[p].str);
+    case TK_HEX: return 0;  // 返回一个16进制的数
+    case TK_REG:
+      bool success;
+      uint32_t result;
+      result = isa_reg_str2val(tokens[p].str,&success);
+      if(success){
+        return result;
+      }else{
+        panic("cannot read Reg %s",tokens[p].str);
+        return 0;
+      }
+    //case TK_DEREF: return paddr_read(&tokens[p].str,4);
+    default: return 0;
+    }
+    
   }else if(check_parentheses(p,q)){
     return eval(p+1, q-1);
   }else{
@@ -223,6 +261,15 @@ word_t expr(char *e, bool *success) {
   }
   /* TODO: Insert codes to evaluate the expression. */
   // TODO();
+  // 识别指针解引用
+  // 如果是指针，前面不能是右括号、读寄存器、16进制和10进制的数
+  for (int i = 0; i < nr_token; i ++) {
+    if (tokens[i].type == TK_MUL && 
+      (i == 0 || (tokens[i - 1].type != TK_RIGHT && tokens[i-1].type != TK_REG 
+                  && tokens[i-1].type != TK_HEX && tokens[i-1].type != TK_DEC)) ) {
+      tokens[i].type = TK_DEREF;
+    }
+  }
   int val = eval(0,nr_token-1);
   *success = true;
   printf("%d\n",val);
