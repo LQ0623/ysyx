@@ -179,6 +179,7 @@ uint32_t eval(int p,int q){
     return 0;
   }else if(p == q){
     uint32_t result;
+    bool success;
     switch (tokens[p].type)
     {
       case TK_DEC:
@@ -192,7 +193,6 @@ uint32_t eval(int p,int q){
         
         return decimal_number;  // 返回一个16进制的数
       case TK_REG:
-        bool success;
         result = isa_reg_str2val(tokens[p].str,&success);
         if(success){
           return result;
