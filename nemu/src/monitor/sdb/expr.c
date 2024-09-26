@@ -19,6 +19,7 @@
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
+#include <memory/paddr.h>
 
 enum {
   TK_NOTYPE = 256, TK_EQ,
@@ -173,31 +174,30 @@ bool check_parentheses(int p,int q){
   return false;
 }
 
-int eval(int p,int q){
+uint32_t eval(int p,int q){
   if(p > q){
     return 0;
   }else if(p == q){
     switch (tokens[p].type)
     {
-    case TK_DEC: return atoi(tokens[p].str);
-    case TK_HEX:
-      char *hex_number = tokens[p].str;  // 去除0x的长度
-      uint32_t decimal_number = 0;
-      sscanf(hex_number, "%x", &decimal_number);
-      
-      return decimal_number;  // 返回一个16进制的数
-    case TK_REG:
-      bool success;
-      uint32_t result;
-      result = isa_reg_str2val(tokens[p].str,&success);
-      if(success){
-        return result;
-      }else{
-        panic("cannot read Reg %s",tokens[p].str);
-        return 0;
-      }
-    //case TK_DEREF: return paddr_read(&tokens[p].str,4);
-    default: return 0;
+      case TK_DEC: return atoi(tokens[p].str);
+      case TK_HEX:
+        char *hex_number = tokens[p].str;  // 去除0x的长度
+        uint32_t decimal_number = 0;
+        sscanf(hex_number, "%x", &decimal_number);
+        
+        return decimal_number;  // 返回一个16进制的数
+      case TK_REG:
+        bool success;
+        uint32_t result;
+        result = isa_reg_str2val(tokens[p].str,&success);
+        if(success){
+          return result;
+        }else{
+          panic("cannot read Reg %s",tokens[p].str);
+          return 0;
+        }
+      default: return 0;
     }
     
   }else if(check_parentheses(p,q)){
@@ -216,14 +216,20 @@ int eval(int p,int q){
       }
       if(flag == 0){
         switch(tokens[i].type){
+          case TK_DEREF:
+            if(op_type == ' ' || op_type == 'f'){
+              op = i;
+              op_type = 'f';
+            }
+            break;
           case TK_MUL:
-            if(op_type == ' ' || op_type == '*' || op_type == '/'){
+            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f'){
               op = i;
               op_type = '*';
             }
             break;
           case TK_DIV:
-            if(op_type == ' ' || op_type == '*' || op_type == '/'){
+            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f'){
               op = i;
               op_type = '/';
             }
@@ -273,6 +279,8 @@ int eval(int p,int q){
     int val2 = eval(op + 1,q);
     switch (op_type)
     {
+      // f 表示解引用，因为解引用是针对后面的表达式，所以解的地址是val2存储
+      case 'f': return paddr_read(val2,4);
       case '*': return val1 * val2;
       case '/': 
         if(val2 == 0){
