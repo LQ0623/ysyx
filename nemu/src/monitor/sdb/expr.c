@@ -247,6 +247,7 @@ int eval(int p,int q){
           panic("val2 == 0\n");
         }
         return val1 / val2;
+      case ' ': return val2;
       default: panic("cal failure\n");
     }
   }
