@@ -178,7 +178,9 @@ int eval(int p,int q){
     switch (tokens[p].type)
     {
     case TK_DEC: return atoi(tokens[p].str);
-    case TK_HEX: return 0;  // 返回一个16进制的数
+    case TK_HEX:
+      
+      return 0;  // 返回一个16进制的数
     case TK_REG:
       bool success;
       uint32_t result;
