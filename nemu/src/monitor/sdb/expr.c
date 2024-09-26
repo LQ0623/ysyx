@@ -128,7 +128,7 @@ static bool make_token(char *e) {
           case TK_REG:
             tokens[nr_token].type = rules[i].token_type;
             strncpy(tokens[nr_token].str, substr_start + 1, substr_len - 1);
-            if(strcmp(tokens[nr_token].str,"0")){
+            if(strcmp(tokens[nr_token].str,"0") == 0){
               strncpy(tokens[nr_token].str, substr_start, substr_len);
             }
             tokens[nr_token].str[substr_len] = '\0'; // 确保字符串以空字符结尾
