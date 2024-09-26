@@ -163,7 +163,9 @@ static bool make_token(char *e) {
   return true;
 }
 
-// 递归求值
+/**
+ * 递归求值
+ */
 bool check_parentheses(int p,int q){
   if(tokens[p].type == TK_LEFT && tokens[q].type == TK_RIGHT){
     return true;
@@ -179,11 +181,11 @@ int eval(int p,int q){
     {
     case TK_DEC: return atoi(tokens[p].str);
     case TK_HEX:
-      //int hex_len = strlen(tokens[p].str) - 2;  // 去除0x的长度
-      //int result = 0;
-      //sscanf(hex_number, "%x", &decimal_number);
+      char *hex_number = tokens[p].str;  // 去除0x的长度
+      uint32_t decimal_number = 0;
+      sscanf(hex_number, "%x", &decimal_number);
       
-      return 0;  // 返回一个16进制的数
+      return decimal_number;  // 返回一个16进制的数
     case TK_REG:
       bool success;
       uint32_t result;
