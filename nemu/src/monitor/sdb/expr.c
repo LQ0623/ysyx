@@ -168,7 +168,6 @@ bool check_parentheses(int p,int q){
 
 int eval(int p,int q){
   if(p > q){
-    panic("p > q");
     return 0;
   }else if(p == q){
     switch (tokens[p].type)
