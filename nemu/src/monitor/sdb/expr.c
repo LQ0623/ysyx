@@ -178,9 +178,13 @@ uint32_t eval(int p,int q){
   if(p > q){
     return 0;
   }else if(p == q){
+    uint32_t result;
     switch (tokens[p].type)
     {
-      case TK_DEC: return atoi(tokens[p].str);
+      case TK_DEC:
+        sscanf(tokens[p].str, "%u", &result);
+        return result;
+        //return atoi(tokens[p].str);
       case TK_HEX:
         char *hex_number = tokens[p].str;  // 去除0x的长度
         uint32_t decimal_number = 0;
@@ -189,7 +193,6 @@ uint32_t eval(int p,int q){
         return decimal_number;  // 返回一个16进制的数
       case TK_REG:
         bool success;
-        uint32_t result;
         result = isa_reg_str2val(tokens[p].str,&success);
         if(success){
           return result;
@@ -311,7 +314,7 @@ word_t expr(char *e, bool *success) {
   /* TODO: Insert codes to evaluate the expression. */
   // TODO();
   // 识别指针解引用
-  // 如果是指针，前面不能是右括号、读寄存器、16进制和10进制的数
+  // 如果是指针解引用，前面不能是右括号、读寄存器、16进制和10进制的数
   for (int i = 0; i < nr_token; i ++) {
     if (tokens[i].type == TK_MUL && 
       (i == 0 || (tokens[i - 1].type != TK_RIGHT && tokens[i-1].type != TK_REG 

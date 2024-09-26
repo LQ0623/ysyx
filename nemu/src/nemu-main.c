@@ -55,8 +55,10 @@ int main(int argc, char *argv[]) {
   //   char *result = strtok(line, " ");
   //   char *e = strtok(line,"\0");
   //   bool success;
-  //   int eval_result = expr(e,&success);
-  //   if(atoi(result) != eval_result){
+  //   uint32_t eval_result = expr(e,&success);
+  //   unsigned int re;
+  //   sscanf(result, "%u", &re);
+  //   if(re != eval_result){
   //     fclose(file);
   //     panic("Cal Error");
   //     flag = 1;
