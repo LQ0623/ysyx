@@ -210,29 +210,45 @@ int eval(int p,int q){
       if(flag == 0){
         switch(tokens[i].type){
           case TK_ADD:
-            op = i;
-            op_type = '+';
+            if(op_type == ' ' || (op_type != '=' && op_type != '!' && op_type != '&')){
+              op = i;
+              op_type = '+';
+            }
             break;
           case TK_SUB:
-            op = i;
-            op_type = '-';
+            if(op_type == ' ' || (op_type != '=' && op_type != '!' && op_type != '&')){
+              op = i;
+              op_type = '-';
+            }
             break;
           case TK_MUL:
             if(op_type == '*' || op_type == '/' || op_type == ' '){
               op = i;
               op_type = '*';
-              break;
-            }else {
-              continue;
             }
+            break;
           case TK_DIV:
             if(op_type == '*' || op_type == '/' || op_type == ' '){
               op = i;
               op_type = '/';
-              break;
-            }else{
-              continue;
             }
+            break;
+          case TK_EQ:
+            if(op_type == ' ' || op_type != '&'){
+              op = i;
+              op_type = '=';
+            }
+            break;
+          case TK_NEQ:
+            if(op_type == ' ' || op_type != '&'){
+              op = i;
+              op_type = '!';
+            }
+            break;
+          case TK_AND:
+            op = i;
+            op_type = '&';
+            break;
           default: continue;
         }
       }
@@ -252,6 +268,9 @@ int eval(int p,int q){
           panic("val2 == 0\n");
         }
         return val1 / val2;
+      case '=': return val1 == val2;
+      case '!': return val1 != val2;
+      case '&': return val1 && val2;
       case ' ': return val2;
       default: panic("cal failure\n");
     }
