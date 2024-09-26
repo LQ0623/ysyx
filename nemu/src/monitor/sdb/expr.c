@@ -143,8 +143,8 @@ static bool make_token(char *e) {
             break;
           case TK_HEX:
             tokens[nr_token].type = rules[i].token_type;
-            strncpy(tokens[nr_token].str, substr_start, substr_len);
-            tokens[nr_token].str[substr_len] = '\0'; // 确保字符串以空字符结尾
+            strncpy(tokens[nr_token].str, substr_start+2, substr_len - 2);  // 去除0x
+            tokens[nr_token].str[substr_len - 2] = '\0'; // 确保字符串以空字符结尾
             nr_token++;
             break;
           default: panic("cannot split token");
@@ -179,6 +179,9 @@ int eval(int p,int q){
     {
     case TK_DEC: return atoi(tokens[p].str);
     case TK_HEX:
+      //int hex_len = strlen(tokens[p].str) - 2;  // 去除0x的长度
+      //int result = 0;
+      //sscanf(hex_number, "%x", &decimal_number);
       
       return 0;  // 返回一个16进制的数
     case TK_REG:
