@@ -45,9 +45,9 @@ static struct rule {
   {"/", TK_DIV},           // div
   {"\\(", TK_LEFT},           // (
   {"\\)", TK_RIGHT},           // )
+  {"0x[0-9,a-f,A-F]+", TK_HEX},   // 0-f
   {"[0-9]+", TK_DEC},       // 0-9
   {"\\$[0-9,a-z]+", TK_REG},      // REG
-  {"[0x,0X][0-9,a-f,A-F]+", TK_HEX},   // 0-f
   {"!=", TK_NEQ},            // not equal
   {"&&", TK_AND},            // AND
   {"<=", TK_LESS_EQ},           // less than   
