@@ -25,7 +25,7 @@ enum {
 
   /* TODO: Add more token types */
   TK_ADD,TK_SUB,TK_MUL,TK_DIV,TK_LEFT,TK_RIGHT,TK_DEC,
-  TK_HEX,TK_REG,TK_NEQ,TK_AND,TK_LESS,TK_DEREF,
+  TK_HEX,TK_REG,TK_NEQ,TK_AND,TK_LESS_EQ,TK_DEREF,
 };
 
 static struct rule {
@@ -50,7 +50,7 @@ static struct rule {
   {"0[x,X][0-9,a-f,A-F]+", TK_HEX},   // 0-f
   {"!=", TK_NEQ},            // not equal
   {"&&", TK_AND},            // AND
-  {"<=", TK_LESS},           // less than   
+  {"<=", TK_LESS_EQ},           // less than   
   
 };
 
@@ -121,7 +121,7 @@ static bool make_token(char *e) {
           case TK_RIGHT:
           case TK_NEQ:
           case TK_AND:
-          case TK_LESS:
+          case TK_LESS_EQ:
             tokens[nr_token].type = rules[i].token_type;
             nr_token++;
             break;
@@ -209,28 +209,34 @@ int eval(int p,int q){
       }
       if(flag == 0){
         switch(tokens[i].type){
-          case TK_ADD:
-            if(op_type == ' ' || (op_type != '=' && op_type != '!' && op_type != '&')){
-              op = i;
-              op_type = '+';
-            }
-            break;
-          case TK_SUB:
-            if(op_type == ' ' || (op_type != '=' && op_type != '!' && op_type != '&')){
-              op = i;
-              op_type = '-';
-            }
-            break;
           case TK_MUL:
-            if(op_type == '*' || op_type == '/' || op_type == ' '){
+            if(op_type == ' ' || op_type == '*' || op_type == '/'){
               op = i;
               op_type = '*';
             }
             break;
           case TK_DIV:
-            if(op_type == '*' || op_type == '/' || op_type == ' '){
+            if(op_type == ' ' || op_type == '*' || op_type == '/'){
               op = i;
               op_type = '/';
+            }
+            break;
+          case TK_ADD:
+            if(op_type == ' ' || (op_type != '=' && op_type != '!' && op_type != '&' && op_type != '<')){
+              op = i;
+              op_type = '+';
+            }
+            break;
+          case TK_SUB:
+            if(op_type == ' ' || (op_type != '=' && op_type != '!' && op_type != '&' && op_type != '<')){
+              op = i;
+              op_type = '-';
+            }
+            break;
+          case TK_LESS_EQ:
+            if(op_type == ' ' || (op_type != '=' && op_type != '!' && op_type != '&')){
+              op = i;
+              op_type = '<';
             }
             break;
           case TK_EQ:
@@ -260,14 +266,16 @@ int eval(int p,int q){
     int val2 = eval(op + 1,q);
     switch (op_type)
     {
-      case '+': return val1 + val2;
-      case '-': return val1 - val2;
       case '*': return val1 * val2;
       case '/': 
         if(val2 == 0){
           panic("val2 == 0\n");
         }
         return val1 / val2;
+
+      case '+': return val1 + val2;
+      case '-': return val1 - val2;
+      case '<': return val1 <= val2;
       case '=': return val1 == val2;
       case '!': return val1 != val2;
       case '&': return val1 && val2;
