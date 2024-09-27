@@ -138,6 +138,12 @@ static int cmd_w(char *args){
   }
 }
 
+static int cmd_d(char* args){
+  char* no = strtok(args," ");
+  remove_point(atoi(no));
+  return 0;
+}
+
 // handler最后返回一个int类型的数据
 static struct {
   const char *name;
@@ -154,6 +160,7 @@ static struct {
   { "x", "扫描内存", cmd_x},
   { "p", "表达式的求值", cmd_p},
   { "w", "设置监视点", cmd_w},
+  { "d", "删除监视点", cmd_d},
 
 };
 
