@@ -26,7 +26,7 @@ enum {
 
   /* TODO: Add more token types */
   TK_ADD,TK_SUB,TK_MUL,TK_DIV,TK_LEFT,TK_RIGHT,TK_DEC,
-  TK_HEX,TK_REG,TK_NEQ,TK_AND,TK_LESS_EQ,TK_DEREF,
+  TK_HEX,TK_REG,TK_NEQ,TK_AND,TK_LESS_EQ,TK_DEREF,TK_NEGATIVE,
 };
 
 static struct rule {
@@ -222,19 +222,25 @@ uint32_t eval(int p,int q){
       if(flag == 0){
         switch(tokens[i].type){
           case TK_DEREF:
-            if(op_type == ' ' || op_type == 'f'){
+            if(op_type == ' ' || op_type == 'f' || op_type == 'n'){
               op = i;
               op_type = 'f';
             }
             break;
+          case TK_NEGATIVE:
+            if(op_type == ' ' || op_type == 'f' || op_type == 'n'){
+              op = i;
+              op_type = 'n';
+            }
+            break;
           case TK_MUL:
-            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f'){
+            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f' || op_type == 'n'){
               op = i;
               op_type = '*';
             }
             break;
           case TK_DIV:
-            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f'){
+            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f' || op_type == 'n'){
               op = i;
               op_type = '/';
             }
@@ -286,6 +292,7 @@ uint32_t eval(int p,int q){
     {
       // f 表示解引用，因为解引用是针对后面的表达式，所以解的地址是val2存储
       case 'f': return paddr_read(val2,4);
+      case 'n': return 0 - val2;
       case '*': return val1 * val2;
       case '/': 
         if(val2 == 0){
@@ -320,6 +327,15 @@ word_t expr(char *e, bool *success) {
       (i == 0 || (tokens[i - 1].type != TK_RIGHT && tokens[i-1].type != TK_REG 
                   && tokens[i-1].type != TK_HEX && tokens[i-1].type != TK_DEC)) ) {
       tokens[i].type = TK_DEREF;
+    }
+  }
+  // 识别负号
+  // 如果是负号，前面不能是右括号、读寄存器、16进制和10进制的数
+  for (int i = 0; i < nr_token; i ++) {
+    if (tokens[i].type == TK_SUB && 
+      (i == 0 || (tokens[i - 1].type != TK_RIGHT && tokens[i-1].type != TK_REG 
+                  && tokens[i-1].type != TK_HEX && tokens[i-1].type != TK_DEC)) ) {
+      tokens[i].type = TK_NEGATIVE;
     }
   }
   uint32_t val = eval(0,nr_token-1);
