@@ -64,11 +64,16 @@ WP* new_wp(){
 
 
 void free_wp(WP *wp){
+  if(wp == head){
+    head = head->next;
+    return;
+  }
+
   WP* temp = head;
   WP* pre = head;
   bool flag = false;
   while(temp != NULL){
-    if(temp->NO == wp->NO){
+    if(temp == wp){
       pre->next = temp->next;
       flag = true;
       break;
@@ -97,8 +102,11 @@ void remove_point(int no){
     assert(0);
   }
   WP* wp = &wp_pool[no];
+  char *expr = (char*)malloc(sizeof(wp->expr)+1);
+  strcpy(expr,wp->expr);
   free_wp(wp);
-  printf("Delete watchpoint %d:%s\n",wp->NO,wp->expr);
+  printf("Delete watchpoint %d:%s\n",no,expr);
+  free(expr);
 }
 
 void point_difftest(){
