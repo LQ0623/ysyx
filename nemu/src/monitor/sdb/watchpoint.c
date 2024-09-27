@@ -13,8 +13,8 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include "sdb.h"
 #include <string.h>
+#include "sdb.h"
 
 #define NR_WP 32
 
@@ -84,6 +84,7 @@ void free_wp(WP *wp){
 
 void set_point(char* expr,word_t result){
   WP* wp = new_wp();
+  wp->expr = (char*)malloc(strlen(expr) * sizeof(char) + 1);
   strcpy(wp->expr, expr);
   wp->result = result;
   printf("Watchpoint %d:%s\n",wp->NO,wp->expr);
