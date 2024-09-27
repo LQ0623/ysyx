@@ -28,7 +28,7 @@ void isa_reg_display() {
   // 寄存器的值保存在cpu这个全局变量的gpr数组中
   int i = 0;
   for(i = 0;i < sizeof(regs) / sizeof(regs[0]); i++){
-    printf("%s = %d\n",regs[i],cpu.gpr[i]);
+    printf("%s = %u\n",regs[i],cpu.gpr[i]);
   }
 }
 

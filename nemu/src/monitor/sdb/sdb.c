@@ -26,7 +26,7 @@ void init_regex();
 void init_wp_pool();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
-static char* rl_gets() {
+static char* rl_gets() {  
   static char *line_read = NULL;
 
   if (line_read) {
@@ -78,6 +78,9 @@ static int cmd_info(char *args){
   if(SubCmd == 'r'){
     isa_reg_display();
     return 0;
+  }else if(SubCmd == 'w'){
+    point_display();
+    return 0;
   }
   return 0;
 }
@@ -123,6 +126,24 @@ static int cmd_p(char *args){
   }
 }
 
+static int cmd_w(char *args){
+  bool success = false;
+  word_t result = expr(args,&success);
+  if(success){
+    set_point(args,result);
+    return 0;
+  }else{
+    panic("cannot set watchpoint\n");
+    return -1;
+  }
+}
+
+static int cmd_d(char* args){
+  char* no = strtok(args," ");
+  remove_point(atoi(no));
+  return 0;
+}
+
 // handler最后返回一个int类型的数据
 static struct {
   const char *name;
@@ -138,6 +159,8 @@ static struct {
   { "info", "打印程序状态", cmd_info},
   { "x", "扫描内存", cmd_x},
   { "p", "表达式的求值", cmd_p},
+  { "w", "设置监视点", cmd_w},
+  { "d", "删除监视点", cmd_d},
 
 };
 

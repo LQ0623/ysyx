@@ -13,6 +13,7 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
+#include <string.h>
 #include "sdb.h"
 
 #define NR_WP 32
@@ -22,13 +23,17 @@ typedef struct watchpoint {
   struct watchpoint *next;
 
   /* TODO: Add more members if necessary */
-
+  word_t result;
+  char* expr;
 } WP;
 
 static WP wp_pool[NR_WP] = {};
 static WP *head = NULL, *free_ = NULL;
 WP* new_wp();
 void free_wp(WP *wp);
+void set_point(char* expr,word_t result);
+void remove_point(int no);
+void point_difftest();
 
 void init_wp_pool() {
   int i;
@@ -44,6 +49,85 @@ void init_wp_pool() {
 /* TODO: Implement the functionality of watchpoint */
 WP* new_wp(){
 
-  return NULL;
+  // there is no free point
+  if(free_ == NULL){
+    assert(0);
+  }
 
+  WP* new_node = free_;
+  free_ = free_->next;
+  new_node->next = head;
+  head = new_node;
+
+  return new_node;
+}
+
+
+void free_wp(WP *wp){
+  if(wp == head){
+    head = head->next;
+    return;
+  }
+
+  WP* temp = head;
+  WP* pre = head;
+  bool flag = false;
+  while(temp != NULL){
+    if(temp == wp){
+      pre->next = temp->next;
+      flag = true;
+      break;
+    }
+    pre = temp;
+    temp = temp->next;
+  }
+  if(flag){
+    free(wp->expr);
+    wp->next = free_;
+    free_ = wp;
+  }
+}
+
+void set_point(char* expr,word_t result){
+  WP* wp = new_wp();
+  wp->expr = (char*)malloc(strlen(expr) * sizeof(char) + 1);
+  strcpy(wp->expr, expr);
+  wp->result = result;
+  printf("Watchpoint %d:%s\n",wp->NO,wp->expr);
+}
+
+void remove_point(int no){
+  if(no < 0 || no >= NR_WP){
+    printf("N is not in right\n");
+    assert(0);
+  }
+  WP* wp = &wp_pool[no];
+  char *expr = (char*)malloc(sizeof(wp->expr)+1);
+  strcpy(expr,wp->expr);
+  free_wp(wp);
+  printf("Delete watchpoint %d:%s\n",no,expr);
+  free(expr);
+}
+
+void point_difftest(){
+  WP *wp = head;
+  while(wp!=NULL){
+    bool success = false;
+    word_t new_value = expr(wp->expr,&success);
+    if(wp->result != new_value){
+      printf("watchpoint %d:%s has changed,old value is %u,new value is %u\n",wp->NO,wp->expr,wp->result,new_value);
+      wp->result = new_value;
+      nemu_state.state = NEMU_STOP;
+    }
+    wp = wp->next;
+  }
+}
+
+void point_display(){
+  WP* cur = head;
+  printf("NO\t\t\tExpr\t\t\t\t\tValue\n");
+  while(cur != NULL){
+    printf("%d\t\t\t%s\t\t\t\t\t%d\n",cur->NO,cur->expr,cur->result);
+    cur = cur->next;
+  }
 }

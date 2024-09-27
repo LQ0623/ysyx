@@ -19,5 +19,9 @@
 #include <common.h>
 
 word_t expr(char *e, bool *success);
+void set_point(char* expr,word_t result);
+void remove_point(int no);
+void point_difftest();
+void point_display();
 
 #endif
