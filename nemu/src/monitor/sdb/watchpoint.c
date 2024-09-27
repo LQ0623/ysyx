@@ -114,3 +114,10 @@ void point_difftest(){
     wp = wp->next;
   }
 }
+
+void point_display(){
+  WP* cur = head;
+  while(cur != NULL){
+    
+  }
+}
