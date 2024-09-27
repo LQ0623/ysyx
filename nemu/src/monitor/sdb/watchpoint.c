@@ -77,6 +77,7 @@ void free_wp(WP *wp){
     temp = temp->next;
   }
   if(flag){
+    free(wp->expr);
     wp->next = free_;
     free_ = wp;
   }
