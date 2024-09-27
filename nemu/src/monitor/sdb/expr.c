@@ -222,19 +222,25 @@ uint32_t eval(int p,int q){
       if(flag == 0){
         switch(tokens[i].type){
           case TK_DEREF:
-            if(op_type == ' ' || op_type == 'f'){
+            if(op_type == ' ' || op_type == 'f' || op_type == 'n'){
               op = i;
               op_type = 'f';
             }
             break;
+          case TK_NEGATIVE:
+            if(op_type == ' ' || op_type == 'f' || op_type == 'n'){
+              op = i;
+              op_type = 'n';
+            }
+            break;
           case TK_MUL:
-            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f'){
+            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f' || op_type == 'n'){
               op = i;
               op_type = '*';
             }
             break;
           case TK_DIV:
-            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f'){
+            if(op_type == ' ' || op_type == '*' || op_type == '/' || op_type == 'f' || op_type == 'n'){
               op = i;
               op_type = '/';
             }
@@ -286,6 +292,7 @@ uint32_t eval(int p,int q){
     {
       // f 表示解引用，因为解引用是针对后面的表达式，所以解的地址是val2存储
       case 'f': return paddr_read(val2,4);
+      case 'n': return 0 - val2;
       case '*': return val1 * val2;
       case '/': 
         if(val2 == 0){
