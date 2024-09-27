@@ -117,7 +117,9 @@ void point_difftest(){
 
 void point_display(){
   WP* cur = head;
+  printf("NO/t/t/tExpr/t/t/t/t/tValue\n");
   while(cur != NULL){
-    
+    printf("%d/t/t/t%s/t/t/t/t/t%d\n",cur->NO,cur->expr,cur->result);
+    cur = cur->next;
   }
 }

@@ -78,6 +78,9 @@ static int cmd_info(char *args){
   if(SubCmd == 'r'){
     isa_reg_display();
     return 0;
+  }else if(SubCmd == 'w'){
+    point_display();
+    return 0;
   }
   return 0;
 }
