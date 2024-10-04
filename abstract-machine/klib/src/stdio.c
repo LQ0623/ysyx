@@ -19,11 +19,16 @@ int sprintf(char *out, const char *fmt, ...) {
   va_start(args, fmt);
   
   int index = 0;
+  const char* s = va_arg(args, char*);
   
-  while(*fmt != '\0'){
-  	if(*fmt == '%'){
-  		fmt++;
-  		switch(*fmt){
+  if(s == NULL){
+  	s = '\0';
+  }
+  
+  while(*s != '\0'){
+  	if(*s == '%'){
+  		s++;
+  		switch(*s){
   			case 'd':
   				int i = va_arg(args, int);
   				int tmp;
@@ -39,14 +44,13 @@ int sprintf(char *out, const char *fmt, ...) {
   					out[index++] = s[i];
   				}
   				break;
-  			default:
-  				out[index++] = *fmt;
+  			
   				
   		}
   	} else{
-  		out[index++] = *fmt;
+  		out[index++] = *s;
   	}
-  	fmt++;
+  	s++;
   }
   
   va_end(args);
