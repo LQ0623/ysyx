@@ -39,14 +39,14 @@ char *strncpy(char *dst, const char *src, size_t n) {
 
 char *strcat(char *dst, const char *src) {
     //panic("Not implemented");
-    size_t len = strlen(dst);
+    size_t index = strlen(dst) - 1;
     const char* tmp = src;
     while(*tmp != '\0'){
-        dst[len] = *tmp;
+        dst[index] = *tmp;
         tmp++;
-        len++;
+        index++;
     }
-    dst[len] = '\0';
+    dst[index] = '\0';
     return dst;
 }
 
@@ -63,9 +63,9 @@ int strcmp(const char *s1, const char *s2) {
         }
     }
     if(len_1 > len_2){
-        return s1[len_2] - s2[len_2];
+        return s1[len_2 - 1] - s2[len_2 - 1];
     }else if(len_1 < len_2){
-        return s1[len_1] - s2[len_1];
+        return s1[len_1 - 1] - s2[len_1 - 1];
     }else{
         return 0;
     }
@@ -90,10 +90,10 @@ int strncmp(const char *s1, const char *s2, size_t n) {
     }
     
     if(len_1 > len_2){
-        return s1[len_2] - s2[len_2];
+        return s1[len_2 - 1] - s2[len_2 - 1];
     }
     else if(len_1 < len_2){
-        return s1[len_1] - s2[len_1];
+        return s1[len_1 - 1] - s2[len_1 - 1];
     }
     
     return 0;
@@ -162,10 +162,10 @@ int memcmp(const void *s1, const void *s2, size_t n) {
     }
     
     if(len_1 > len_2){
-        return p1[len_2] - p2[len_2];
+        return p1[len_2 - 1] - p2[len_2 - 1];
     }
     else if(len_1 < len_2){
-        return p1[len_1] - p2[len_1];
+        return p1[len_1 - 1] - p2[len_1 - 1];
     }
     
     return 0;
