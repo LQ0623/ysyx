@@ -27,7 +27,7 @@ int sprintf(char *out, const char *fmt, ...) {
   			case 'd':
   				int i = va_arg(args, int);
   				int tmp;
-  				while(i>=0){
+  				while(i>0){
   					tmp = i%10;
   					out[index++] = tmp + '0';
   					i = i/10;
