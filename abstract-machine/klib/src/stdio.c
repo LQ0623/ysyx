@@ -26,7 +26,12 @@ int sprintf(char *out, const char *fmt, ...) {
   		switch(*fmt){
   			case 'd':
   				int i = va_arg(args, int);
-  				out[index++] = i;
+  				int tmp;
+  				while(i>=0){
+  					tmp = i%10;
+  					out[index++] = tmp + '0';
+  					i = i/10;
+  				}
   				break;
   			case 's':
   				char *s = va_arg(args, char*);
