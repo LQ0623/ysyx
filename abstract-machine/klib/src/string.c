@@ -85,7 +85,7 @@ int strncmp(const char *s1, const char *s2, size_t n) {
         }
     }
 
-    if(len > n){
+    if(len >= n){
         return 0;
     }
     
@@ -157,7 +157,7 @@ int memcmp(const void *s1, const void *s2, size_t n) {
         }
     }
 
-    if(len > n){
+    if(len >= n){
         return 0;
     }
     
