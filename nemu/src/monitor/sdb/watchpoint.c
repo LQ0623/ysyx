@@ -16,7 +16,7 @@
 #include <string.h>
 #include "sdb.h"
 
-#define NR_WP 32
+#define NR_WP 4
 
 typedef struct watchpoint {
   int NO;
