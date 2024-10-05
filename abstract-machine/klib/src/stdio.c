@@ -14,8 +14,8 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 }
 
 int sprintf(char *out, const char *fmt, ...) {
-  //panic("Not implemented");
-  va_list args;
+  panic("Not implemented");
+  /*va_list args;
   va_start(args, fmt);
   
   int index = 0;
@@ -55,7 +55,7 @@ int sprintf(char *out, const char *fmt, ...) {
   }
   
   va_end(args);
-  return 0;
+  return 0;*/
 
 }
 
