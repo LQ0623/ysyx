@@ -21,7 +21,7 @@ int sprintf(char *out, const char *fmt, ...) {
   
   int index = 0;
 
-  while(*fmt != '\0'){
+  while(*fmt){
   	if(*fmt == '%'){
   		fmt++;
   		switch(*fmt){
