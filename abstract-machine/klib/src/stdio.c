@@ -51,7 +51,7 @@ int sprintf(char *out, const char *fmt, ...) {
 							i = i/10;
 						}
 						count--;	// 对于下标而言，这个count多加了一次
-						while(count>0){
+						while(count>=0){
 							out[index++] = temp[count--];
 						}
 					}
