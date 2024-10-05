@@ -25,7 +25,13 @@ int sprintf(char *out, const char *fmt, ...) {
   	if(*fmt == '%'){
   		fmt++;
   		switch(*fmt){
-  			case 'd':
+  			case 's':{
+				char *s = va_arg(args, char*);
+				strcpy(out + index, s);
+				index += strlen(s);
+				break;
+			}
+  			case 'd':{
   				int i = va_arg(args, int);
   				int tmp;
   				while(i>0){
@@ -34,13 +40,11 @@ int sprintf(char *out, const char *fmt, ...) {
   					i = i/10;
   				}
   				break;
-  			case 's':
-				char *s = va_arg(args, char*);
-				strcpy(out + index, s);
-				index += strlen(s);
-				break;
-  			default:
+			}
+  			default:{
   				out[index++] = *fmt;
+				break;
+			}
   				
   		}
   	} else{
@@ -50,7 +54,7 @@ int sprintf(char *out, const char *fmt, ...) {
   }
   out[index] = '\0';
   va_end(args);
-  return 0;
+  return index;
 
 }
 
