@@ -64,24 +64,27 @@ WP* new_wp(){
 
 
 void free_wp(WP *wp){
+  bool flag = false;
   if(wp == head){
     head = head->next;
-    return;
+    flag = true;
+  }else{
+    WP* temp = head->next;
+    WP* pre = head;
+    
+    while(temp != NULL){
+      if(temp == wp){
+        pre->next = temp->next;
+        flag = true;
+        break;
+      }
+      pre = temp;
+      temp = temp->next;
+    }
   }
 
-  WP* temp = head;
-  WP* pre = head;
-  bool flag = false;
-  while(temp != NULL){
-    if(temp == wp){
-      pre->next = temp->next;
-      flag = true;
-      break;
-    }
-    pre = temp;
-    temp = temp->next;
-  }
   if(flag){
+    // 释放给监视点的表达式申请的空间
     free(wp->expr);
     wp->next = free_;
     free_ = wp;
