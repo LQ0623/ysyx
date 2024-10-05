@@ -54,6 +54,7 @@ int sprintf(char *out, const char *fmt, ...) {
 						while(count>0){
 							out[index++] = temp[count--];
 						}
+						free(temp);
 					}
 					break;
 				}
