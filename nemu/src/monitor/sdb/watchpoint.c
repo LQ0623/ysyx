@@ -102,8 +102,7 @@ void remove_point(int no){
     assert(0);
   }
   WP* wp = &wp_pool[no];
-  char *expr = (char*)malloc(sizeof(wp->expr)+1);
-  strcpy(expr,wp->expr);
+  char *expr = wp->expr;
   free_wp(wp);
   printf("Delete watchpoint %d:%s\n",no,expr);
   free(expr);
