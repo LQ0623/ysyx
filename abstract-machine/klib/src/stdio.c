@@ -44,7 +44,8 @@ int sprintf(char *out, const char *fmt, ...) {
   					out[index++] = s[i];
   				}
   				break;
-  			
+  			default:
+  				out[index++] = *s;
   				
   		}
   	} else{
