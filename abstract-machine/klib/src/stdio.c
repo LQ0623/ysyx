@@ -30,7 +30,7 @@ int sprintf(char *out, const char *fmt, ...) {
 				case 's':{
 					char *s = va_arg(args, char*);
 					strcpy(out + index, s);
-					index += strlen(s);
+					index += strlen(s) - 1;
 					break;
 				}
 				case 'd':{
