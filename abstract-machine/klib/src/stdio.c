@@ -43,7 +43,7 @@ int sprintf(char *out, const char *fmt, ...) {
 							i = i * (-1);
 						}
 						int digital;
-						char* temp = (char*)malloc(sizeof(char) * 32);
+						char temp[32];
 						int count = 0;
 						while(i>0){
 							digital = i%10;
@@ -54,7 +54,6 @@ int sprintf(char *out, const char *fmt, ...) {
 						while(count>0){
 							out[index++] = temp[count--];
 						}
-						free(temp);
 					}
 					break;
 				}
