@@ -82,6 +82,7 @@ void free_wp(WP *wp){
     temp = temp->next;
   }
   if(flag){
+    // 释放给监视点的表达式申请的空间
     free(wp->expr);
     wp->next = free_;
     free_ = wp;
@@ -102,7 +103,8 @@ void remove_point(int no){
     assert(0);
   }
   WP* wp = &wp_pool[no];
-  char *expr = wp->expr;
+  char *expr = (char*)malloc(sizeof(wp->expr)+1);
+  strcpy(expr,wp->expr);
   free_wp(wp);
   printf("Delete watchpoint %d:%s\n",no,expr);
   free(expr);
