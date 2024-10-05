@@ -14,21 +14,17 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 }
 
 int sprintf(char *out, const char *fmt, ...) {
-  panic("Not implemented");
-  /*va_list args;
+  //panic("Not implemented");
+  va_list args;
+  // 解析...中的参数
   va_start(args, fmt);
   
   int index = 0;
-  const char* s = va_arg(args, char*);
-  
-  if(s == NULL){
-  	s = '\0';
-  }
-  
-  while(*s != '\0'){
-  	if(*s == '%'){
-  		s++;
-  		switch(*s){
+
+  while(*fmt != '\0'){
+  	if(*fmt == '%'){
+  		fmt++;
+  		switch(*fmt){
   			case 'd':
   				int i = va_arg(args, int);
   				int tmp;
@@ -39,23 +35,22 @@ int sprintf(char *out, const char *fmt, ...) {
   				}
   				break;
   			case 's':
-  				char *s = va_arg(args, char*);
-  				for(size_t i = 0;i < strlen(s);i++){
-  					out[index++] = s[i];
-  				}
-  				break;
+				char *s = va_arg(args, char*);
+				strcpy(out + index, s);
+				index += strlen(s);
+				break;
   			default:
-  				out[index++] = *s;
+  				out[index++] = *fmt;
   				
   		}
   	} else{
-  		out[index++] = *s;
+  		out[index++] = *fmt;
   	}
-  	s++;
+  	fmt++;
   }
   
   va_end(args);
-  return 0;*/
+  return 0;
 
 }
 
