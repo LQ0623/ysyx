@@ -35,15 +35,25 @@ int sprintf(char *out, const char *fmt, ...) {
 				}
 				case 'd':{
 					int i = va_arg(args, int);
-					int tmp;
-					if(i < 0){
-						out[index++] = '-';
-						i = i * (-1);
-					}
-					while(i>0){
-						tmp = i%10;
-						out[index++] = tmp + '0';
-						i = i/10;
+					if(i == 0){
+						out[index++] = '0';
+					}else {
+						if(i < 0){
+							out[index++] = '-';
+							i = i * (-1);
+						}
+						int digital;
+						char* temp = (char*)malloc(sizeof(char) * 32);
+						int count = 0;
+						while(i>0){
+							digital = i%10;
+							temp[count++] = digital + '0';
+							i = i/10;
+						}
+						count--;	// 对于下标而言，这个count多加了一次
+						while(count>0){
+							out[index++] = temp[count--];
+						}
 					}
 					break;
 				}
