@@ -54,7 +54,8 @@ static int cmd_c(char *args) {
 
 static int cmd_q(char *args) {
   // cmd_q 函数只是简单的返回-1,但是并没有实现完整的退出逻辑
-  exit(0); // 使用 exit(0) 退出程序
+  //exit(0); // 使用 exit(0) 退出程序
+  nemu_state.state = NEMU_QUIT;
   return -1;
 }
 
