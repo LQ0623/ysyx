@@ -56,6 +56,7 @@ int sprintf(char *out, const char *fmt, ...) {
 		} 
 		fmt++;
 	}
+	printf("123\n");
 	out[index] = '\0';
 	va_end(args);
 	return index;
