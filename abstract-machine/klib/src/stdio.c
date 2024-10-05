@@ -22,7 +22,9 @@ int sprintf(char *out, const char *fmt, ...) {
 	int index = 0;
 
 	while(*fmt){
-		if(*fmt == '%'){
+		if(*fmt != '%'){
+			out[index++] = *fmt;
+		}else{
 			fmt++;
 			switch(*fmt){
 				case 's':{
@@ -48,9 +50,7 @@ int sprintf(char *out, const char *fmt, ...) {
 				}
 					
 			}
-		} else{
-			out[index++] = *fmt;
-		}
+		} 
 		fmt++;
 	}
 	out[index] = '\0';
