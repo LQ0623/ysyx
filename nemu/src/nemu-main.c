@@ -69,6 +69,10 @@ int main(int argc, char *argv[]) {
   // }
   // fclose(file);
 
-
+  /**
+   * main返回值的情况：
+   *    返回 0 表示程序已成功执行且没有遇到任何严重错误。
+   *    返回非零值（即正整数或负整数）表示程序在执行过程中遇到了某种错误或异常情况。
+   */
   return is_exit_status_bad();
 }
