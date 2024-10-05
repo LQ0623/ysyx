@@ -36,7 +36,10 @@ int sprintf(char *out, const char *fmt, ...) {
 				case 'd':{
 					int i = va_arg(args, int);
 					int tmp;
-					//int sign = (i>0)? 1:-1;
+					if(i < 0){
+						out[index++] = '-';
+						i = i * (-1);
+					}
 					while(i>0){
 						tmp = i%10;
 						out[index++] = tmp + '0';
