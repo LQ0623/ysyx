@@ -97,6 +97,7 @@ static void statistic() {
 }
 
 void assert_fail_msg() {
+  print_inst_buffer();
   isa_reg_display();
   statistic();
 }
