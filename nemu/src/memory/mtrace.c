@@ -1,6 +1,6 @@
 #include <memory/mtrace.h>
 
-char file_path[] = "../../mtrace.log"; 
+char file_path[] = "mtrace.log"; 
 
 void init_mtrace_log(){
     FILE *file = fopen(file_path, "w");
