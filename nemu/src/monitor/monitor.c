@@ -24,6 +24,7 @@ void init_device();
 void init_sdb();
 void init_disasm();
 void init_inst_buffer();
+void init_mtrace_log();
 
 static void welcome() {
   Log("Trace: %s", MUXDEF(CONFIG_TRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
@@ -136,6 +137,8 @@ void init_monitor(int argc, char *argv[]) {
 
   /* 输出出错前的语句 */
   init_inst_buffer();
+
+  init_mtrace_log();
 }
 #else // CONFIG_TARGET_AM
 static long load_img() {
