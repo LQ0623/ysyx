@@ -154,6 +154,14 @@ config ITRACE_COND
   string "Only trace instructions when the condition is true"
   default "true"
 
+config MTRACE
+  bool "Enable mtrace"
+  default y
+
+config MTRACE_LOG
+  depends on MTRACE
+  bool "The decision to log memory operation activities"
+  default y
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
