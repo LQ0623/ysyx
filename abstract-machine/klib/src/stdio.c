@@ -14,8 +14,8 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 }
 
 int sprintf(char *out, const char *fmt, ...) {
-	panic("Not implemented");
-	/*va_list args;
+	//panic("Not implemented");
+	va_list args;
 	// 解析...中的参数
 	va_start(args, fmt);
 	
@@ -68,7 +68,7 @@ int sprintf(char *out, const char *fmt, ...) {
 	}
 	out[index] = '\0';
 	va_end(args);
-	return index;*/
+	return index;
 
 }
 
