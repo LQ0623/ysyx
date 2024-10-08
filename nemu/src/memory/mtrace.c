@@ -1,6 +1,6 @@
 #include <memory/mtrace.h>
 
-char file_path[] = "mtrace.log"; 
+char file_path[] = "../mtrace.log"; 
 
 void init_mtrace_log(){
     FILE *file = fopen(file_path, "w");
@@ -18,9 +18,9 @@ void mtrace_log_write(paddr_t addr, int len, char operate,word_t data){
     }
     
     if(operate == 'r'){
-        fprintf(file, "This has read addr : %u  len : %d", addr, len);
+        fprintf(file, "This has read addr : %u  len : %d\n", addr, len);
     }else if(operate == 'w'){
-        fprintf(file, "This has write addr : %u  len : %d,the data is %u", addr, len, data);
+        fprintf(file, "This has write addr : %u  len : %d,the data is %u\n", addr, len, data);
     }
     fclose(file);
 }
