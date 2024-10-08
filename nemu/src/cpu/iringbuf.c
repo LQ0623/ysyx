@@ -25,5 +25,7 @@ void print_inst_buffer(){
     for(int i = inst_buf.start;i < end - 1;i++){
         printf("\t%s\n",inst_buf.inst[i%MAX_INST_BUFFER]);
     }
-    printf("-->\t%s\n",inst_buf.inst[(end-1)%MAX_INST_BUFFER]);
+    if(inst_buf.start != inst_buf.end || (inst_buf.start == inst_buf.end && inst_buf.store == true)){
+        printf("-->\t%s\n",inst_buf.inst[(end-1)%MAX_INST_BUFFER]);
+    }
 }
