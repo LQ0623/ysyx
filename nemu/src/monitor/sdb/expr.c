@@ -19,7 +19,6 @@
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
-#include <memory/paddr.h>
 #include <memory/vaddr.h>
 
 enum {

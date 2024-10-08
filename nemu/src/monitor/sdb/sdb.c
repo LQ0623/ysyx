@@ -18,7 +18,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
-#include <memory/paddr.h>
 #include <memory/vaddr.h>
 
 static int is_batch_mode = false;
