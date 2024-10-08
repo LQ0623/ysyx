@@ -98,8 +98,8 @@ static void statistic() {
 
 void assert_fail_msg() {
   isa_reg_display();
-  statistic();
   print_inst_buffer();
+  statistic();
 }
 
 /* Simulate how the CPU works. */
