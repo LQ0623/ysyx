@@ -20,9 +20,9 @@ void init_ftrace(char* elf_file){
 void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
     printf("0x%x:",addr_inv);
     if(operate == 'c'){
-        for(int i = 0;i < count_inv;i++){
-            printf("  ");
-        }
+        // for(int i = 0;i < count_inv;i++){
+        //     printf("  ");
+        // }
         printf("call [");
         char* str;
         for(int i = 0;i < MAX_FUNC;i++){
