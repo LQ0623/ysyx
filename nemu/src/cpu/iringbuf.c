@@ -11,12 +11,12 @@ void init_inst_buffer(){
     inst_buf.store = false;
 }
 
-void write_inst_buffer(char* p){
+void write_inst_buffer(char* inst){
     if(inst_buf.end == inst_buf.start && inst_buf.store){
         inst_buf.start = (inst_buf.start+1)%MAX_INST_BUFFER;
     }
     inst_buf.store = true;
-    strcpy(inst_buf.inst[inst_buf.end], p);
+    strcpy(inst_buf.inst[inst_buf.end], inst);
     inst_buf.end = (inst_buf.end+1)%MAX_INST_BUFFER;
 }
 

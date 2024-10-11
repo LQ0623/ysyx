@@ -19,6 +19,7 @@
 #include <locale.h>
 #include "../monitor/sdb/sdb.h"
 #include <cpu/iringbuf.h>
+#include <ftrace.h>
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -52,6 +53,11 @@ static void exec_once(Decode *s, vaddr_t pc) {
   isa_exec_once(s);
 
   write_inst_buffer(s->logbuf);
+  if(strstr(s->logbuf, "jal")){
+    ftrace_function('c',s->pc,s->dnpc);
+  }else if(strstr(s->logbuf, "jalr")){
+    ftrace_function('r',s->pc,s->dnpc);
+  }
 
   cpu.pc = s->dnpc;
 #ifdef CONFIG_ITRACE

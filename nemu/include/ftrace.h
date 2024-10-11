@@ -1,0 +1,18 @@
+#ifndef __FTRACE_H__
+#define __FTRACE_H__
+
+#include <common.h>
+#include <elf.h>
+#define MAX_FUNC 1024
+
+typedef struct analysis_elf
+{
+    char* name;
+    Elf32_Addr addr;
+} func_name_collation;
+
+void init_ftrace(char* elf_file);
+void analysis_elf(func_name_collation* func_name,char* elf_file);
+void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func);
+
+#endif

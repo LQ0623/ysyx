@@ -13,7 +13,7 @@ typedef struct RING_BUFFER{
 } INST_BUFFER;
 
 void init_inst_buffer();
-void write_inst_buffer(char* p);
+void write_inst_buffer(char* inst);
 void print_inst_buffer();
 
 #endif
