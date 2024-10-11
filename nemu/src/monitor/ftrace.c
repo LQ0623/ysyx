@@ -38,6 +38,7 @@ void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
         printf("%s@0x%x]\n",str,addr_func);
         count_inv++;
     }else if(operate == 'r'){
+        count_inv--;
         for(int i = 0;i < count_inv;i++){
             printf("  ");
         }
@@ -53,6 +54,5 @@ void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
         //     panic("解析错误");
         // }
         // printf("%s@0x%x]\n");
-        count_inv--;
     }
 }
