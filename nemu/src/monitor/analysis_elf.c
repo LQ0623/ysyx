@@ -99,7 +99,7 @@ void analysis_elf(Func_Name_Collation* func_name,char* elf_file){
             count++;
 
             // 打印符号信息
-            printf("Symbol %d: %s, value: %x, size: %d\n", i, func_name[count - 1].name, symbol.st_value, symbol.st_size);
+            // printf("Symbol %d: %s, value: %x, size: %d\n", i, func_name[count - 1].name, symbol.st_value, symbol.st_size);
         }
     }
     free(section_headers);

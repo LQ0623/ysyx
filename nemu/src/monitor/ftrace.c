@@ -70,7 +70,10 @@ int find_symbol_func(vaddr_t target, bool is_call) {
  *      是否是尾调用
  */
 void ftrace_function_call(vaddr_t addr_inv,vaddr_t addr_func,bool is_tail){
-    if(func_name == NULL) return;
+    if(symbol_table_entry_count == 0){
+        return;
+    }
+    
     // 找到调用的函数在func_name中的位置
     int i = find_symbol_func(addr_func, true);
     printf("0x%x:",addr_inv);
@@ -90,7 +93,13 @@ void ftrace_function_call(vaddr_t addr_inv,vaddr_t addr_func,bool is_tail){
 }
 
 void ftrace_function_ret(vaddr_t pc){
-    if(func_name == NULL) return;
+    if(symbol_table_entry_count == 0){
+        return;
+    }
+
+    for(int j = 0;j < count_inv;j++){
+        printf("  ");
+    }
 
     printf("0x%x:",pc);
     // 找到调用的函数在func_name中的位置
