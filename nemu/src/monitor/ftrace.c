@@ -25,7 +25,8 @@ void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
         // }
         printf("call [\n");
         char* str;
-        for(int i = 0;i < MAX_FUNC;i++){
+        int i;
+        for(i = 0;i < MAX_FUNC;i++){
             if(func_name[i].addr == addr_func){
                 str = func_name[i].name;
                 break;
@@ -34,7 +35,7 @@ void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
         if(str == NULL){
             panic("解析错误");
         }
-        printf("%s@0x%x]\n",str,addr_func);
+        printf("%s@0x%x]        %s  %d\n",str,addr_func,func_name[i].name,count_inv);
         count_inv++;
     }else if(operate == 'r'){
         for(int i = 0;i < count_inv;i++){
