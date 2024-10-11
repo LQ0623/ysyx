@@ -4,9 +4,6 @@
 #define ELF_MAGIC "\x7f" "ELF"
 
 void analysis_elf(func_name_collation* func_name,char* elf_file){
-    if(elf_file != NULL){
-        printf("%s\n",elf_file);
-    }
     FILE *file = fopen(elf_file, "rb");
     if(!file){
         panic("cannot open file");
