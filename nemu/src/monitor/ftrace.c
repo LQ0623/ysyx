@@ -101,7 +101,7 @@ void ftrace_function_ret(vaddr_t pc){
     // 找到调用的函数在func_name中的位置
     int i = find_symbol_func(pc, false);
 
-    for(int j = 0;j < count_inv;j++){
+    for(int j = 0;j < count_inv-1;j++){
         printf("  ");
     }
 
