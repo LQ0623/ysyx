@@ -1,7 +1,7 @@
 #include <ftrace.h>
 #include <elf.h>
 
-Func_Name_Collation* func_name = NULL;
+Func_Name_Collation *func_name = NULL;
 // 用于恢复被尾调用删除的ret语句
 TailRecNode *tail_rec_head = NULL; // linklist with head, dynamic allocated
 // count_inv 表示调用的深度
@@ -17,6 +17,10 @@ void init_ftrace(char* elf_file){
     init_tail_rec_list();
     analysis_elf(func_name,elf_file);
     count_inv = 0;
+}
+
+void free_func(){
+    free(func_name);
 }
 
 void insert_tail_rec(vaddr_t pc, int depth) {
