@@ -56,7 +56,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
   write_inst_buffer(s->logbuf);
   if(strstr(s->logbuf, "jal")){
     ftrace_function('c',old_pc,s->pc);
-  }else if(strstr(s->logbuf, "jalr")){
+  }else if(strstr(s->logbuf, "ret")){
     ftrace_function('r',old_pc,s->pc);
   }
 
