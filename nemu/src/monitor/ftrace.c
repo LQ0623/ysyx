@@ -69,7 +69,7 @@ void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
             for(int i = 0;i < count_inv;i++){
                 printf("  ");
             }
-            printf("ret [\n");
+            printf("ret [");
             char* str;
             str = tail_rec_head->next->name;
             printf("%s]\n",str);
