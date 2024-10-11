@@ -16,6 +16,7 @@ void insert_tail_rec(vaddr_t pc, int depth,char* name) {
 	node->pc = pc;
 	node->depth = depth;
 	node->next = tail_rec_head->next;
+    node->name = name;
 	tail_rec_head->next = node;
 }
 
