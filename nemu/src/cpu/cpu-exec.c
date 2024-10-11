@@ -57,7 +57,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
   if(strstr(s->logbuf, "jal")){
     ftrace_function('c',old_pc,s->pc);
   }else if(strstr(s->logbuf, "jalr")){
-    ftrace_function('r',s->pc,s->dnpc);
+    ftrace_function('r',old_pc,s->pc);
   }
 
   cpu.pc = s->dnpc;
