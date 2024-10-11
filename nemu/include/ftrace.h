@@ -12,6 +12,14 @@ typedef struct analysis_elf
     Elf32_Addr addr;
 } func_name_collation;
 
+typedef struct tail_rec_node
+{
+	paddr_t pc;
+	int depth;
+    char* name;
+	struct tail_rec_node *next;
+} TailRecNode;
+
 void init_ftrace(char* elf_file);
 void analysis_elf(func_name_collation* func_name,char* elf_file);
 void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func);
