@@ -3,7 +3,7 @@
 
 #define ELF_MAGIC "\x7f" "ELF"
 
-void analysis_elf(func_name_collation* func_name,char* elf_file){
+void analysis_elf(Func_Name_Collation* func_name,char* elf_file){
     FILE *file = fopen(elf_file, "rb");
     if(!file){
         panic("cannot open file");
@@ -59,6 +59,9 @@ void analysis_elf(func_name_collation* func_name,char* elf_file){
     size_t symtab_size = section_headers[symtab_index].sh_size;
     size_t symbol_table_entry_count = symtab_size / sizeof(Elf32_Sym);
 
+    // 为func_name申请symbol_table_entry_count多个空间，将符号表中所有的符号都保存起来
+    func_name = (Func_Name_Collation*)malloc(sizeof(Func_Name_Collation) * symbol_table_entry_count);
+
     Elf32_Sym *symtab = (Elf32_Sym*)malloc(symtab_size);
     fseek(file, symtab_offset, SEEK_SET);
     if (fread(symtab, sizeof(Elf32_Sym), symbol_table_entry_count, file) != symbol_table_entry_count) {
@@ -73,31 +76,33 @@ void analysis_elf(func_name_collation* func_name,char* elf_file){
     // 解析符号表项
     for (int i = 0; i < symbol_table_entry_count; ++i) {
         Elf32_Sym symbol = symtab[i];
-        // 判断是否为FUNC
-        if(ELF32_ST_TYPE(symbol.st_info) == STT_FUNC){
-            // 计算符号名称的长度
-            size_t name_length = strlen(strtab + symbol.st_name) + 1;
+    
+        // 计算符号名称的长度
+        size_t name_length = strlen(strtab + symbol.st_name) + 1;
 
-            // 为符号名称分配内存
-            func_name[count].name = (char *)malloc(name_length);
-            if (!func_name[count].name) {
-                // 处理内存分配失败
-                panic("malloc");
-                exit(1);
-            }
-
-            // 拷贝符号名称
-            strncpy(func_name[count].name, strtab + symbol.st_name, name_length);
-
-            func_name[count].addr = symbol.st_value;
-            count++;
-
-            // 打印符号信息
-            printf("Symbol %d: %s, value: %x, size: %d\n", i, func_name[count - 1].name, symbol.st_value, symbol.st_size);
+        // 为符号名称分配内存
+        func_name[count].name = (char *)malloc(name_length);
+        if (!func_name[count].name) {
+            // 处理内存分配失败
+            panic("malloc");
+            exit(1);
         }
+
+        // 拷贝符号名称
+        strncpy(func_name[count].name, strtab + symbol.st_name, name_length);
+
+        func_name[count].addr = symbol.st_value;
+        func_name[count].size = symbol.st_size;
+        func_name[count].info = symbol.st_info;
+        func_name[count].symbol_table_entry_count = symbol_table_entry_count;
+        count++;
+
+        // 打印符号信息
+        printf("Symbol %d: %s, value: %x, size: %d\n", i, func_name[count - 1].name, symbol.st_value, symbol.st_size);
     }
     free(section_headers);
     free(strtab);
     free(symtab);
     fclose(file);
+    return;
 }

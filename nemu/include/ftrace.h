@@ -10,7 +10,10 @@ typedef struct analysis_elf
 {
     char* name;
     Elf32_Addr addr;
-} func_name_collation;
+    unsigned char info;
+    Elf64_Xword size;
+    int symbol_table_entry_count;
+} Func_Name_Collation;
 
 typedef struct tail_rec_node
 {
@@ -20,11 +23,15 @@ typedef struct tail_rec_node
 	struct tail_rec_node *next;
 } TailRecNode;
 
+void analysis_elf(Func_Name_Collation* func_name,char* elf_file);
+
 void init_tail_rec_list();
-void insert_tail_rec(vaddr_t pc, int depth,char* name);
+void insert_tail_rec(vaddr_t pc, int depth);
 void remove_tail_rec();
 void init_ftrace(char* elf_file);
-void analysis_elf(func_name_collation* func_name,char* elf_file);
-void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func);
+int find_symbol_func(paddr_t target, bool is_call);
+// void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func);
+void ftrace_function_call(vaddr_t addr_inv,vaddr_t addr_func,bool is_tail);
+void ftrace_function_ret(vaddr_t pc);
 
 #endif
