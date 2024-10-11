@@ -31,10 +31,11 @@ void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
                 break;
             }
         }
+        printf("%s@0x%x]    count_inv:%d\n",func_name[i].name,addr_func,count_inv);
         if(i == MAX_FUNC){
             panic("解析错误");
         }
-        printf("%s@0x%x]    count_inv:%d\n",func_name[i].name,addr_func,count_inv);
+        
         count_inv++;
     }else if(operate == 'r'){
         for(int i = 0;i < count_inv;i++){
