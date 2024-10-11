@@ -4,6 +4,7 @@
 #include <common.h>
 #include <elf.h>
 #define MAX_FUNC 1024
+#define MAX_recursion 1024
 
 typedef struct analysis_elf
 {
