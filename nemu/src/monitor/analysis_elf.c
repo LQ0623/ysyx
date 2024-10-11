@@ -1,6 +1,6 @@
 #include <isa.h>
-#include <ftrace.h>
-#include <analysis_elf.h>
+#include <ftrace/ftrace.h>
+#include <ftrace/analysis_elf.h>
 
 #define ELF_MAGIC "\x7f" "ELF"
 

@@ -1,5 +1,5 @@
-#include <ftrace.h>
-#include <analysis_elf.h>
+#include <ftrace/ftrace.h>
+#include <ftrace/analysis_elf.h>
 
 // Func_Name_Collation func_name[];
 // 用于恢复被尾调用删除的ret语句
