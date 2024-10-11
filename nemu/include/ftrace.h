@@ -4,16 +4,6 @@
 #include <common.h>
 #include <elf.h>
 #define MAX_FUNC 1024
-#define MAX_recursion 1024
-
-typedef struct analysis_elf
-{
-    char* name;
-    Elf32_Addr addr;
-    unsigned char info;
-    Elf64_Xword size;
-    int symbol_table_entry_count;
-} Func_Name_Collation;
 
 typedef struct tail_rec_node
 {
@@ -22,8 +12,6 @@ typedef struct tail_rec_node
     char* name;
 	struct tail_rec_node *next;
 } TailRecNode;
-
-void analysis_elf(Func_Name_Collation* func_name,char* elf_file);
 
 void init_tail_rec_list();
 void insert_tail_rec(vaddr_t pc, int depth);

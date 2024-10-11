@@ -1,7 +1,7 @@
 #include <ftrace.h>
-#include <elf.h>
+#include <analysis_elf.h>
 
-Func_Name_Collation *func_name = NULL;
+// Func_Name_Collation func_name[];
 // 用于恢复被尾调用删除的ret语句
 TailRecNode *tail_rec_head = NULL; // linklist with head, dynamic allocated
 // count_inv 表示调用的深度
@@ -20,14 +20,9 @@ void init_ftrace(char* elf_file){
 }
 
 void free_func(){
-    if(func_name == NULL){
-        return;
-    }
-    int symbol_table_entry_count = func_name[0].symbol_table_entry_count;
-    for(int i = 0;i < symbol_table_entry_count;i++){
+    for(size_t i = 0;i < symbol_table_entry_count;i++){
         free(func_name[i].name);
     }
-    free(func_name);
 }
 
 void insert_tail_rec(vaddr_t pc, int depth) {
@@ -51,11 +46,7 @@ void remove_tail_rec() {
  *      是调用还是返回
  */
 int find_symbol_func(vaddr_t target, bool is_call) {
-    if(func_name == NULL){
-        return -1;
-    }
-    int symbol_table_entry_count = func_name[0].symbol_table_entry_count;
-	int i;
+	size_t i;
 	for (i = 0; i < symbol_table_entry_count; i++) {
         // 判断是否为FUNC
         if(ELF32_ST_TYPE(func_name[i].info) == STT_FUNC){
