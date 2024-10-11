@@ -18,24 +18,23 @@ void init_ftrace(char* elf_file){
  *      函数的地址
  */
 void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
-    printf("0x%x:",addr_inv);
+    printf("0x%x:\n",addr_inv);
     if(operate == 'c'){
         // for(int i = 0;i < count_inv;i++){
         //     printf("  ");
         // }
-        printf("call [");
-        // char* str;
-        int i;
-        for(i = 0;i < MAX_FUNC;i++){
+        printf("call [\n");
+        char* str;
+        for(int i = 0;i < MAX_FUNC;i++){
             if(func_name[i].addr == addr_func){
+                str = func_name[i].name;
                 break;
             }
         }
-        printf("%s@0x%x]    count_inv:%d\n",func_name[i].name,addr_func,count_inv);
-        if(i == MAX_FUNC){
+        if(str == NULL){
             panic("解析错误");
         }
-        
+        printf("%s@0x%x]\n",str,addr_func);
         count_inv++;
     }else if(operate == 'r'){
         for(int i = 0;i < count_inv;i++){
