@@ -21,7 +21,7 @@ typedef struct tail_rec_node
 } TailRecNode;
 
 void init_tail_rec_list();
-void insert_tail_rec(vaddr_t pc, int depth);
+void insert_tail_rec(vaddr_t pc, int depth,char* name);
 void remove_tail_rec();
 void init_ftrace(char* elf_file);
 void analysis_elf(func_name_collation* func_name,char* elf_file);

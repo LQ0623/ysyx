@@ -11,7 +11,7 @@ void init_tail_rec_list() {
 	tail_rec_head->next = NULL;
 }
 
-void insert_tail_rec(vaddr_t pc, int depth) {
+void insert_tail_rec(vaddr_t pc, int depth,char* name) {
 	TailRecNode *node = (TailRecNode *)malloc(sizeof(TailRecNode));
 	node->pc = pc;
 	node->depth = depth;
@@ -60,8 +60,8 @@ void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
             panic("解析错误");
         }
         printf("%s@0x%x]\n",str,addr_func);
+        insert_tail_rec(addr_inv,count_inv,str);
         count_inv++;
-        insert_tail_rec(addr_inv,count_inv-1);
     }else if(operate == 'r'){
         count_inv--;
         if(tail_rec_head->next != NULL){
