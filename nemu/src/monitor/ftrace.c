@@ -117,19 +117,19 @@ void ftrace_function_ret(vaddr_t pc){
     /**
      * 对齐ret和call语句
      */
-    while(node!=NULL){
-        count_inv--;
-        remove_tail_rec();
-        node = tail_rec_head->next;
-    }
+    // while(node!=NULL){
+    //     count_inv--;
+    //     remove_tail_rec();
+    //     node = tail_rec_head->next;
+    // }
     /**
      * 用于恢复被尾调用优化删除的ret语句
      */
-    // if (node != NULL) {
-	// 	if (node->depth == count_inv) {
-	// 		paddr_t ret_target = node->pc;
-	// 		remove_tail_rec();
-	// 		trace_func_ret(ret_target);
-	// 	}
-	// }
+    if (node != NULL) {
+		if (node->depth == count_inv) {
+			paddr_t ret_target = node->pc;
+			remove_tail_rec();
+			ftrace_function_ret(ret_target);
+		}
+	}
 }
