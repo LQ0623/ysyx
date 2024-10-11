@@ -64,13 +64,15 @@ void ftrace_function(char operate,vaddr_t addr_inv,vaddr_t addr_func){
         insert_tail_rec(addr_inv,count_inv-1);
     }else if(operate == 'r'){
         count_inv--;
-        for(int i = 0;i < count_inv;i++){
-            printf("  ");
+        if(tail_rec_head->next != NULL){
+            for(int i = 0;i < count_inv;i++){
+                printf("  ");
+            }
+            printf("ret [\n");
+            char* str;
+            str = tail_rec_head->next->name;
+            printf("%s]\n",str);
+            remove_tail_rec();
         }
-        printf("ret [\n");
-        char* str;
-        str = tail_rec_head->next->name;
-        printf("%s]\n",str);
-        remove_tail_rec();
     }
 }
