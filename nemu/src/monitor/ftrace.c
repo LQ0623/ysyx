@@ -20,6 +20,13 @@ void init_ftrace(char* elf_file){
 }
 
 void free_func(){
+    if(func_name == NULL){
+        return;
+    }
+    int symbol_table_entry_count = func_name[0].symbol_table_entry_count;
+    for(int i = 0;i < symbol_table_entry_count;i++){
+        free(func_name[i].name);
+    }
     free(func_name);
 }
 
