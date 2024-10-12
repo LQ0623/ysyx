@@ -18,6 +18,8 @@
 #include <cpu/difftest.h>
 #include <locale.h>
 #include "../monitor/sdb/sdb.h"
+#include <cpu/iringbuf.h>
+#include <ftrace/ftrace.h>
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -49,6 +51,9 @@ static void exec_once(Decode *s, vaddr_t pc) {
   s->pc = pc;
   s->snpc = pc;
   isa_exec_once(s);
+
+  write_inst_buffer(s->logbuf);
+
   cpu.pc = s->dnpc;
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
@@ -94,6 +99,7 @@ static void statistic() {
 
 void assert_fail_msg() {
   isa_reg_display();
+  print_inst_buffer();
   statistic();
 }
 
@@ -123,6 +129,11 @@ void cpu_exec(uint64_t n) {
            (nemu_state.halt_ret == 0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
             ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
           nemu_state.halt_pc);
+      
+      if(nemu_state.halt_ret == 1){
+        print_inst_buffer();
+      }
+
       // fall through
     case NEMU_QUIT: statistic();
   }

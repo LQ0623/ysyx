@@ -18,7 +18,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
-#include <memory/paddr.h>
+#include <memory/vaddr.h>
+#include <ftrace/ftrace.h>
 
 static int is_batch_mode = false;
 
@@ -54,7 +55,9 @@ static int cmd_c(char *args) {
 
 static int cmd_q(char *args) {
   // cmd_q 函数只是简单的返回-1,但是并没有实现完整的退出逻辑
-  exit(0); // 使用 exit(0) 退出程序
+  //exit(0); // 使用 exit(0) 退出程序
+  free_func();
+  nemu_state.state = NEMU_QUIT;
   return -1;
 }
 
@@ -106,7 +109,7 @@ static int cmd_x(char *args){
     uint64_t addr = strtoull(expr_x,NULL,16);
     word_t data;
     for(int i = 0;i < num; i++){
-      data = paddr_read(addr,4);
+      data = vaddr_read(addr,4);
       printf("addr: %lx,data: %08x\n",addr,data);
       addr = addr + 4;
     }

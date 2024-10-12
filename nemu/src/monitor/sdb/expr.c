@@ -19,7 +19,7 @@
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
-#include <memory/paddr.h>
+#include <memory/vaddr.h>
 
 enum {
   TK_NOTYPE = 256, TK_EQ,
@@ -291,7 +291,7 @@ uint32_t eval(int p,int q){
     switch (op_type)
     {
       // f 表示解引用，因为解引用是针对后面的表达式，所以解的地址是val2存储
-      case 'f': return paddr_read(val2,4);
+      case 'f': return vaddr_read(val2,4);
       case 'n': return 0 - val2;
       case '*': return val1 * val2;
       case '/': 
