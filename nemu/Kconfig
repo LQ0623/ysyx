@@ -157,6 +157,9 @@ config ITRACE_COND
 config MTRACE
   bool "Enable mtrace"
   default y
+config FTRACE
+  bool "Enable ftrace"
+  default y
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
