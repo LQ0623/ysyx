@@ -117,18 +117,19 @@ void *memmove(void *dst, const void *src, size_t n) {
     const char *s = (const char *)src;
 
     if (d < s) {
-        for (size_t i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
             d[i] = s[i];
         }
-    }
-    else{
-        for (size_t i = n - 1; i >= 0; i--) {
+    } else if (d > s) {
+        for (int i = n - 1; i >= 0; i--) {
             d[i] = s[i];
         }
     }
 
     return dst;;
 }
+
+
 
 void *memcpy(void *out, const void *in, size_t n) {
   //panic("Not implemented");
