@@ -12,7 +12,7 @@ size_t strlen(const char *s) {
         len++;
         tmp++;
     }
-    len++;	// for '\0'
+ //   len++;	// for '\0'
     return len;
 }
 
