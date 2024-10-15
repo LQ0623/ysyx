@@ -143,9 +143,14 @@ void init_monitor(int argc, char *argv[]) {
   /* 输出出错前的语句 */
   init_inst_buffer();
 
+#ifdef CONFIG_MTRACE
   init_mtrace_log();
+#endif
 
+#ifdef CONFIG_FTRACE
   init_ftrace(elf_file);
+#endif
+
 }
 #else // CONFIG_TARGET_AM
 static long load_img() {
