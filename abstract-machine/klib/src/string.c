@@ -93,18 +93,21 @@ void *memset(void *s, int c, size_t n) {
 }
 
 void *memmove(void *dst, const void *src, size_t n) {
-  char *char_dst = (char *)dst;
-  char *char_src = (char *)src;
+    //panic("Not implemented");
+    char *d = (char *)dst;
+    const char *s = (const char *)src;
 
-  if (dst < src){
-    for (int i = 0; i < n; ++i)
-      char_dst[i] = char_src[i];
-  }else if(dst > src){
-    for (int i = n-1; i >= 0; --i)
-      char_dst[i] = char_src[i];
-  }//else 不需要复制
+    if (d < s) {
+        for (int i = 0; i < n; i++) {
+            d[i] = s[i];
+        }
+    } else if (d > s) {
+        for (int i = n - 1; i >= 0; i--) {
+            d[i] = s[i];
+        }
+    }
 
-  return dst;
+    return dst;;
 }
 
 void *memcpy(void *out, const void *in, size_t n) {
