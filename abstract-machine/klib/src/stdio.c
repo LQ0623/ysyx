@@ -41,6 +41,7 @@ int sprintf(char *out, const char *fmt, ...) {
 			}
 			if(*fmt == '.'){
 				fmt++;
+				precision = 0;
 				while(*fmt>='0' && *fmt<='9'){
 					precision = precision * 10 + (*fmt - '0');
 					fmt ++;
@@ -83,9 +84,11 @@ int sprintf(char *out, const char *fmt, ...) {
 							temp[count++] = HEX_CHARACTERS[digital];
 							i = i/10;
 						}
-						count--;	// 对于下标而言，这个count多加了一次
+						//count--;	// 对于下标而言，这个count多加了一次
 						if (precision >= 0 && precision < count) {
-							count = precision;
+							count = precision - 1;
+						}else{
+							count--;
 						}
 						if (width > count) {
 							for (int i = 0; i < width - count; i++) {
@@ -110,27 +113,27 @@ int sprintf(char *out, const char *fmt, ...) {
 				}
 				case 'x': {
 					int x = va_arg(args, int);
-					char buf[32];
-					int i = sizeof(buf) - 1;
-					buf[i--] = '\0';
-					while(x != 0){
-						int temp = x % 16;
-						buf[i--] = HEX_CHARACTERS[temp];
-						x >>= 4;
+					char temp[32]; 
+					int count = 0,digital = 0;
+					while(x>0){
+						digital = x%16;
+						temp[count++] = HEX_CHARACTERS[digital];
+						x = x/16;
 					}
-					int len = strlen(buf + i + 1);
 					// 处理宽度和精度
-                    if (precision >= 0 && precision < len) {
-                        len = precision;
-                    }
-                    if (width > len) {
-                        for (int i = 0; i < width - len; i++) {
+					// count和precision代表的是数字的位数，但是后续需要使用下标，所以需要减1
+					if (precision >= 0 && precision < count) {
+						count = precision - 1;
+					}else{
+						count--;
+					}
+					if (width > count) {
+						for (int i = 0; i < width - count; i++) {
 							out[index++] = ' '; // 右对齐
 						}
-                    }
-					int count = i + 1;
-					while(count < len){
-							out[index++] = buf[count++];
+					}
+					while(count>=0){
+						out[index++] = temp[count--];
 					}
                     break;
 				}
@@ -146,7 +149,6 @@ int sprintf(char *out, const char *fmt, ...) {
 	out[index] = '\0';
 	va_end(args);
 	return index;
-
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {

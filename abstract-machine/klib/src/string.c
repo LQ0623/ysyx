@@ -22,6 +22,7 @@ char *strcpy(char *dst, const char *src) {
     for(size_t i = 0;i < len;i++){
         dst[i] = src[i];
     }
+    dst[len] = '\0';
     return dst;
 }
 
@@ -39,7 +40,7 @@ char *strncpy(char *dst, const char *src, size_t n) {
 
 char *strcat(char *dst, const char *src) {
     //panic("Not implemented");
-    size_t index = strlen(dst) - 1;
+    size_t index = strlen(dst);
     const char* tmp = src;
     while(*tmp != '\0'){
         dst[index] = *tmp;
@@ -109,8 +110,6 @@ void *memmove(void *dst, const void *src, size_t n) {
     return dst;;
 }
 
-
-
 void *memcpy(void *out, const void *in, size_t n) {
   //panic("Not implemented");
     char *d = (char *)out;
@@ -144,10 +143,10 @@ int memcmp(const void *s1, const void *s2, size_t n) {
     }
     
     if(len_1 > len_2){
-        return p1[len_2 - 1] - p2[len_2 - 1];
+        return p1[len_2] - p2[len_2];
     }
     else if(len_1 < len_2){
-        return p1[len_1 - 1] - p2[len_1 - 1];
+        return p1[len_1] - p2[len_1];
     }
     
     return 0;
