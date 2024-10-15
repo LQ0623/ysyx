@@ -46,9 +46,9 @@ int sprintf(char *out, const char *fmt, ...) {
 					fmt ++;
 				}
 			}
-			//if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L') {
-                //argc_type = *fmt++;
-            //}
+			// if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L') {
+            //     argc_type = *fmt++;
+            // }
 
 			switch(*fmt){
 				case 's':{
@@ -129,7 +129,7 @@ int sprintf(char *out, const char *fmt, ...) {
 						}
                     }
 					int count = i + 1;
-					while(count < sizeof(buf) - 2){
+					while(count < len){
 							out[index++] = buf[count++];
 					}
                     break;

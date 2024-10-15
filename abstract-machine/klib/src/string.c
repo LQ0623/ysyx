@@ -52,51 +52,31 @@ char *strcat(char *dst, const char *src) {
 
 int strcmp(const char *s1, const char *s2) {
     //panic("Not implemented");
-    size_t len_1 = 0,len_2 = 0;
-    len_1 = strlen(s1);
-    len_2 = strlen(s2);
-    size_t len = (len_1 > len_2) ? len_2:len_1;
-
-    for(size_t i = 0;i < len;i++){
-        if(s1[i] !=s2[i]){
-            return s1[i] - s2[i];
-        }
+    int i;
+    for (i = 0; s1[i] != '\0' && s2[i] != '\0'; ++i){
+        if (s1[i] != s2[i])
+        return (int)(s1[i]) - (int)(s2[i]);
     }
-    if(len_1 > len_2){
-        return s1[len_2 - 1] - s2[len_2 - 1];
-    }else if(len_1 < len_2){
-        return s1[len_1 - 1] - s2[len_1 - 1];
-    }else{
-        return 0;
-    }
+    //case 同时结束：为0
+    //case s1先结束，0-x < 0
+    //case s2先结束，x-0 > 0
+    return (int)(s1[i]) - (int)(s2[i]);
 }
 
 int strncmp(const char *s1, const char *s2, size_t n) {
     //panic("Not implemented");
-    size_t len_1 = 0,len_2 = 0;
-    len_1 = strlen(s1);
-    len_2 = strlen(s2);
-    size_t len = (len_1 > len_2)? len_2:len_1;
-    len = (len > n)? n:len;
-
-    for(size_t i = 0;i < len;i++){
-        if(s1[i] !=s2[i]){
-            return s1[i] - s2[i];
-        }
+    int i;
+    for (i = 0; i < n && s1[i] != '\0' && s2[i] != '\0'; ++i){
+        if (s1[i] != s2[i])
+        return (int)(s1[i]) - (int)(s2[i]);
     }
-
-    if(len >= n){
+    //case 同时结束：为0
+    //case s1先结束，0-x < 0
+    //case s2先结束，x-0 > 0
+    //case 到达n，返回0
+    if (i == n)
         return 0;
-    }
-    
-    if(len_1 > len_2){
-        return s1[len_2 - 1] - s2[len_2 - 1];
-    }
-    else if(len_1 < len_2){
-        return s1[len_1 - 1] - s2[len_1 - 1];
-    }
-    
-    return 0;
+    return (int)(s1[i]) - (int)(s2[i]);
 }
 
 void *memset(void *s, int c, size_t n) {
