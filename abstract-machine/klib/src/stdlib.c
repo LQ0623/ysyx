@@ -45,8 +45,8 @@ void *malloc(size_t size) {
   malloc_addr = malloc_addr + align_size;
   assert(malloc_addr < heap.end);
   for(int i = 0;i < align_size;i++){
-    uint32_t* p = (uint32_t*)(assign_addr + i);
-    *p = 0;
+    char* p = assign_addr + i;
+    *p = '\0';
   }
 
 #endif
