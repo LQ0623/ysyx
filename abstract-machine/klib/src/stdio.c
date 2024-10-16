@@ -18,10 +18,11 @@ int printf(const char *fmt, ...) {
 	
 	count = vsprintf(buf, fmt, args);
 
-	for(int i = 0; i < count;i++){
-		putch(buf[i]);
-	}
-	
+	// for(int i = 0; i < count;i++){
+	// 	putch(buf[i]);
+	// }
+	putstr(buf);
+
 	va_end(args);
 	return count;
 }
