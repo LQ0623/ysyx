@@ -6,8 +6,8 @@ void __am_timer_init() {
 
 // AM系统启动时间, 可读出系统启动后的微秒数.
 void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
-  uint32_t low_part = inl(RTC_ADDR);
   uint32_t high_part = inl(RTC_ADDR + 4);
+  uint32_t low_part = inl(RTC_ADDR);
   uptime->us = ((uint64_t)high_part) << 32 | low_part;
 }
 
