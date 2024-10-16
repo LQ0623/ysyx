@@ -8,19 +8,27 @@
 static char HEX_CHARACTERS[] = "0123456789ABCDEF";
 
 int printf(const char *fmt, ...) {
-  panic("Not implemented");
-}
+//   panic("Not implemented");
 
-int vsprintf(char *out, const char *fmt, va_list ap) {
-  panic("Not implemented");
-}
-
-int sprintf(char *out, const char *fmt, ...) {
-	//panic("Not implemented");
+	int count;
+	char buf[2048];
 	va_list args;
 	// 解析...中的参数
 	va_start(args, fmt);
 	
+	count = vsprintf(buf, fmt, args);
+
+	for(int i = 0; i < count;i++){
+		putch(buf[i]);
+	}
+	
+	va_end(args);
+	return count;
+}
+
+int vsprintf(char *out, const char *fmt, va_list ap) {
+//   panic("Not implemented");
+
 	int index = 0;
 
 	while(*fmt){
@@ -53,7 +61,7 @@ int sprintf(char *out, const char *fmt, ...) {
 
 			switch(*fmt){
 				case 's':{
-					char *s = va_arg(args, char*);
+					char *s = va_arg(ap, char*);
 					int len = strlen(s);
 					if (precision >= 0 && precision < len) {
                         len = precision;
@@ -68,7 +76,7 @@ int sprintf(char *out, const char *fmt, ...) {
 					break;
 				}
 				case 'd':{
-					int i = va_arg(args, int);
+					int i = va_arg(ap, int);
 					if(i == 0){
 						out[index++] = '0';
 					}else {
@@ -102,7 +110,7 @@ int sprintf(char *out, const char *fmt, ...) {
 					break;
 				}
 				case 'c': {
-					char temp = (char)va_arg(args,int);
+					char temp = (char)va_arg(ap,int);
 					if (width > 1) {
 						for (int i = 0; i < width - 1; i++) {
 							out[index++] = ' '; // 右对齐
@@ -112,7 +120,7 @@ int sprintf(char *out, const char *fmt, ...) {
 					break;
 				}
 				case 'x': {
-					int x = va_arg(args, int);
+					int x = va_arg(ap, int);
 					char temp[32]; 
 					int count = 0,digital = 0;
 					while(x>0){
@@ -147,8 +155,22 @@ int sprintf(char *out, const char *fmt, ...) {
 		fmt++;
 	}
 	out[index] = '\0';
-	va_end(args);
+
 	return index;
+}
+
+int sprintf(char *out, const char *fmt, ...) {
+	//panic("Not implemented");
+
+	char *start = out;
+	va_list args;
+	// 解析...中的参数
+	va_start(args, fmt);
+	
+	vsprintf(out, fmt, args);
+	
+	va_end(args);
+	return out - start;
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
