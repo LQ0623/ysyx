@@ -5,9 +5,12 @@
 #define PIXELS_ADDR FB_ADDR
 
 void __am_gpu_init() {
+  uint32_t all_size = inl(VGACTL_ADDR);
+  uint32_t width_size = all_size >> 16;
+  uint32_t height_size = all_size & (0xffff);
   int i;
-  int w = 400;  // TODO: get the correct width
-  int h = 300;  // TODO: get the correct height
+  int w = width_size;  // TODO: get the correct width
+  int h = height_size;  // TODO: get the correct height
   uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
   
   for (i = 0; i < w * h; i ++) fb[i] = i;
