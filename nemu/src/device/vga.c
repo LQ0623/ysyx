@@ -79,8 +79,7 @@ void vga_update_screen() {
   // uint32_t sync = vgactl_port_base[1];
   if(1 == sync){
     update_screen();
-    vaddr_t addr = 0xa0000100 + 4;
-    vaddr_write(addr, 4, 0);
+    vaddr_write(0xa0000100+4, 4, 0);
     // vgactl_port_base[1] = 0;
   }
 }
