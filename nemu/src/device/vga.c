@@ -75,12 +75,12 @@ static inline void update_screen() {
 void vga_update_screen() {
   // TODO: call `update_screen()` when the sync register is non-zero,
   // then zero out the sync register
-  // uint32_t sync = vaddr_read(0xa0000100+4, 4);
-  uint32_t sync = vgactl_port_base[1];
+  uint32_t sync = vaddr_read(CONFIG_VGA_CTL_MMIO+4, 4);
+  // uint32_t sync = vgactl_port_base[1];
   if(1 == sync){
     update_screen();
-    // vaddr_write(0xa0000100+4, 4, 0);
-    vgactl_port_base[1] = 0;
+    vaddr_write(CONFIG_VGA_CTL_MMIO+4, 4, 0);
+    // vgactl_port_base[1] = 0;
   }
 }
 
