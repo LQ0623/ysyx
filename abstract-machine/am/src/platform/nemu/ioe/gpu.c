@@ -6,7 +6,7 @@
 #define H_ADDR    (VGACTL_ADDR + 12)
 #define X_ADDR    (VGACTL_ADDR + 16)
 #define Y_ADDR    (VGACTL_ADDR + 20)
-#define PIXELS_ADDR (VGACTL_ADDR + 24)
+#define PIXELS_ADDR FB_ADDR
 
 void __am_gpu_init() {
   int i;
