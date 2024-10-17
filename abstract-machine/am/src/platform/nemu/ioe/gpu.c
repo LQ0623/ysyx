@@ -6,7 +6,7 @@
 void __am_gpu_init() {
   int i;
   int w = 400;  // TODO: get the correct width
-  int h = 200;  // TODO: get the correct height
+  int h = 400;  // TODO: get the correct height
   uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
   
   for (i = 0; i < w * h; i ++) fb[i] = i;
@@ -17,7 +17,7 @@ void __am_gpu_init() {
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true, .has_accel = false,
-    .width = 400, .height = 200,
+    .width = 400, .height = 400,
     .vmemsz = 0
   };
 }
