@@ -2,7 +2,7 @@
 #include <nemu.h>
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
-#define W_ADDR    (VGACTL_ADDR + 8)
+#define W_ADDR    (VGACTL_ADDR + 12)
 #define H_ADDR    (VGACTL_ADDR + 12)
 #define X_ADDR    (VGACTL_ADDR + 16)
 #define Y_ADDR    (VGACTL_ADDR + 20)
