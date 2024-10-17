@@ -48,5 +48,6 @@ void __am_gpu_status(AM_GPU_STATUS_T *status) {
 }
 
 void __am_gpu_memcpy(AM_GPU_MEMCPY_T *memcpy){
-  memcpy->size = inl(FB_ADDR);
+  uint32_t all_size = inl(VGACTL_ADDR);
+  memcpy->size = all_size;
 }
