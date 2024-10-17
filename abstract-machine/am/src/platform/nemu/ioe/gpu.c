@@ -28,7 +28,7 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
 
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
   uint32_t x = ctl->x,y = ctl->y,w = ctl->w,h = ctl->h;
-  if(ctl->sync != 1 || w == 0 || h == 0){
+  if(ctl->sync != 1 &&(w == 0 || h == 0)){
     return;
   }
   uint32_t screen_width_size = inl(VGACTL_ADDR) >> 16;
