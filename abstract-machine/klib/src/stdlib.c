@@ -4,6 +4,8 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 static unsigned long int next = 1;
+// 分配的内存的首地址
+static void* malloc_addr = NULL;
 
 int rand(void) {
   // RAND_MAX assumed to be 32767
@@ -34,9 +36,21 @@ void *malloc(size_t size) {
   // Therefore do not call panic() here, else it will yield a dead recursion:
   //   panic() -> putchar() -> (glibc) -> malloc() -> panic()
 #if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
-  panic("Not implemented");
+  // panic("Not implemented");
+  if(malloc_addr == NULL){
+    malloc_addr = (void*)ROUNDUP(heap.start, 4);
+  }
+  size_t align_size = (size_t)ROUNDUP(size, 4);
+  void* assign_addr = malloc_addr;
+  malloc_addr = malloc_addr + align_size;
+  assert(malloc_addr < heap.end);
+  for(int i = 0;i < align_size;i++){
+    char* p = assign_addr + i;
+    *p = '\0';
+  }
+
 #endif
-  return NULL;
+  return assign_addr;
 }
 
 void free(void *ptr) {

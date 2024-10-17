@@ -1,6 +1,7 @@
 *.*
 *
 !*/
+!/abstract-machine/*
 !/nemu/*
 !/nexus-am/*
 !/nanos-lite/*
