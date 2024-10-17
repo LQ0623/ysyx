@@ -2,10 +2,6 @@
 #include <nemu.h>
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
-#define W_ADDR    (VGACTL_ADDR + 8)
-#define H_ADDR    (VGACTL_ADDR + 12)
-#define X_ADDR    (VGACTL_ADDR + 16)
-#define Y_ADDR    (VGACTL_ADDR + 20)
 #define PIXELS_ADDR FB_ADDR
 
 void __am_gpu_init() {
@@ -34,11 +30,7 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
   if (ctl->sync) {
     outl(SYNC_ADDR, 1);
-    // outl(W_ADDR, ctl->w);
-    // outl(H_ADDR, ctl->h);
-    // outl(X_ADDR, ctl->x);
-    // outl(Y_ADDR, ctl->y);
-    // outl(PIXELS_ADDR, ctl->pixels);
+    
   }
 }
 
