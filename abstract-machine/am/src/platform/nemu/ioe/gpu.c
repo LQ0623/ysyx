@@ -20,9 +20,13 @@ void __am_gpu_init() {
 }
 
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
+  uint32_t all_size = inl(VGACTL_ADDR);
+  uint32_t width_size = all_size >> 16;
+  uint32_t height_size = all_size & (0xffff);
+
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true, .has_accel = false,
-    .width = 400, .height = 300,
+    .width = width_size, .height = height_size,
     .vmemsz = 0
   };
 }
