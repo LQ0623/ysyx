@@ -35,7 +35,7 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
   uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
   uint32_t *pixels = (uint32_t*)ctl->pixels;
 
-  for(size_t i = y;i < y + w;i++){
+  for(size_t i = y;i < y + h;i++){
     for(size_t j = x;j < x + w;j++){
       fb[i*screen_width_size+j] = pixels[(i-x)*w + (j-y)];
     }
