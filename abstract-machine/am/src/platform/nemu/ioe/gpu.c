@@ -33,7 +33,16 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
   if (ctl->sync) {
     outl(SYNC_ADDR, 1);
-    
+    uint32_t all_size = inl(VGACTL_ADDR);
+    uint32_t width_size = all_size >> 16;
+    uint32_t height_size = all_size & (0xffff);
+    for(size_t i = 0;i < width_size;i++){
+      for(size_t j = 0;j < height_size;j++){
+        uint32_t addr = PIXELS_ADDR + 4*(i*width_size + j);
+        uint32_t data =  inl(addr);
+        outl(addr, data);
+      }
+    }
   }
 }
 
