@@ -22,7 +22,7 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   int reg_num = ARRLEN(cpu.gpr);
   for(int i = 0; i < reg_num;i++){
     if(cpu.gpr[i] != ref_r->gpr[i]){
-      Log("pc:%x\tcpu.pc: %c \tgpr[%d] : ref_r.gpr[%d]: %x\tcpu.gpr[%d]: %x", pc, cpu.pc, i, i, ref_r->gpr[i], i, cpu.gpr[i]);
+      Log("pc: %x\tcpu.pc: %x\tgpr[%d] : ref_r.gpr[%d]: %x\tcpu.gpr[%d]: %x", pc, cpu.pc, i, i, ref_r->gpr[i], i, cpu.gpr[i]);
       return false;
     }
   }
