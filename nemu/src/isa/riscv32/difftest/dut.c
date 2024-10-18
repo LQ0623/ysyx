@@ -28,7 +28,9 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   int reg_num = ARRLEN(cpu.gpr);
   for(int i = 0; i < reg_num;i++){
     if(cpu.gpr[i] != ref_r->gpr[i]){
-      Log("ref_r.pc:%x\tpc: %x\tcpu.pc: %x\tgpr[%d] : ref_r.gpr[%d]: %x\tcpu.gpr[%d]: %x", ref_r->pc, pc, cpu.pc, i, i, ref_r->gpr[i], i, cpu.gpr[i]);
+      // Log("ref_r.pc:%x\tpc: %x\tcpu.pc: %x\tgpr[%d] : ref_r.gpr[%d]: %x\tcpu.gpr[%d]: %x", ref_r->pc, pc, cpu.pc, i, i, ref_r->gpr[i], i, cpu.gpr[i]);
+      
+      Log("PC = 0x%x, Difftest Reg Compare failed at GPR[%d], Difftest Get 0x%x, NEMU Get 0x%x", cpu.pc, i, cpu.gpr[i], ref_r->gpr[i]);
       return false;
     }
   }
