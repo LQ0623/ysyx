@@ -39,7 +39,7 @@ static inline int find_mapid_by_addr(IOMap *maps, int size, paddr_t addr) {
   Log("step in 123");
   for (i = 0; i < size; i ++) {
     if (map_inside(maps + i, addr)) {
-      Log("step in 123");
+      Log("step in asdasd");
       difftest_skip_ref();
       return i;
     }
