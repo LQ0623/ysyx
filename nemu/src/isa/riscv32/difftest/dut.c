@@ -21,7 +21,7 @@
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   
   if(ref_r->pc != cpu.pc){
-    Log("ref_r: %x\tpc: %x", ref_r->pc, cpu.pc);
+    Log("ref_r: " FMT_WORD "\tpc:" FMT_WORD, ref_r->pc, cpu.pc);
     return false;
   }
 
