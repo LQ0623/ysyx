@@ -35,6 +35,7 @@ static int skip_dut_nr_inst = 0;
 // this is used to let ref skip instructions which
 // can not produce consistent behavior with NEMU
 void difftest_skip_ref() {
+  Log("1341asdadasdaasd1123!@#");
   is_skip_ref = true;
   // If such an instruction is one of the instruction packing in QEMU
   // (see below), we end the process of catching up with QEMU's pc to
@@ -103,6 +104,7 @@ static void checkregs(CPU_state *ref, vaddr_t pc) {
 void difftest_step(vaddr_t pc, vaddr_t npc) {
   CPU_state ref_r;
 
+  Log("ASDASDASDWQEQQEFSDFSDF");
   if (skip_dut_nr_inst > 0) {
     // Log("count is %d\n\n",count++);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
