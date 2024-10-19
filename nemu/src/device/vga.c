@@ -16,15 +16,22 @@
 #include <common.h>
 #include <device/map.h>
 #include <memory/vaddr.h>
+#include <difftest-def.h>
 
 #define SCREEN_W (MUXDEF(CONFIG_VGA_SIZE_800x600, 800, 400))
 #define SCREEN_H (MUXDEF(CONFIG_VGA_SIZE_800x600, 600, 300))
 
 static uint32_t screen_width() {
+#ifdef CONFIG_TARGET_AM
+  difftest_skip_ref();
+#endif
   return MUXDEF(CONFIG_TARGET_AM, io_read(AM_GPU_CONFIG).width, SCREEN_W);
 }
 
 static uint32_t screen_height() {
+#ifdef CONFIG_TARGET_AM
+  difftest_skip_ref();
+#endif
   return MUXDEF(CONFIG_TARGET_AM, io_read(AM_GPU_CONFIG).height, SCREEN_H);
 }
 
@@ -67,6 +74,7 @@ static inline void update_screen() {
 static void init_screen() {}
 
 static inline void update_screen() {
+  difftest_skip_ref();
   io_write(AM_GPU_FBDRAW, 0, 0, vmem, screen_width(), screen_height(), true);
 }
 #endif
