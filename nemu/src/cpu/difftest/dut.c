@@ -121,7 +121,7 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
     // Log("skip count is %d,is_skip_ref is %d\n",count++, is_skip_ref);
     // to skip the checking of an instruction, just copy the reg state to reference design
     ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
-    is_skip_ref = false;
+    //is_skip_ref = false;
     return;
   }
 
