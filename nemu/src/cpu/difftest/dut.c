@@ -116,7 +116,7 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
       panic("can not catch up with ref.pc = " FMT_WORD " at pc = " FMT_WORD, ref_r.pc, pc);
     return;
   }
-  Log("skip count is %d,is_skip_ref is %d13131313\n",count, is_skip_ref);
+
   if (is_skip_ref) {
     Log("skip count is %d,is_skip_ref is %d\n",count++, is_skip_ref);
     // to skip the checking of an instruction, just copy the reg state to reference design
