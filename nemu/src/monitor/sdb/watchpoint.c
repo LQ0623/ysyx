@@ -118,7 +118,7 @@ void point_difftest(){
     bool success = false;
     word_t new_value = expr(wp->expr,&success);
     if(wp->result != new_value){
-      printf("watchpoint %d:%s has changed,old value is %u,new value is %u\n",wp->NO,wp->expr,wp->result,new_value);
+      printf("watchpoint %d:%s has changed,old value is " FMT_WORD ",new value is " FMT_WORD "\n",wp->NO,wp->expr,wp->result,new_value);
       wp->result = new_value;
       nemu_state.state = NEMU_STOP;
     }
