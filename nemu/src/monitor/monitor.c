@@ -48,7 +48,7 @@ void sdb_set_batch_mode();
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
-static int difftest_port = 1234;
+static int difftest_port = 234;
 static char *elf_file = NULL;
 
 static long load_img() {
