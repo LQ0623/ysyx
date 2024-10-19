@@ -36,8 +36,10 @@ static inline bool map_inside(IOMap *map, paddr_t addr) {
 
 static inline int find_mapid_by_addr(IOMap *maps, int size, paddr_t addr) {
   int i;
+  Log("start    1231231");
   for (i = 0; i < size; i ++) {
     if (map_inside(maps + i, addr)) {
+      Log("end    asdasdad");
       difftest_skip_ref();
       return i;
     }
