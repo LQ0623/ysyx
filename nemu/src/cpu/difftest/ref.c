@@ -29,26 +29,21 @@ __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction)
 }
 
 __EXPORT void difftest_regcpy(void *dut, bool direction) {
-  // assert(0);
-  int i = 0;
-  struct diff_context_t *dut_state = (struct diff_context_t *)dut;
-  if(direction == DIFFTEST_TO_REF){
-    for(i = 0;i < NR_GPR ; i++){
-      cpu.gpr[i] = dut_state->gpr[i];
-    }
-    cpu.pc = dut_state->pc;
-  }
-  else{
-    for(i = 0;i < NR_GPR ; i++){
-      dut_state->gpr[i] = cpu.gpr[i];
-    }
-    dut_state->pc = cpu.pc;
-    // dut_state->csr[0] = cpu.csr[0x300]; //mstatus
-    // dut_state->csr[1] = cpu.csr[0x305]; //mtvec
-    // dut_state->csr[2] = cpu.csr[0x341]; //mepc
-    // dut_state->csr[3] = cpu.csr[0x342]; //mcause
-    
-  }
+  assert(0);
+  // int i = 0;
+  // struct diff_context_t *dut_state = (struct diff_context_t *)dut;
+  // if(direction == DIFFTEST_TO_REF){
+  //   for(i = 0;i < NR_GPR ; i++){
+  //     cpu.gpr[i] = dut_state->gpr[i];
+  //   }
+  //   cpu.pc = dut_state->pc;
+  // }
+  // else{
+  //   for(i = 0;i < NR_GPR ; i++){
+  //     dut_state->gpr[i] = cpu.gpr[i];
+  //   }
+  //   dut_state->pc = cpu.pc;
+  // }
 }
 
 __EXPORT void difftest_exec(uint64_t n) {
