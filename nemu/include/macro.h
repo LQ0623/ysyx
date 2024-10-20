@@ -102,11 +102,13 @@
   ({ difftest_skip_ref();\
     reg##_T __io_param; \
     ioe_read(reg, &__io_param); \
-    __io_param; })
+    __io_param;\
+    difftest_skip_ref(); })
 
 #define io_write(reg, ...) \
   ({ difftest_skip_ref();\
     reg##_T __io_param = (reg##_T) { __VA_ARGS__ }; \
-    ioe_write(reg, &__io_param); })
+    ioe_write(reg, &__io_param);\
+    difftest_skip_ref(); })
 
 #endif
