@@ -21,12 +21,10 @@
 #define SCREEN_H (MUXDEF(CONFIG_VGA_SIZE_800x600, 600, 300))
 
 static uint32_t screen_width() {
-  difftest_skip_ref();
   return MUXDEF(CONFIG_TARGET_AM, io_read(AM_GPU_CONFIG).width, SCREEN_W);
 }
 
 static uint32_t screen_height() {
-  difftest_skip_ref();
   return MUXDEF(CONFIG_TARGET_AM, io_read(AM_GPU_CONFIG).height, SCREEN_H);
 }
 
@@ -70,7 +68,6 @@ static void init_screen() {}
 
 static inline void update_screen() {
   io_write(AM_GPU_FBDRAW, 0, 0, vmem, screen_width(), screen_height(), true);
-  difftest_skip_ref();
 }
 #endif
 #endif
