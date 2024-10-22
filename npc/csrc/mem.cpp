@@ -10,8 +10,8 @@ static const uint32_t inst[] = {
     0b00000000010100001000000100010011 //addi x2 x1 5
 };
 
-uint32_t *init_mem(size_t size){
-    uint32_t* memory = (uint32_t*)malloc(size * sizeof(uint32_t));
+uint32_t *init_mem(){
+    uint32_t* memory = (uint32_t*)malloc(sizeof(inst) * sizeof(uint32_t));
     if(memory == NULL){
         exit(0);
     }
