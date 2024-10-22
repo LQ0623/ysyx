@@ -10,9 +10,7 @@ static Vysyx_24100006_cpu *top;
 VerilatedContext* contextp = NULL;
 VerilatedFstC* tfp = NULL;
 
-uint32_t *init_mem();
 uint32_t guest_to_host(uint32_t addr);
-uint32_t pmem_read(uint32_t *memory, uint32_t vaddr);
 
 void single_cycle(){
     top->clk = 0;top->eval();
@@ -27,10 +25,6 @@ static void reset_cpu(int n){
 
 int main(int argc, char** argv) {
     
-    uint32_t *memory;
-    memory = init_mem();
-
-    
     contextp = new VerilatedContext;
     contextp->traceEverOn(true);
     tfp = new VerilatedFstC;
@@ -41,7 +35,6 @@ int main(int argc, char** argv) {
 
     reset_cpu(100);
     for(int i = 0;i < 5;i++) {
-    	top->instruction = pmem_read(memory,top->x_pc);
         single_cycle();
         tfp->dump(contextp->time());
         contextp -> timeInc(1);

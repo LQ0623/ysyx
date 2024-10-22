@@ -1,7 +1,6 @@
 module ysyx_24100006_cpu(
-	input reg clk,
+	input clk,
 	input reset,
-	input [31:0] instruction,
 	output [31:0] result,
 	output [31:0] x_pc
 );
@@ -15,8 +14,8 @@ module ysyx_24100006_cpu(
 	assign wen = 0;
 	wire [4:0] rs;
 	wire [4:0] rt;
-	// wire [4:0] rd;
 	/* verilator lint_off UNDRIVEN */
+	wire [4:0] rd;
 	wire [4:0] waddr;
 	wire [31:0] wdata;
 	wire [31:0] rs1_data;
