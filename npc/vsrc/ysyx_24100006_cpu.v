@@ -15,8 +15,8 @@ module ysyx_24100006_cpu(
 	wire [4:0] rs;
 	wire [4:0] rt;
 	wire [4:0] rd;
+	wire [4:0] waddr;
 	wire [31:0] wdata;
-	wire [31:0] waddr;
 	wire [31:0] rs1_data;
 	wire [31:0] rs2_data;
 	
@@ -29,7 +29,7 @@ module ysyx_24100006_cpu(
 	ysyx_24100006_imm_sext imm_sext(.inst(instruction),.sext_imm(sext_imm));
 	
 	// wire [31:0] result;
-	ysyx_24100006_alu alu(.rs_data(rs1_data),.rt_data(sext_imm),.result(result));
+	ysyx_24100006_alu alu(.rs_data(rs1_data),.rt_data(sext_imm),.rd_data(result));
 	
 
 endmodule

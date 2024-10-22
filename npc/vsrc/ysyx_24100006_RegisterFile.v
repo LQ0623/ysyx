@@ -6,7 +6,7 @@ module ysyx_24100006_RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
   input [ADDR_WIDTH-1:0] rs1,
   input [ADDR_WIDTH-1:0] rs2,
   output [DATA_WIDTH-1:0] rs1_data,
-  output [DATA_WIDTH-1:0] rs2_data,
+  output [DATA_WIDTH-1:0] rs2_data
 );
   reg [DATA_WIDTH-1:0] rf [2**ADDR_WIDTH-1:0];
   always @(posedge clk) begin
