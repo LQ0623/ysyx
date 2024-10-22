@@ -10,7 +10,7 @@ static Vysyx_24100006_cpu *top;
 VerilatedContext* contextp = NULL;
 VerilatedFstC* tfp = NULL;
 
-uint32_t *init_mem();
+uint32_t *init_mem(size_t size);
 uint32_t guest_to_host(uint32_t addr);
 uint32_t pmem_read(uint32_t *memory, uint32_t vaddr);
 
@@ -28,7 +28,7 @@ static void reset(int n){
 int main(int argc, char** argv) {
     
     uint32_t *memory;
-    memory = init_mem();
+    memory = init_mem(3);
 
     
     contextp = new VerilatedContext;
