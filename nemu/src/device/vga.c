@@ -15,6 +15,7 @@
 
 #include <common.h>
 #include <device/map.h>
+#include <memory/vaddr.h>
 
 #define SCREEN_W (MUXDEF(CONFIG_VGA_SIZE_800x600, 800, 400))
 #define SCREEN_H (MUXDEF(CONFIG_VGA_SIZE_800x600, 600, 300))
@@ -74,6 +75,11 @@ static inline void update_screen() {
 void vga_update_screen() {
   // TODO: call `update_screen()` when the sync register is non-zero,
   // then zero out the sync register
+  uint32_t sync = vaddr_read(0xa0000100+4, 4);
+  if(1 == sync){
+    update_screen();
+    vaddr_write(0xa0000100+4, 4, 0);
+  }
 }
 
 void init_vga() {

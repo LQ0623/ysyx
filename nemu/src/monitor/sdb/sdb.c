@@ -134,6 +134,7 @@ static int cmd_p(char *args){
 static int cmd_w(char *args){
   bool success = false;
   word_t result = expr(args,&success);
+  // printf("%s",args);
   if(success){
     set_point(args,result);
     return 0;

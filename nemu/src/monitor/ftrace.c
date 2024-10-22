@@ -23,6 +23,7 @@ void free_func_name(){
     for(size_t i = 0;i < symbol_table_entry_count;i++){
         free(func_name[i].name);
     }
+    free(tail_rec_head);
 }
 
 void insert_tail_rec(vaddr_t pc, int depth) {
