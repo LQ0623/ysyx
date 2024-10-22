@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "verilated.h"
-#include "verilated_fst_c.h"
+// #include "verilated_fst_c.h"
+#include "verilated_vcd_c.h"
 #include "Vysyx_24100006_cpu.h"
 
 static Vysyx_24100006_cpu *top;
 
 VerilatedContext* contextp = NULL;
-VerilatedFstC* tfp = NULL;
+VerilatedVcdC* tfp = NULL;
 
 uint32_t *init_mem();
 uint32_t guest_to_host(uint32_t addr);
@@ -33,11 +34,11 @@ int main(int argc, char** argv) {
     
     contextp = new VerilatedContext;
     contextp->traceEverOn(true);
-    tfp = new VerilatedFstC;
+    tfp = new VerilatedVcdC;
     top = new Vysyx_24100006_cpu;
 
     top->trace(tfp, 0) ;
-    tfp->open("build/sim.fst") ;
+    tfp->open("build/sim.vcd") ;
 
     reset(10);
     for(int i = 0;i < 4;i++) {
