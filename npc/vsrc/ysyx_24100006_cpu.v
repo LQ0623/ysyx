@@ -1,11 +1,10 @@
 module ysyx_24100006_cpu(
-	input clk,
+	input reg clk,
 	input reset,
 	input [31:0] instruction,
 	output [31:0] result,
 	output [31:0] x_pc
 );
-    reg clk;
 	wire [31:0]pc;
 	wire [31:0]npc;
 	ysyx_24100006_pc PC(.clk(clk),.reset(reset),.npc(npc),.pc(pc));
