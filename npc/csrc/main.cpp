@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     tfp = new VerilatedFstC;
     contextp->traceEverOn(true);
 
-    top->trace(tfp, 0) ;
+    top->trace(tfp, 5) ;
     tfp->open("build/waveform.fst") ;
 
     reset(10);
