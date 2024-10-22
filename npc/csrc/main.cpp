@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     tfp = new VerilatedFstC;
     top = new Vysyx_24100006_cpu;
 
-    top->trace(tfp, 0) ;
+    top->trace(tfp, 100) ;
     tfp->open("build/sim.fst") ;
 
     reset_cpu(100);
