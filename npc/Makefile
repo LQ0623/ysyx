@@ -54,7 +54,7 @@ sim:
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
 
-	verilator -Wall --trace-fst --cc --exe --build ./vsrc/ysyx_24100006_cpu.v ./csrc/main.cpp
+	verilator -Wall --trace-fst --cc --exe --build $(VSRCS) $(CSRCS)
 
 include ../Makefile
 
