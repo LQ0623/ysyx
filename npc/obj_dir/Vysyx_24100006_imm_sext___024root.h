@@ -14,18 +14,13 @@ class Vysyx_24100006_imm_sext___024root final : public VerilatedModule {
 
     // DESIGN SPECIFIC STATE
     VL_IN8(clk,0,0);
-    VL_OUT8(ysyx_24100006_MuxKey__02Eout,0,0);
-    VL_IN8(ysyx_24100006_MuxKey__02Ekey,0,0);
-    VL_IN8(ysyx_24100006_MuxKey__02Elut,3,0);
-    VL_OUT8(ysyx_24100006_MuxKeyWithDefault__02Eout,0,0);
-    VL_IN8(ysyx_24100006_MuxKeyWithDefault__02Ekey,0,0);
+    VL_OUT8(out,0,0);
+    VL_IN8(key,0,0);
     VL_IN8(default_out,0,0);
-    VL_IN8(ysyx_24100006_MuxKeyWithDefault__02Elut,3,0);
+    VL_IN8(lut,3,0);
     VL_IN8(reset,0,0);
-    CData/*0:0*/ ysyx_24100006_MuxKey__DOT__i0__DOT__lut_out;
-    CData/*0:0*/ ysyx_24100006_MuxKey__DOT__i0__DOT__hit;
-    CData/*0:0*/ ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__lut_out;
-    CData/*0:0*/ ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__hit;
+    CData/*0:0*/ ysyx_24100006_MuxKeyInternal__DOT__lut_out;
+    CData/*0:0*/ ysyx_24100006_MuxKeyInternal__DOT__hit;
     CData/*0:0*/ ysyx_24100006_cpu__DOT__wen;
     CData/*4:0*/ ysyx_24100006_cpu__DOT__rd;
     CData/*4:0*/ ysyx_24100006_cpu__DOT__waddr;
@@ -40,12 +35,9 @@ class Vysyx_24100006_imm_sext___024root final : public VerilatedModule {
     IData/*31:0*/ __VstlIterCount;
     IData/*31:0*/ __VicoIterCount;
     IData/*31:0*/ __VactIterCount;
-    VlUnpacked<CData/*1:0*/, 2> ysyx_24100006_MuxKey__DOT__i0__DOT__pair_list;
-    VlUnpacked<CData/*0:0*/, 2> ysyx_24100006_MuxKey__DOT__i0__DOT__key_list;
-    VlUnpacked<CData/*0:0*/, 2> ysyx_24100006_MuxKey__DOT__i0__DOT__data_list;
-    VlUnpacked<CData/*1:0*/, 2> ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__pair_list;
-    VlUnpacked<CData/*0:0*/, 2> ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__key_list;
-    VlUnpacked<CData/*0:0*/, 2> ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__data_list;
+    VlUnpacked<CData/*1:0*/, 2> ysyx_24100006_MuxKeyInternal__DOT__pair_list;
+    VlUnpacked<CData/*0:0*/, 2> ysyx_24100006_MuxKeyInternal__DOT__key_list;
+    VlUnpacked<CData/*0:0*/, 2> ysyx_24100006_MuxKeyInternal__DOT__data_list;
     VlUnpacked<IData/*31:0*/, 32> ysyx_24100006_cpu__DOT__registerfile__DOT__rf;
     VlUnpacked<CData/*0:0*/, 3> __Vm_traceActivity;
     VlTriggerVec<1> __VstlTriggered;

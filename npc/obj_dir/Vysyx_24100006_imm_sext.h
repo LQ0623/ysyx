@@ -26,13 +26,10 @@ class Vysyx_24100006_imm_sext VL_NOT_FINAL : public VerilatedModel {
     // The application code writes and reads these signals to
     // propagate new values into/out from the Verilated model.
     VL_IN8(&clk,0,0);
-    VL_OUT8(&ysyx_24100006_MuxKey__02Eout,0,0);
-    VL_IN8(&ysyx_24100006_MuxKey__02Ekey,0,0);
-    VL_IN8(&ysyx_24100006_MuxKey__02Elut,3,0);
-    VL_OUT8(&ysyx_24100006_MuxKeyWithDefault__02Eout,0,0);
-    VL_IN8(&ysyx_24100006_MuxKeyWithDefault__02Ekey,0,0);
+    VL_OUT8(&out,0,0);
+    VL_IN8(&key,0,0);
     VL_IN8(&default_out,0,0);
-    VL_IN8(&ysyx_24100006_MuxKeyWithDefault__02Elut,3,0);
+    VL_IN8(&lut,3,0);
     VL_IN8(&reset,0,0);
     VL_IN(&instruction,31,0);
     VL_OUT(&result,31,0);

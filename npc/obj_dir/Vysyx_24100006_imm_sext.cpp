@@ -12,13 +12,10 @@ Vysyx_24100006_imm_sext::Vysyx_24100006_imm_sext(VerilatedContext* _vcontextp__,
     : VerilatedModel{*_vcontextp__}
     , vlSymsp{new Vysyx_24100006_imm_sext__Syms(contextp(), _vcname__, this)}
     , clk{vlSymsp->TOP.clk}
-    , ysyx_24100006_MuxKey__02Eout{vlSymsp->TOP.ysyx_24100006_MuxKey__02Eout}
-    , ysyx_24100006_MuxKey__02Ekey{vlSymsp->TOP.ysyx_24100006_MuxKey__02Ekey}
-    , ysyx_24100006_MuxKey__02Elut{vlSymsp->TOP.ysyx_24100006_MuxKey__02Elut}
-    , ysyx_24100006_MuxKeyWithDefault__02Eout{vlSymsp->TOP.ysyx_24100006_MuxKeyWithDefault__02Eout}
-    , ysyx_24100006_MuxKeyWithDefault__02Ekey{vlSymsp->TOP.ysyx_24100006_MuxKeyWithDefault__02Ekey}
+    , out{vlSymsp->TOP.out}
+    , key{vlSymsp->TOP.key}
     , default_out{vlSymsp->TOP.default_out}
-    , ysyx_24100006_MuxKeyWithDefault__02Elut{vlSymsp->TOP.ysyx_24100006_MuxKeyWithDefault__02Elut}
+    , lut{vlSymsp->TOP.lut}
     , reset{vlSymsp->TOP.reset}
     , instruction{vlSymsp->TOP.instruction}
     , result{vlSymsp->TOP.result}

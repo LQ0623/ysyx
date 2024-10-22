@@ -11,16 +11,10 @@ VL_INLINE_OPT void Vysyx_24100006_imm_sext___024root___ico_sequent__TOP__0(Vysyx
     Vysyx_24100006_imm_sext__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_24100006_imm_sext___024root___ico_sequent__TOP__0\n"); );
     // Body
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__pair_list[0U] 
-        = (3U & (IData)(vlSelf->ysyx_24100006_MuxKey__02Elut));
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__pair_list[1U] 
-        = (3U & ((IData)(vlSelf->ysyx_24100006_MuxKey__02Elut) 
-                 >> 2U));
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__pair_list[0U] 
-        = (3U & (IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Elut));
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__pair_list[1U] 
-        = (3U & ((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Elut) 
-                 >> 2U));
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__pair_list[0U] 
+        = (3U & (IData)(vlSelf->lut));
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__pair_list[1U] 
+        = (3U & ((IData)(vlSelf->lut) >> 2U));
     vlSelf->result = (vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf
                       [(0x1fU & (vlSelf->instruction 
                                  >> 0xfU))] + (((- (IData)(
@@ -29,73 +23,31 @@ VL_INLINE_OPT void Vysyx_24100006_imm_sext___024root___ico_sequent__TOP__0(Vysyx
                                                 << 0xcU) 
                                                | (vlSelf->instruction 
                                                   >> 0x14U)));
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__data_list[0U] 
-        = (1U & (IData)(vlSelf->ysyx_24100006_MuxKey__02Elut));
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__data_list[1U] 
-        = (1U & ((IData)(vlSelf->ysyx_24100006_MuxKey__02Elut) 
-                 >> 2U));
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__key_list[0U] 
-        = (1U & ((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Elut) 
-                 >> 1U));
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__key_list[1U] 
-        = (1U & ((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Elut) 
-                 >> 3U));
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__data_list[0U] 
-        = (1U & (IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Elut));
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__data_list[1U] 
-        = (1U & ((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Elut) 
-                 >> 2U));
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__key_list[0U] 
-        = (1U & ((IData)(vlSelf->ysyx_24100006_MuxKey__02Elut) 
-                 >> 1U));
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__key_list[1U] 
-        = (1U & ((IData)(vlSelf->ysyx_24100006_MuxKey__02Elut) 
-                 >> 3U));
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__lut_out 
-        = (((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Ekey) 
-            == vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__key_list
-            [0U]) & vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__data_list
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__data_list[0U] 
+        = (1U & (IData)(vlSelf->lut));
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__data_list[1U] 
+        = (1U & ((IData)(vlSelf->lut) >> 2U));
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__key_list[0U] 
+        = (1U & ((IData)(vlSelf->lut) >> 1U));
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__key_list[1U] 
+        = (1U & ((IData)(vlSelf->lut) >> 3U));
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__hit 
+        = ((IData)(vlSelf->key) == vlSelf->ysyx_24100006_MuxKeyInternal__DOT__key_list
            [0U]);
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__hit 
-        = ((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Ekey) 
-           == vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__key_list
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__hit 
+        = ((IData)(vlSelf->ysyx_24100006_MuxKeyInternal__DOT__hit) 
+           | ((IData)(vlSelf->key) == vlSelf->ysyx_24100006_MuxKeyInternal__DOT__key_list
+              [1U]));
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__lut_out 
+        = (((IData)(vlSelf->key) == vlSelf->ysyx_24100006_MuxKeyInternal__DOT__key_list
+            [0U]) & vlSelf->ysyx_24100006_MuxKeyInternal__DOT__data_list
            [0U]);
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__lut_out 
-        = ((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__lut_out) 
-           | (((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Ekey) 
-               == vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__key_list
-               [1U]) & vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__data_list
+    vlSelf->ysyx_24100006_MuxKeyInternal__DOT__lut_out 
+        = ((IData)(vlSelf->ysyx_24100006_MuxKeyInternal__DOT__lut_out) 
+           | (((IData)(vlSelf->key) == vlSelf->ysyx_24100006_MuxKeyInternal__DOT__key_list
+               [1U]) & vlSelf->ysyx_24100006_MuxKeyInternal__DOT__data_list
               [1U]));
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__hit 
-        = ((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__hit) 
-           | ((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__02Ekey) 
-              == vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__key_list
-              [1U]));
-    vlSelf->ysyx_24100006_MuxKeyWithDefault__02Eout 
-        = ((IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__hit)
-            ? (IData)(vlSelf->ysyx_24100006_MuxKeyWithDefault__DOT__i0__DOT__lut_out)
-            : (IData)(vlSelf->default_out));
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__hit 
-        = ((IData)(vlSelf->ysyx_24100006_MuxKey__02Ekey) 
-           == vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__key_list
-           [0U]);
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__hit 
-        = ((IData)(vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__hit) 
-           | ((IData)(vlSelf->ysyx_24100006_MuxKey__02Ekey) 
-              == vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__key_list
-              [1U]));
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__lut_out 
-        = (((IData)(vlSelf->ysyx_24100006_MuxKey__02Ekey) 
-            == vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__key_list
-            [0U]) & vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__data_list
-           [0U]);
-    vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__lut_out 
-        = ((IData)(vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__lut_out) 
-           | (((IData)(vlSelf->ysyx_24100006_MuxKey__02Ekey) 
-               == vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__key_list
-               [1U]) & vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__data_list
-              [1U]));
-    vlSelf->ysyx_24100006_MuxKey__02Eout = vlSelf->ysyx_24100006_MuxKey__DOT__i0__DOT__lut_out;
+    vlSelf->out = vlSelf->ysyx_24100006_MuxKeyInternal__DOT__lut_out;
 }
 
 void Vysyx_24100006_imm_sext___024root___eval_ico(Vysyx_24100006_imm_sext___024root* vlSelf) {
@@ -198,7 +150,7 @@ void Vysyx_24100006_imm_sext___024root___eval(Vysyx_24100006_imm_sext___024root*
 #ifdef VL_DEBUG
                 Vysyx_24100006_imm_sext___024root___dump_triggers__ico(vlSelf);
 #endif
-                VL_FATAL_MT("/home/lq/ysyx-workbench/npc/vsrc/ysyx_24100006_IM.v", 4, "", "Input combinational region did not converge.");
+                VL_FATAL_MT("/home/lq/ysyx-workbench/npc/vsrc/ysyx_24100006_MuxKeyInternal.v", 2, "", "Input combinational region did not converge.");
             }
             vlSelf->__VicoIterCount = ((IData)(1U) 
                                        + vlSelf->__VicoIterCount);
@@ -221,7 +173,7 @@ void Vysyx_24100006_imm_sext___024root___eval(Vysyx_24100006_imm_sext___024root*
 #ifdef VL_DEBUG
                     Vysyx_24100006_imm_sext___024root___dump_triggers__act(vlSelf);
 #endif
-                    VL_FATAL_MT("/home/lq/ysyx-workbench/npc/vsrc/ysyx_24100006_IM.v", 4, "", "Active region did not converge.");
+                    VL_FATAL_MT("/home/lq/ysyx-workbench/npc/vsrc/ysyx_24100006_MuxKeyInternal.v", 2, "", "Active region did not converge.");
                 }
                 vlSelf->__VactIterCount = ((IData)(1U) 
                                            + vlSelf->__VactIterCount);
@@ -236,7 +188,7 @@ void Vysyx_24100006_imm_sext___024root___eval(Vysyx_24100006_imm_sext___024root*
 #ifdef VL_DEBUG
                 Vysyx_24100006_imm_sext___024root___dump_triggers__nba(vlSelf);
 #endif
-                VL_FATAL_MT("/home/lq/ysyx-workbench/npc/vsrc/ysyx_24100006_IM.v", 4, "", "NBA region did not converge.");
+                VL_FATAL_MT("/home/lq/ysyx-workbench/npc/vsrc/ysyx_24100006_MuxKeyInternal.v", 2, "", "NBA region did not converge.");
             }
             __VnbaIterCount = ((IData)(1U) + __VnbaIterCount);
             Vysyx_24100006_imm_sext___024root___eval_nba(vlSelf);
@@ -250,20 +202,12 @@ void Vysyx_24100006_imm_sext___024root___eval_debug_assertions(Vysyx_24100006_im
     Vysyx_24100006_imm_sext__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_24100006_imm_sext___024root___eval_debug_assertions\n"); );
     // Body
-    if (VL_UNLIKELY((vlSelf->ysyx_24100006_MuxKey__02Ekey 
-                     & 0xfeU))) {
-        Verilated::overWidthError("ysyx_24100006_MuxKey.key");}
-    if (VL_UNLIKELY((vlSelf->ysyx_24100006_MuxKey__02Elut 
-                     & 0xf0U))) {
-        Verilated::overWidthError("ysyx_24100006_MuxKey.lut");}
-    if (VL_UNLIKELY((vlSelf->ysyx_24100006_MuxKeyWithDefault__02Ekey 
-                     & 0xfeU))) {
-        Verilated::overWidthError("ysyx_24100006_MuxKeyWithDefault.key");}
+    if (VL_UNLIKELY((vlSelf->key & 0xfeU))) {
+        Verilated::overWidthError("key");}
     if (VL_UNLIKELY((vlSelf->default_out & 0xfeU))) {
         Verilated::overWidthError("default_out");}
-    if (VL_UNLIKELY((vlSelf->ysyx_24100006_MuxKeyWithDefault__02Elut 
-                     & 0xf0U))) {
-        Verilated::overWidthError("ysyx_24100006_MuxKeyWithDefault.lut");}
+    if (VL_UNLIKELY((vlSelf->lut & 0xf0U))) {
+        Verilated::overWidthError("lut");}
     if (VL_UNLIKELY((vlSelf->clk & 0xfeU))) {
         Verilated::overWidthError("clk");}
     if (VL_UNLIKELY((vlSelf->reset & 0xfeU))) {
