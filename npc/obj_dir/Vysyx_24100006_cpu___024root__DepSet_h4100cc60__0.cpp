@@ -72,6 +72,7 @@ VL_INLINE_OPT void Vysyx_24100006_cpu___024root___nba_sequent__TOP__0(Vysyx_2410
                                                 << 0xcU) 
                                                | (vlSelf->instruction 
                                                   >> 0x14U)));
+    vlSelf->x_pc = vlSelf->ysyx_24100006_cpu__DOT__pc;
     vlSelf->ysyx_24100006_cpu__DOT__npc = ((IData)(4U) 
                                            + vlSelf->ysyx_24100006_cpu__DOT__pc);
 }

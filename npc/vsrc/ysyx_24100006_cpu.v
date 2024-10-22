@@ -12,9 +12,10 @@ module ysyx_24100006_cpu(
 
 
 	wire wen;
+	assign wen = 0;
 	wire [4:0] rs;
 	wire [4:0] rt;
-	wire [4:0] rd;
+	// wire [4:0] rd;
 	wire [4:0] waddr;
 	wire [31:0] wdata;
 	wire [31:0] rs1_data;
@@ -23,7 +24,7 @@ module ysyx_24100006_cpu(
 	assign rs = instruction[19:15];
 	assign rt = instruction[24:20];
 	ysyx_24100006_RegisterFile registerfile(.clk(clk),.wdata(wdata),.waddr(waddr),.wen(wen),
-											.rs1(rs),.rs2(rd),.rs1_data(rs1_data),.rs2_data(rs2_data));
+											.rs1(rs),.rs2(rt),.rs1_data(rs1_data),.rs2_data(rs2_data));
 	
 	wire [31:0] sext_imm;
 	ysyx_24100006_imm_sext imm_sext(.inst(instruction),.sext_imm(sext_imm));

@@ -79,6 +79,7 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___stl_sequent__TOP__0(Vysyx_24100
     Vysyx_24100006_cpu__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_24100006_cpu___024root___stl_sequent__TOP__0\n"); );
     // Body
+    vlSelf->x_pc = vlSelf->ysyx_24100006_cpu__DOT__pc;
     vlSelf->ysyx_24100006_cpu__DOT__npc = ((IData)(4U) 
                                            + vlSelf->ysyx_24100006_cpu__DOT__pc);
     vlSelf->result = (vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf
