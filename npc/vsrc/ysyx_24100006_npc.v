@@ -6,3 +6,4 @@ module ysyx_24100006_npc(
     assign npc = pc + 4;
 
 endmodule
+
