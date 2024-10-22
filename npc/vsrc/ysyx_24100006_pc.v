@@ -6,7 +6,7 @@ module ysyx_24100006_pc(
 );
 
     always @(posedge clk) begin
-        if(!reset)begin
+        if(reset)begin
             pc <= 32'h80000000;
         end else begin
             pc <= npc;
