@@ -15,8 +15,6 @@ class Vysyx_24100006_cpu___024root final : public VerilatedModule {
     // DESIGN SPECIFIC STATE
     VL_IN8(clk,0,0);
     VL_IN8(reset,0,0);
-    CData/*0:0*/ ysyx_24100006_cpu__DOT__wen;
-    CData/*4:0*/ ysyx_24100006_cpu__DOT__rd;
     CData/*4:0*/ ysyx_24100006_cpu__DOT__waddr;
     CData/*0:0*/ __Vtrigrprev__TOP__clk;
     CData/*0:0*/ __VactContinue;
@@ -30,7 +28,6 @@ class Vysyx_24100006_cpu___024root final : public VerilatedModule {
     IData/*31:0*/ __VicoIterCount;
     IData/*31:0*/ __VactIterCount;
     VlUnpacked<IData/*31:0*/, 32> ysyx_24100006_cpu__DOT__registerfile__DOT__rf;
-    VlUnpacked<CData/*0:0*/, 2> __Vm_traceActivity;
     VlTriggerVec<1> __VstlTriggered;
     VlTriggerVec<1> __VicoTriggered;
     VlTriggerVec<1> __VactTriggered;

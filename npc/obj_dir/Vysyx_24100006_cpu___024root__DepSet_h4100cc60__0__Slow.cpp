@@ -159,15 +159,10 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___ctor_var_reset(Vysyx_24100006_c
     vlSelf->x_pc = VL_RAND_RESET_I(32);
     vlSelf->ysyx_24100006_cpu__DOT__pc = VL_RAND_RESET_I(32);
     vlSelf->ysyx_24100006_cpu__DOT__npc = VL_RAND_RESET_I(32);
-    vlSelf->ysyx_24100006_cpu__DOT__wen = VL_RAND_RESET_I(1);
-    vlSelf->ysyx_24100006_cpu__DOT__rd = VL_RAND_RESET_I(5);
     vlSelf->ysyx_24100006_cpu__DOT__waddr = VL_RAND_RESET_I(5);
     vlSelf->ysyx_24100006_cpu__DOT__wdata = VL_RAND_RESET_I(32);
     for (int __Vi0 = 0; __Vi0 < 32; ++__Vi0) {
         vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf[__Vi0] = VL_RAND_RESET_I(32);
     }
     vlSelf->__Vtrigrprev__TOP__clk = VL_RAND_RESET_I(1);
-    for (int __Vi0 = 0; __Vi0 < 2; ++__Vi0) {
-        vlSelf->__Vm_traceActivity[__Vi0] = 0;
-    }
 }
