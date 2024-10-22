@@ -30,10 +30,11 @@ int main(int argc, char** argv) {
     uint32_t *memory;
     memory = init_mem();
 
-    top = new Vysyx_24100006_cpu;
+    
     contextp = new VerilatedContext;
-    tfp = new VerilatedFstC;
     contextp->traceEverOn(true);
+    tfp = new VerilatedFstC;
+    top = new Vysyx_24100006_cpu;
 
     top->trace(tfp, 5) ;
     tfp->open("build/waveform.fst") ;
