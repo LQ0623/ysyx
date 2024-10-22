@@ -15,8 +15,8 @@ uint32_t guest_to_host(uint32_t addr);
 uint32_t pmem_read(uint32_t *memory, uint32_t vaddr);
 
 void single_cycle(){
-    top->clk = 0;top->eval();top->eval();
-    top->clk = 1;top->eval();top->eval();
+    top->clk = 0;top->eval();
+    top->clk = 1;top->eval();
 }
 
 static void reset(int n){
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     tfp = new VerilatedFstC;
     top = new Vysyx_24100006_cpu;
 
-    top->trace(tfp, 5) ;
+    top->trace(tfp, 0) ;
     tfp->open("build/sim.fst") ;
 
     reset(10);
