@@ -19,7 +19,7 @@ void single_cycle(){
     top->clk = 1;top->eval();
 }
 
-static void reset(int n){
+static void reset_cpu(int n){
     top->reset = 1;
     while(n--) single_cycle();
     top->reset = 0;
@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     top->trace(tfp, 5) ;
     tfp->open("build/sim.fst") ;
 
-    reset(100);
+    reset_cpu(100);
     for(int i = 0;i < 4;i++) {
     	top->instruction = pmem_read(memory,top->x_pc);
         single_cycle();
