@@ -17,11 +17,11 @@ module ysyx_24100006_cpu(
 	wire [4:0] rs;
 	wire [4:0] rt;
 	/* verilator lint_off UNDRIVEN */
+	/* verilator lint_off UNUSEDSIGNAL */
 	wire [4:0] rd;
 	wire [4:0] waddr;
 	wire [31:0] wdata;
 	wire [31:0] rs1_data;
-	/* verilator lint_off UNUSEDSIGNAL */
 	wire [31:0] rs2_data;
 	
 	assign rs = instruction[19:15];
