@@ -40,13 +40,12 @@ int main(int argc, char** argv) {
     tfp->open("build/waveform.fst") ;
 
     reset(10);
-    int count = 4;
-    while (count>0) {
+    for(int i = 0;i < 4;i++) {
     	top->instruction = pmem_read(memory,top->x_pc);
         single_cycle();
         tfp->dump(contextp->time());
         contextp -> timeInc(1);
-        count--;
+        
     }
     tfp -> close();
     return 0;
