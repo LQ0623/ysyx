@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     tfp->open("build/sim.fst") ;
 
     reset_cpu(100);
-    for(int i = 0;i < sizeof(memory)/sizeof(uint32_t);i++) {
+    for(int i = 0;i < sizeof(memory)/sizeof(uint32_t*);i++) {
     	top->instruction = pmem_read(memory,top->x_pc);
         single_cycle();
         tfp->dump(contextp->time());
