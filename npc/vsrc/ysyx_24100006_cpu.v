@@ -22,7 +22,6 @@ module ysyx_24100006_cpu(
 	wire [31:0] rs1_data;
 	/* verilator lint_off UNUSEDSIGNAL */
 	wire [31:0] rs2_data;
-	/* verilator lint_off UNDRIVEN */
 	
 	assign rs = instruction[19:15];
 	assign rt = instruction[24:20];
