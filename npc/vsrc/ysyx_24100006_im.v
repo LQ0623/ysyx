@@ -10,7 +10,7 @@ module ysyx_24100006_im(
     reg [31:0] instructions[1023:0];
     // initial 用于初始化
     initial begin
-        $readmemb("/home/lq/ysyx-workbench/npc/vsrc/inst.txt",instructions);
+        $readmemh("/home/lq/ysyx-workbench/npc/vsrc/inst.txt",instructions);
     end
 
     assign instruction = instructions[pc[11:2]];
