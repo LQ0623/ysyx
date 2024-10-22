@@ -12,7 +12,7 @@ module ysyx_24100006_im(
         $readmemb("inst.txt",instructions);
     end
 
-    assign instruction = instructions[pc[11:0]>>2];
+    assign instruction = instructions[pc[11:2]];
 
 
 endmodule
