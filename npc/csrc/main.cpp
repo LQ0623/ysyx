@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
     for(int i = 0;i < 4;i++) {
     	top->instruction = pmem_read(memory,top->x_pc);
         single_cycle();
+        single_cycle();
         tfp->dump(contextp->time());
         contextp -> timeInc(1);
         
