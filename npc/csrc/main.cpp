@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     top = new Vysyx_24100006_cpu;
 
     top->trace(tfp, 5) ;
-    tfp->open("build/waveform.fst") ;
+    tfp->open("build/sim.fst") ;
 
     reset(10);
     for(int i = 0;i < 4;i++) {
