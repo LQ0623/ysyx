@@ -25,7 +25,7 @@ module ysyx_24100006_cpu(
 	
 	assign rs = instruction[19:15];
 	assign rt = instruction[24:20];
-	ysyx_24100006_RegisterFile registerfile(.clk(clk),.wdata(wdata),.waddr(waddr),.wen(wen),
+	ysyx_24100006_RegisterFile registerfile(.clk(clk),.reset(reset),.wdata(wdata),.waddr(waddr),.wen(wen),
 											.rs1(rs),.rs2(rt),.rs1_data(rs1_data),.rs2_data(rs2_data));
 	
 	wire [31:0] sext_imm;

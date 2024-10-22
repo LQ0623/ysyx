@@ -41,9 +41,19 @@ VL_INLINE_OPT void Vysyx_24100006_cpu___024root___nba_sequent__TOP__0(Vysyx_2410
     if (false && vlSelf) {}  // Prevent unused
     Vysyx_24100006_cpu__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_24100006_cpu___024root___nba_sequent__TOP__0\n"); );
+    // Init
+    CData/*0:0*/ __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0;
+    __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 = 0;
     // Body
+    __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 = 0U;
     if ((1U & (~ (IData)(vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__reset)))) {
         vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__i = 0x20U;
+        __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 = 1U;
+    }
+    vlSelf->ysyx_24100006_cpu__DOT__pc = ((IData)(vlSelf->reset)
+                                           ? vlSelf->ysyx_24100006_cpu__DOT__npc
+                                           : 0x80000000U);
+    if (__Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0) {
         vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf[0U] = 0U;
         vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf[1U] = 0U;
         vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf[2U] = 0U;
@@ -85,9 +95,6 @@ VL_INLINE_OPT void Vysyx_24100006_cpu___024root___nba_sequent__TOP__0(Vysyx_2410
                                                 << 0xcU) 
                                                | (vlSelf->instruction 
                                                   >> 0x14U)));
-    vlSelf->ysyx_24100006_cpu__DOT__pc = ((IData)(vlSelf->reset)
-                                           ? vlSelf->ysyx_24100006_cpu__DOT__npc
-                                           : 0x80000000U);
     vlSelf->x_pc = vlSelf->ysyx_24100006_cpu__DOT__pc;
     vlSelf->ysyx_24100006_cpu__DOT__npc = ((IData)(4U) 
                                            + vlSelf->ysyx_24100006_cpu__DOT__pc);
