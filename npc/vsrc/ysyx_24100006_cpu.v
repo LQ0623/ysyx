@@ -9,6 +9,8 @@ module ysyx_24100006_cpu(
 	ysyx_24100006_pc PC(.clk(clk),.reset(reset),.npc(npc),.pc(pc));
 	ysyx_24100006_npc NPC(.pc(pc),.npc(npc));
 
+	wire [31:0] instruction;
+	ysyx_24100006_im IM(.pc(pc),.instruction(instruction));
 
 	wire wen;
 	assign wen = 0;

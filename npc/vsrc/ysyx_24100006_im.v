@@ -1,7 +1,7 @@
 /**
     模拟指令存储器
 */
-module ysyx_24100006_IM(
+module ysyx_24100006_im(
     input [31:0] pc,
     output [31:0] instruction
 );
