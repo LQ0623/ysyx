@@ -36,10 +36,10 @@ int main(int argc, char** argv) {
     tfp = new VerilatedFstC;
     top = new Vysyx_24100006_cpu;
 
-    top->trace(tfp, 0) ;
+    top->trace(tfp, 5) ;
     tfp->open("build/sim.fst") ;
 
-    reset(10);
+    reset(100);
     for(int i = 0;i < 4;i++) {
     	top->instruction = pmem_read(memory,top->x_pc);
         single_cycle();
