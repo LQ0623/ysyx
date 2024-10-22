@@ -31,5 +31,5 @@ module ysyx_24100006_cpu(
 	// wire [31:0] result;
 	ysyx_24100006_alu alu(.rs_data(rs1_data),.rt_data(sext_imm),.rd_data(result));
 	
-
+	assign x_pc = pc;
 endmodule
