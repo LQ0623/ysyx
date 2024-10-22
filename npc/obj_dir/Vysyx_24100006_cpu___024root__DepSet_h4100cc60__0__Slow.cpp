@@ -27,8 +27,13 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___eval_initial__TOP(Vysyx_2410000
     if (false && vlSelf) {}  // Prevent unused
     Vysyx_24100006_cpu__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_24100006_cpu___024root___eval_initial__TOP\n"); );
+    // Init
+    VlWide<3>/*95:0*/ __Vtemp_hff9c9e2d__0;
     // Body
-    VL_READMEM_N(false, 32, 1024, 0, std::string{"inst.txt"}
+    __Vtemp_hff9c9e2d__0[0U] = 0x2e747874U;
+    __Vtemp_hff9c9e2d__0[1U] = 0x696e7374U;
+    __Vtemp_hff9c9e2d__0[2U] = 0x2e2fU;
+    VL_READMEM_N(false, 32, 1024, 0, VL_CVT_PACK_STR_NW(3, __Vtemp_hff9c9e2d__0)
                  ,  &(vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions)
                  , 0, ~0ULL);
 }
