@@ -35,19 +35,6 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___eval_initial__TOP(Vysyx_2410000
     VL_READMEM_N(true, 32, 1024, 0, VL_CVT_PACK_STR_NW(11, Vysyx_24100006_cpu__ConstPool__CONST_hb47a61ae_0)
                  ,  &(vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions)
                  , 0, ~0ULL);
-    VL_WRITEF("instruction is 0x%0x\ninstruction is 0x%0x\ninstruction is 0x%0x\ninstruction is 0x%0x\ninstruction is 0x%0x\ninstruction is 0x%0x\ninstruction is 0x%0x\ninstruction is 0x%0x\ninstruction is 0x%0x\ninstruction is 0x%0x\n",
-              32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [0U],32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [1U],32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [2U],32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [3U],32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [4U],32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [5U],32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [6U],32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [7U],32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [8U],32,vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
-              [9U]);
-    vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__i = 0xaU;
     vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf[0U] = 0U;
     vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf[1U] = 0U;
     vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf[2U] = 0U;
