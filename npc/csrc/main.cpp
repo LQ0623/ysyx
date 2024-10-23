@@ -23,7 +23,7 @@ static void reset_cpu(int n){
     top->reset = 0;
 }
 
-int main(int argc, char** argv) {
+int main() {
     
     contextp = new VerilatedContext;
     tfp = new VerilatedVcdC;
