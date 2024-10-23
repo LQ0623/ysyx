@@ -21,16 +21,24 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___eval_initial(Vysyx_24100006_cpu
     // Body
     Vysyx_24100006_cpu___024root___eval_initial__TOP(vlSelf);
     vlSelf->__Vtrigrprev__TOP__clk = vlSelf->clk;
+    vlSelf->__Vtrigrprev__TOP__reset = vlSelf->reset;
 }
-
-extern const VlWide<11>/*351:0*/ Vysyx_24100006_cpu__ConstPool__CONST_hb47a61ae_0;
 
 VL_ATTR_COLD void Vysyx_24100006_cpu___024root___eval_initial__TOP(Vysyx_24100006_cpu___024root* vlSelf) {
     if (false && vlSelf) {}  // Prevent unused
     Vysyx_24100006_cpu__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_24100006_cpu___024root___eval_initial__TOP\n"); );
+    // Init
+    VlWide<7>/*223:0*/ __Vtemp_h1ac22a90__0;
     // Body
-    VL_READMEM_N(true, 32, 1024, 0, VL_CVT_PACK_STR_NW(11, Vysyx_24100006_cpu__ConstPool__CONST_hb47a61ae_0)
+    __Vtemp_h1ac22a90__0[0U] = 0x2e747874U;
+    __Vtemp_h1ac22a90__0[1U] = 0x696e7374U;
+    __Vtemp_h1ac22a90__0[2U] = 0x7372632fU;
+    __Vtemp_h1ac22a90__0[3U] = 0x564d2f76U;
+    __Vtemp_h1ac22a90__0[4U] = 0x6172655fU;
+    __Vtemp_h1ac22a90__0[5U] = 0x3a2f5368U;
+    __Vtemp_h1ac22a90__0[6U] = 0x44U;
+    VL_READMEM_N(true, 32, 1024, 0, VL_CVT_PACK_STR_NW(7, __Vtemp_h1ac22a90__0)
                  ,  &(vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions)
                  , 0, ~0ULL);
 }
@@ -117,6 +125,7 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___eval_stl(Vysyx_24100006_cpu___0
     // Body
     if (vlSelf->__VstlTriggered.at(0U)) {
         Vysyx_24100006_cpu___024root___stl_sequent__TOP__0(vlSelf);
+        vlSelf->__Vm_traceActivity[2U] = 1U;
         vlSelf->__Vm_traceActivity[1U] = 1U;
         vlSelf->__Vm_traceActivity[0U] = 1U;
     }
@@ -132,7 +141,10 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___dump_triggers__act(Vysyx_241000
         VL_DBG_MSGF("         No triggers active\n");
     }
     if (vlSelf->__VactTriggered.at(0U)) {
-        VL_DBG_MSGF("         'act' region trigger index 0 is active: @(posedge clk)\n");
+        VL_DBG_MSGF("         'act' region trigger index 0 is active: @(posedge clk or posedge reset)\n");
+    }
+    if (vlSelf->__VactTriggered.at(1U)) {
+        VL_DBG_MSGF("         'act' region trigger index 1 is active: @(posedge clk)\n");
     }
 }
 #endif  // VL_DEBUG
@@ -147,7 +159,10 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___dump_triggers__nba(Vysyx_241000
         VL_DBG_MSGF("         No triggers active\n");
     }
     if (vlSelf->__VnbaTriggered.at(0U)) {
-        VL_DBG_MSGF("         'nba' region trigger index 0 is active: @(posedge clk)\n");
+        VL_DBG_MSGF("         'nba' region trigger index 0 is active: @(posedge clk or posedge reset)\n");
+    }
+    if (vlSelf->__VnbaTriggered.at(1U)) {
+        VL_DBG_MSGF("         'nba' region trigger index 1 is active: @(posedge clk)\n");
     }
 }
 #endif  // VL_DEBUG
@@ -165,8 +180,6 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___ctor_var_reset(Vysyx_24100006_c
     vlSelf->ysyx_24100006_cpu__DOT__npc = VL_RAND_RESET_I(32);
     vlSelf->ysyx_24100006_cpu__DOT__instruction = VL_RAND_RESET_I(32);
     vlSelf->ysyx_24100006_cpu__DOT__rd = VL_RAND_RESET_I(5);
-    vlSelf->ysyx_24100006_cpu__DOT__waddr = VL_RAND_RESET_I(5);
-    vlSelf->ysyx_24100006_cpu__DOT__wdata = VL_RAND_RESET_I(32);
     for (int __Vi0 = 0; __Vi0 < 1024; ++__Vi0) {
         vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions[__Vi0] = VL_RAND_RESET_I(32);
     }
@@ -174,8 +187,13 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___ctor_var_reset(Vysyx_24100006_c
         vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__rf[__Vi0] = VL_RAND_RESET_I(32);
     }
     vlSelf->ysyx_24100006_cpu__DOT__registerfile__DOT__i = VL_RAND_RESET_I(32);
+    vlSelf->__Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 = 0;
+    vlSelf->__Vdlyvdim0__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v32 = 0;
+    vlSelf->__Vdlyvval__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v32 = VL_RAND_RESET_I(32);
+    vlSelf->__Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v32 = 0;
     vlSelf->__Vtrigrprev__TOP__clk = VL_RAND_RESET_I(1);
-    for (int __Vi0 = 0; __Vi0 < 2; ++__Vi0) {
+    vlSelf->__Vtrigrprev__TOP__reset = VL_RAND_RESET_I(1);
+    for (int __Vi0 = 0; __Vi0 < 3; ++__Vi0) {
         vlSelf->__Vm_traceActivity[__Vi0] = 0;
     }
 }

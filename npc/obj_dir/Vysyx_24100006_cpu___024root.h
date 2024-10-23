@@ -16,24 +16,27 @@ class Vysyx_24100006_cpu___024root final : public VerilatedModule {
     VL_IN8(clk,0,0);
     VL_IN8(reset,0,0);
     CData/*4:0*/ ysyx_24100006_cpu__DOT__rd;
-    CData/*4:0*/ ysyx_24100006_cpu__DOT__waddr;
+    CData/*0:0*/ __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0;
+    CData/*4:0*/ __Vdlyvdim0__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v32;
+    CData/*0:0*/ __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v32;
     CData/*0:0*/ __Vtrigrprev__TOP__clk;
+    CData/*0:0*/ __Vtrigrprev__TOP__reset;
     CData/*0:0*/ __VactContinue;
     VL_OUT(result,31,0);
     VL_OUT(x_pc,31,0);
     IData/*31:0*/ ysyx_24100006_cpu__DOT__pc;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__npc;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__instruction;
-    IData/*31:0*/ ysyx_24100006_cpu__DOT__wdata;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__registerfile__DOT__i;
+    IData/*31:0*/ __Vdlyvval__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v32;
     IData/*31:0*/ __VstlIterCount;
     IData/*31:0*/ __VactIterCount;
     VlUnpacked<IData/*31:0*/, 1024> ysyx_24100006_cpu__DOT__IM__DOT__instructions;
     VlUnpacked<IData/*31:0*/, 32> ysyx_24100006_cpu__DOT__registerfile__DOT__rf;
-    VlUnpacked<CData/*0:0*/, 2> __Vm_traceActivity;
+    VlUnpacked<CData/*0:0*/, 3> __Vm_traceActivity;
     VlTriggerVec<1> __VstlTriggered;
-    VlTriggerVec<1> __VactTriggered;
-    VlTriggerVec<1> __VnbaTriggered;
+    VlTriggerVec<2> __VactTriggered;
+    VlTriggerVec<2> __VnbaTriggered;
 
     // INTERNAL VARIABLES
     Vysyx_24100006_cpu__Syms* const vlSymsp;
