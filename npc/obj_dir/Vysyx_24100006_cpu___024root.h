@@ -23,6 +23,7 @@ class Vysyx_24100006_cpu___024root final : public VerilatedModule {
     IData/*31:0*/ ysyx_24100006_cpu__DOT__pc;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__npc;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__instruction;
+    IData/*31:0*/ ysyx_24100006_cpu__DOT__IM__DOT__i;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__registerfile__DOT__i;
     IData/*31:0*/ __VstlIterCount;
     IData/*31:0*/ __VactIterCount;
