@@ -27,21 +27,14 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___eval_initial(Vysyx_24100006_cpu
     vlSelf->__Vtrigrprev__TOP__reset = vlSelf->reset;
 }
 
+extern const VlWide<11>/*351:0*/ Vysyx_24100006_cpu__ConstPool__CONST_hb47a61ae_0;
+
 VL_ATTR_COLD void Vysyx_24100006_cpu___024root___eval_initial__TOP(Vysyx_24100006_cpu___024root* vlSelf) {
     if (false && vlSelf) {}  // Prevent unused
     Vysyx_24100006_cpu__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_24100006_cpu___024root___eval_initial__TOP\n"); );
-    // Init
-    VlWide<7>/*223:0*/ __Vtemp_h1ac22a90__0;
     // Body
-    __Vtemp_h1ac22a90__0[0U] = 0x2e747874U;
-    __Vtemp_h1ac22a90__0[1U] = 0x696e7374U;
-    __Vtemp_h1ac22a90__0[2U] = 0x7372632fU;
-    __Vtemp_h1ac22a90__0[3U] = 0x564d2f76U;
-    __Vtemp_h1ac22a90__0[4U] = 0x6172655fU;
-    __Vtemp_h1ac22a90__0[5U] = 0x3a2f5368U;
-    __Vtemp_h1ac22a90__0[6U] = 0x44U;
-    VL_READMEM_N(true, 32, 1024, 0, VL_CVT_PACK_STR_NW(7, __Vtemp_h1ac22a90__0)
+    VL_READMEM_N(true, 32, 1024, 0, VL_CVT_PACK_STR_NW(11, Vysyx_24100006_cpu__ConstPool__CONST_hb47a61ae_0)
                  ,  &(vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions)
                  , 0, ~0ULL);
     if (vlSelf->reset) {

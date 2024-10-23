@@ -4,6 +4,7 @@
 #include "Vysyx_24100006_cpu___024root__DepSet_hf21933ab__0.cpp"
 #include "Vysyx_24100006_cpu___024root__DepSet_h4100cc60__0.cpp"
 #include "Vysyx_24100006_cpu__Trace__0.cpp"
+#include "Vysyx_24100006_cpu__ConstPool_0.cpp"
 #include "Vysyx_24100006_cpu___024root__Slow.cpp"
 #include "Vysyx_24100006_cpu___024root__DepSet_hf21933ab__0__Slow.cpp"
 #include "Vysyx_24100006_cpu___024root__DepSet_h4100cc60__0__Slow.cpp"
