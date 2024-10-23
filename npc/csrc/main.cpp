@@ -35,7 +35,7 @@ int main() {
     tfp->open("build/sim.vcd") ;
 
     reset_cpu(1);
-    for(int i = 0;i < 5;i++) {
+    for(int i = 0;i < 10;i++) {
         single_cycle();
         // contextp -> timeInc(1);
         
