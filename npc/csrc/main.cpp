@@ -34,7 +34,7 @@ int main() {
     top->trace(tfp, 0) ;
     tfp->open("build/sim.vcd") ;
 
-    reset_cpu(100);
+    reset_cpu(1);
     for(int i = 0;i < 5;i++) {
         single_cycle();
         contextp -> timeInc(1);
