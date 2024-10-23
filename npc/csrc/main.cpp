@@ -4,13 +4,21 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include "Vysyx_24100006_cpu.h"
+#include "Vysyx_24100006_cpu__Dpi.h"
+#include "svdpi.h"
 
 static Vysyx_24100006_cpu *top;
 
 VerilatedContext* contextp = NULL;
 VerilatedVcdC* tfp = NULL;
 
-uint32_t guest_to_host(uint32_t addr);
+static int ebreak = 1;
+
+void is_ebreak(int inst) {
+    if(inst == 1048691){
+        ebreak = 0;
+    }
+}
 
 void single_cycle(){
     top->clk = 0;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
@@ -35,10 +43,8 @@ int main() {
     tfp->open("build/sim.vcd") ;
 
     reset_cpu(1);
-    for(int i = 0;i < 10;i++) {
+    while(ebreak) {
         single_cycle();
-        // contextp -> timeInc(1);
-        
     }
     tfp -> close();
     return 0;

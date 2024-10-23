@@ -1,3 +1,5 @@
+import "DPI-C" function void is_ebreak (input int inst);
+
 module ysyx_24100006_cpu(
 	input clk,
 	input reset,
@@ -38,4 +40,6 @@ module ysyx_24100006_cpu(
 	ysyx_24100006_alu alu(.rs_data(rs1_data),.rt_data(sext_imm),.rd_data(result));
 	
 	assign x_pc = pc;
+
+	is_ebreak(instruction);
 endmodule
