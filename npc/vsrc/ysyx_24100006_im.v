@@ -12,9 +12,9 @@ module ysyx_24100006_im(
     // initial 用于初始化
     initial begin
         $readmemh("/home/lq/ysyx-workbench/npc/vsrc/inst.txt",instructions);
-        for(i = 0;i<10;i = i+1)begin
-            $display("instruction is 0x%0h",instructions[i]);
-        end
+        // for(i = 0;i<10;i = i+1)begin
+        //     $display("instruction is 0x%0h",instructions[i]);
+        // end
     end
 
     assign instruction = instructions[pc[11:2]];
