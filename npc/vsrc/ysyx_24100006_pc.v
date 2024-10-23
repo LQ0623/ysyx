@@ -4,13 +4,12 @@ module ysyx_24100006_pc(
     input[31:0] npc,
     output reg [31:0] pc
 );
-
-    always @(posedge clk) begin
-        if(reset)begin
-            pc <= 32'h80000000;
-        end else begin
-            pc <= npc;
-        end
-    end
+    ysyx_24100006_Reg #(32,32'h80000000) pc1(
+		.clk(clk),
+		.rst(rst),
+		.din(next_pc),
+		.dout(pc),
+		.wen(1'b1)
+	);	
 
 endmodule
