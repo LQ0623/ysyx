@@ -1,4 +1,4 @@
-import "DPI-C" function void is_ebreak (int inst);
+import "DPI-C" function void is_ebreak (input int inst);
 
 module ysyx_24100006_cpu(
 	input clk,
@@ -41,5 +41,7 @@ module ysyx_24100006_cpu(
 	
 	assign x_pc = pc;
 
-	is_ebreak(instruction);
+	always @(*) begin
+		is_ebreak(instruction);
+	end
 endmodule
