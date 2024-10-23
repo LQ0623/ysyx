@@ -37,9 +37,8 @@ int main() {
     reset_cpu(100);
     for(int i = 0;i < 5;i++) {
         single_cycle();
-        tfp->dump(contextp->time());
         contextp -> timeInc(1);
-        
+        tfp->dump(contextp->time());
     }
     tfp -> close();
     return 0;

@@ -56,6 +56,7 @@ sim:
 
 	verilator -Wall --trace --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 
+# verilator -Wall --trace-fst --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 include ../Makefile
 
 
