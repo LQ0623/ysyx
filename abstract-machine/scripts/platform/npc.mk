@@ -27,6 +27,6 @@ image: image-dep
 
 run: insert-arg
 	echo "TODO: add command here to run simulation"
-	$(MAKE) -C $(NEMU_HOME) ISA=$(ISA) run IMG=$(IMAGE).bin
+	$(MAKE) -C $(NEMU_HOME) ISA=$(ISA) run ARGS="$(NEMUFLAGS)" IMG=$(IMAGE).bin
 
 .PHONY: insert-arg
