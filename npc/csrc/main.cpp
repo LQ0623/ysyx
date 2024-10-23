@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "verilated.h"
 #include "verilated_vcd_c.h"
-#include "obj_dir/Vysyx_24100006_cpu.h"
+#include "Vysyx_24100006_cpu.h"
 
 static Vysyx_24100006_cpu *top;
 
