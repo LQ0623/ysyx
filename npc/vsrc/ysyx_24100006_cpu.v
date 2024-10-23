@@ -13,7 +13,7 @@ module ysyx_24100006_cpu(
 	ysyx_24100006_im IM(.pc(pc),.instruction(instruction));
 
 	wire wen;
-	assign wen = 0;
+	assign wen = 1;
 	wire [4:0] rs;
 	wire [4:0] rt;
 	/* verilator lint_off UNDRIVEN */
@@ -24,6 +24,8 @@ module ysyx_24100006_cpu(
 	wire [31:0] rs1_data;
 	wire [31:0] rs2_data;
 	
+	assign waddr = instruction[11:7];
+	assign wdata = result;
 	assign rs = instruction[19:15];
 	assign rt = instruction[24:20];
 	ysyx_24100006_RegisterFile registerfile(.clk(clk),.reset(reset),.wdata(wdata),.waddr(waddr),.wen(wen),

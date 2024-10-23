@@ -1,5 +1,5 @@
 /**
-    模拟指令存储器
+    模拟指令存储�?
 */
 module ysyx_24100006_im(
     /* verilator lint_off UNUSEDSIGNAL */
@@ -8,9 +8,9 @@ module ysyx_24100006_im(
 );
 
     reg [31:0] instructions[1023:0];
-    // initial 用于初始化
+    // initial 用于初始�?
     initial begin
-        $readmemh("/home/lq/ysyx-workbench/npc/vsrc/inst.txt",instructions);
+        $readmemh("D:/Share_VM/vsrc/inst.txt",instructions);
     end
 
     assign instruction = instructions[pc[11:2]];

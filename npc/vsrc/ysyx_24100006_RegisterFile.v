@@ -15,7 +15,7 @@ module ysyx_24100006_RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
   end
 
   integer i;
-  always@(posedge clk)begin
+  always@(posedge clk,posedge reset)begin
     if(reset)begin
       for(i = 0;i < 2**ADDR_WIDTH;i = i + 1)begin
         rf[i] <= 32'b0;
@@ -23,7 +23,7 @@ module ysyx_24100006_RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
     end
   end
 
-  assign rs1_data = rf[rs1];
-  assign rs2_data = rf[rs2];
+    assign rs1_data = rf[rs1];
+    assign rs2_data = rf[rs2];
 
 endmodule

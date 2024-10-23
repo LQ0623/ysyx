@@ -5,7 +5,7 @@ module ysyx_24100006_pc(
     output reg [31:0] pc
 );
 
-    always @(posedge clk) begin
+    always @(posedge clk,posedge reset) begin
         if(reset)begin
             pc <= 32'h80000000;
         end else begin
