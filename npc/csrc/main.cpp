@@ -13,8 +13,8 @@ VerilatedVcdC* tfp = NULL;
 uint32_t guest_to_host(uint32_t addr);
 
 void single_cycle(){
-    top->clk = 0;top->eval();
-    top->clk = 1;top->eval();
+    top->clk = 0;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
+    top->clk = 1;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
 }
 
 static void reset_cpu(int n){
@@ -37,8 +37,8 @@ int main() {
     reset_cpu(1);
     for(int i = 0;i < 5;i++) {
         single_cycle();
-        contextp -> timeInc(1);
-        tfp->dump(contextp->time());
+        // contextp -> timeInc(1);
+        
     }
     tfp -> close();
     return 0;
