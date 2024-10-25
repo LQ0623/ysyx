@@ -38,8 +38,8 @@ module ysyx_24100006_cpu(
 	/* verilator lint_off UNUSEDSIGNAL */
 	
 	assign waddr_reg 	= instruction[11:7];
-	assign rs 		= instruction[19:15];
-	assign rt 		= instruction[24:20];
+	assign rs 			= instruction[19:15];
+	assign rt 			= instruction[24:20];
 
 	// 选择写入寄存器的内容
 	ysyx_24100006_MuxKey#(3,2,32) reg_write_data_mux(wdata_reg,Reg_Write_RD,{
@@ -54,8 +54,19 @@ module ysyx_24100006_cpu(
 	
 	ysyx_24100006_imm_sext imm_sext(.inst(instruction),.Imm_Type(Imm_Type),.sext_imm(sext_imm));
 	
+	wire [31:0] alu_a_data,alu_b_data;
 
-	ysyx_24100006_alu alu(.rs_data(rs1_data),.aluop(aluop),.rt_data(sext_imm),.result(alu_result),.of(of),.cf(cf),.zf(zf));
+	// 选择进入加法器的内容
+	ysyx_24100006_MuxKey#(2,1,32) alu_a_data_mux(alu_a_data,AluSrcA,{
+		1'b0,rs1_data,
+		1'b1,pc
+	});
+	ysyx_24100006_MuxKey#(2,1,32) alu_b_data_mux(alu_b_data,AluSrcB,{
+		1'b0,rs2_data,
+		1'b1,sext_imm
+	});
+
+	ysyx_24100006_alu alu(.rs_data(alu_a_data),.aluop(aluop),.rt_data(alu_b_data),.result(alu_result),.of(of),.cf(cf),.zf(zf));
 	
 	// 这里需要修改，不一定写入的内容就是rs_data
 	ysyx_24100006_mem mem(.clk(clk),.Mem_Write(Mem_Write),.waddr(alu_result),.wdata(rs2_data));
