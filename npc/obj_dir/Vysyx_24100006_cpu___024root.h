@@ -30,6 +30,8 @@ class Vysyx_24100006_cpu___024root final : public VerilatedModule {
     CData/*4:0*/ ysyx_24100006_cpu__DOT__rd;
     CData/*0:0*/ ysyx_24100006_cpu__DOT__reg_write_data_mux__DOT__i0__DOT__hit;
     CData/*0:0*/ ysyx_24100006_cpu__DOT__imm_sext__DOT__imm_mux__DOT__i0__DOT__hit;
+    CData/*0:0*/ ysyx_24100006_cpu__DOT__alu_a_data_mux__DOT__i0__DOT__hit;
+    CData/*0:0*/ ysyx_24100006_cpu__DOT__alu_b_data_mux__DOT__i0__DOT__hit;
     CData/*0:0*/ ysyx_24100006_cpu__DOT__alu__DOT__alumux__DOT__i0__DOT__hit;
     CData/*0:0*/ __Vtrigrprev__TOP__clk;
     CData/*0:0*/ __VactContinue;
@@ -40,11 +42,16 @@ class Vysyx_24100006_cpu___024root final : public VerilatedModule {
     IData/*31:0*/ ysyx_24100006_cpu__DOT__instruction;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__wdata_reg;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__rs1_data;
+    IData/*31:0*/ ysyx_24100006_cpu__DOT__rs2_data;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__alu_result;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__sext_imm;
+    IData/*31:0*/ ysyx_24100006_cpu__DOT__alu_a_data;
+    IData/*31:0*/ ysyx_24100006_cpu__DOT__alu_b_data;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__reg_write_data_mux__DOT__i0__DOT__lut_out;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__registerfile__DOT__i;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__imm_sext__DOT__imm_mux__DOT__i0__DOT__lut_out;
+    IData/*31:0*/ ysyx_24100006_cpu__DOT__alu_a_data_mux__DOT__i0__DOT__lut_out;
+    IData/*31:0*/ ysyx_24100006_cpu__DOT__alu_b_data_mux__DOT__i0__DOT__lut_out;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__alu__DOT__complement;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__alu__DOT__add_sub_result;
     IData/*31:0*/ ysyx_24100006_cpu__DOT__alu__DOT__alumux__DOT__i0__DOT__lut_out;
@@ -59,6 +66,12 @@ class Vysyx_24100006_cpu___024root final : public VerilatedModule {
     VlUnpacked<QData/*34:0*/, 5> ysyx_24100006_cpu__DOT__imm_sext__DOT__imm_mux__DOT__i0__DOT__pair_list;
     VlUnpacked<CData/*2:0*/, 5> ysyx_24100006_cpu__DOT__imm_sext__DOT__imm_mux__DOT__i0__DOT__key_list;
     VlUnpacked<IData/*31:0*/, 5> ysyx_24100006_cpu__DOT__imm_sext__DOT__imm_mux__DOT__i0__DOT__data_list;
+    VlUnpacked<QData/*32:0*/, 2> ysyx_24100006_cpu__DOT__alu_a_data_mux__DOT__i0__DOT__pair_list;
+    VlUnpacked<CData/*0:0*/, 2> ysyx_24100006_cpu__DOT__alu_a_data_mux__DOT__i0__DOT__key_list;
+    VlUnpacked<IData/*31:0*/, 2> ysyx_24100006_cpu__DOT__alu_a_data_mux__DOT__i0__DOT__data_list;
+    VlUnpacked<QData/*32:0*/, 2> ysyx_24100006_cpu__DOT__alu_b_data_mux__DOT__i0__DOT__pair_list;
+    VlUnpacked<CData/*0:0*/, 2> ysyx_24100006_cpu__DOT__alu_b_data_mux__DOT__i0__DOT__key_list;
+    VlUnpacked<IData/*31:0*/, 2> ysyx_24100006_cpu__DOT__alu_b_data_mux__DOT__i0__DOT__data_list;
     VlUnpacked<QData/*35:0*/, 2> ysyx_24100006_cpu__DOT__alu__DOT__alumux__DOT__i0__DOT__pair_list;
     VlUnpacked<CData/*3:0*/, 2> ysyx_24100006_cpu__DOT__alu__DOT__alumux__DOT__i0__DOT__key_list;
     VlUnpacked<IData/*31:0*/, 2> ysyx_24100006_cpu__DOT__alu__DOT__alumux__DOT__i0__DOT__data_list;
