@@ -18,10 +18,6 @@ extern "C" {
     // DPI IMPORTS
     // DPI import at /home/lq/ysyx-workbench/npc/vsrc/ID/ysyx_24100006_controller.v:69:30
     extern void npc_trap();
-    // DPI import at /home/lq/ysyx-workbench/npc/vsrc/MEM/ysyx_24100006_mem.v:8:33
-    extern int pmem_read(int raddr);
-    // DPI import at /home/lq/ysyx-workbench/npc/vsrc/MEM/ysyx_24100006_mem.v:9:34
-    extern void pmem_write(int waddr, int wdata);
 
 #ifdef __cplusplus
 }

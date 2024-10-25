@@ -8,30 +8,6 @@
 #include "Vysyx_24100006_cpu__Syms.h"
 #include "Vysyx_24100006_cpu___024root.h"
 
-extern "C" int pmem_read(int raddr);
-
-VL_INLINE_OPT void Vysyx_24100006_cpu___024root____Vdpiimwrap_ysyx_24100006_cpu__DOT__mem__DOT__pmem_read_TOP(IData/*31:0*/ raddr, IData/*31:0*/ &pmem_read__Vfuncrtn) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_24100006_cpu___024root____Vdpiimwrap_ysyx_24100006_cpu__DOT__mem__DOT__pmem_read_TOP\n"); );
-    // Body
-    int raddr__Vcvt;
-    for (size_t raddr__Vidx = 0; raddr__Vidx < 1; ++raddr__Vidx) raddr__Vcvt = raddr;
-    int pmem_read__Vfuncrtn__Vcvt;
-    pmem_read__Vfuncrtn__Vcvt = pmem_read(raddr__Vcvt);
-    pmem_read__Vfuncrtn = pmem_read__Vfuncrtn__Vcvt;
-}
-
-extern "C" void pmem_write(int waddr, int wdata);
-
-VL_INLINE_OPT void Vysyx_24100006_cpu___024root____Vdpiimwrap_ysyx_24100006_cpu__DOT__mem__DOT__pmem_write_TOP(IData/*31:0*/ waddr, IData/*31:0*/ wdata) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_24100006_cpu___024root____Vdpiimwrap_ysyx_24100006_cpu__DOT__mem__DOT__pmem_write_TOP\n"); );
-    // Body
-    int waddr__Vcvt;
-    for (size_t waddr__Vidx = 0; waddr__Vidx < 1; ++waddr__Vidx) waddr__Vcvt = waddr;
-    int wdata__Vcvt;
-    for (size_t wdata__Vidx = 0; wdata__Vidx < 1; ++wdata__Vidx) wdata__Vcvt = wdata;
-    pmem_write(waddr__Vcvt, wdata__Vcvt);
-}
-
 #ifdef VL_DEBUG
 VL_ATTR_COLD void Vysyx_24100006_cpu___024root___dump_triggers__act(Vysyx_24100006_cpu___024root* vlSelf);
 #endif  // VL_DEBUG
@@ -65,9 +41,6 @@ VL_INLINE_OPT void Vysyx_24100006_cpu___024root___nba_sequent__TOP__0(Vysyx_2410
     CData/*0:0*/ __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0;
     __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 = 0;
     // Body
-    if (vlSelf->ysyx_24100006_cpu__DOT__Mem_Write) {
-        Vysyx_24100006_cpu___024root____Vdpiimwrap_ysyx_24100006_cpu__DOT__mem__DOT__pmem_write_TOP(vlSelf->ysyx_24100006_cpu__DOT__alu_result, vlSelf->ysyx_24100006_cpu__DOT__rs2_data);
-    }
     __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 = 0U;
     if (vlSelf->ysyx_24100006_cpu__DOT__Reg_Write) {
         __Vdlyvval__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 

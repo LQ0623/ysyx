@@ -1,3 +1,4 @@
+/* verilator lint_off UNUSEDSIGNAL */
 module ysyx_24100006_mem(
     input clk,
     input Mem_Write,
@@ -14,3 +15,4 @@ module ysyx_24100006_mem(
     // end
 
 endmodule
+/* verilator lint_off UNUSEDSIGNAL */
