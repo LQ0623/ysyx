@@ -2,8 +2,8 @@
     输出一些控制信号
 */
 
-`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_24100006_ctrl_define.vh"
-`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_24100006_inst_define.vh"
+`include "../define/ysyx_24100006_ctrl_define.vh"
+`include "../define/ysyx_24100006_inst_define.vh"
 
 
 import "DPI-C" function void npc_trap ();

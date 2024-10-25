@@ -1,5 +1,5 @@
 
-`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_24100006_ctrl_define.vh"
+`include "../define/ysyx_24100006_ctrl_define.vh"
 
 module ysyx_24100006_npc(
     input[31:0]     pc,
