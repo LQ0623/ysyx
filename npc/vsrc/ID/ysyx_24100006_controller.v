@@ -73,20 +73,20 @@ module ysyx_24100006_controller(
     input [2:0]funct3,
     input [6:0]funct7,
 
-    output [3:0]aluop,
+    output reg [3:0]aluop,
     /* 写寄存器 */
-    output Reg_Write,
+    output reg Reg_Write,
     /* 写回寄存器的内容 */
-    output[1:0] Reg_Write_RD,
+    output reg [1:0] Reg_Write_RD,
     /* pc的跳转类型 */
-    output [3:0] Jump,
+    output reg [3:0] Jump,
     /* 立即数的种类 */
     output [2:0] Imm_Type,
     /* 源操作数的种类 */
-    output AluSrcA,
-    output AluSrcB,
+    output reg AluSrcA,
+    output reg AluSrcB,
     /* 是否写内存 */
-    output Mem_Write
+    output reg Mem_Write
 );
 
     always @(*) begin
