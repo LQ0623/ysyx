@@ -49,7 +49,7 @@ sim:
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
 
-	verilator -I /home/lq/ysyx-workbench/npc/vsrc/define/ysyx_2410000_inst_define.v /home/lq/ysyx-workbench/npc/vsrc/define/ysyx_2410000_ctrl_define.v -Wall --trace --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
+	verilator -I ./define -I ./EX -I ./ID -I ./IF -I ./MEM -I ./template -Wall --trace --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 
 # verilator -Wall --trace-fst --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 include ../Makefile
