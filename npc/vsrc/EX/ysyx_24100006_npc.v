@@ -1,5 +1,5 @@
 /* verilator lint_off INCABSPATH */
-`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_2410000_ctrl_define.h"
+`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_2410000_ctrl_define.h";
 /* verilator lint_off INCABSPATH */
 // 控制信号宏定义
 // // REG_WRITE
