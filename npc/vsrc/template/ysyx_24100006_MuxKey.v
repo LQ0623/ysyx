@@ -1,5 +1,4 @@
 // 选择器模板内部实现
-/* verilator lint_off DECLFILENAME */
 module ysyx_24100006_MuxKeyInternal #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1, HAS_DEFAULT = 0) (
   output reg [DATA_LEN-1:0] out,
   input [KEY_LEN-1:0] key,
@@ -54,4 +53,3 @@ module ysyx_24100006_MuxKeyWithDefault #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) 
 );
   ysyx_23060171_MuxKeyInternal #(NR_KEY, KEY_LEN, DATA_LEN, 1) i0 (out, key, default_out, lut);
 endmodule
-/* verilator lint_off DECLFILENAME */

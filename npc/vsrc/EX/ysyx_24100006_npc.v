@@ -38,7 +38,7 @@
 
 module ysyx_24100006_npc(
     input[31:0]     pc,
-    input[1:0]      Skip_mode,
+    input[4:0]      Skip_mode,
     input[31:0]     sext_imm,
     input[31:0]     rs_data,
     input           zf,         // 判断rs_data是否等于rt_data，相等就会为1

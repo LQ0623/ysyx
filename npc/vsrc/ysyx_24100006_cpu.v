@@ -48,7 +48,7 @@ module ysyx_24100006_cpu(
 		2'b10,(pc+4)
 	});
 
-	ysyx_24100006_RegisterFile registerfile(.clk(clk),.wdata(wdata_reg),.waddr(wdata_reg),.wen(Reg_Write),
+	ysyx_24100006_RegisterFile registerfile(.clk(clk),.wdata(wdata_reg),.waddr(waddr_reg),.wen(Reg_Write),
 											.rs1(rs),.rs2(rt),.rs1_data(rs1_data),.rs2_data(rs2_data));
 	
 	
