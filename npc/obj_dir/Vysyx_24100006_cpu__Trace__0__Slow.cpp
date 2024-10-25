@@ -351,7 +351,8 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root__trace_full_sub_0(Vysyx_24100006_
                                                        != vlSelf->ysyx_24100006_cpu__DOT__alu_result))) 
                                            & (3U == (IData)(vlSelf->ysyx_24100006_cpu__DOT__Jump)))
                                            ? vlSelf->ysyx_24100006_cpu__DOT__NPC__DOT____VdfgTmp_hc1f7d439__0
-                                           : 0U))))),32);
+                                           : ((IData)(4U) 
+                                              + vlSelf->ysyx_24100006_cpu__DOT__pc)))))),32);
     bufp->fullIData(oldp+18,(vlSelf->ysyx_24100006_cpu__DOT__instruction),32);
     bufp->fullCData(oldp+19,(vlSelf->ysyx_24100006_cpu__DOT__aluop),4);
     bufp->fullBit(oldp+20,(vlSelf->ysyx_24100006_cpu__DOT__Reg_Write));

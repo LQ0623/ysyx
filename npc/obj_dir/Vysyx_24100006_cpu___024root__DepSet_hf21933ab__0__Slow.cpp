@@ -589,7 +589,9 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___stl_sequent__TOP__0(Vysyx_24100
                                                      & (3U 
                                                         == (IData)(vlSelf->ysyx_24100006_cpu__DOT__Jump)))
                                                      ? vlSelf->ysyx_24100006_cpu__DOT__NPC__DOT____VdfgTmp_hc1f7d439__0
-                                                     : 0U))));
+                                                     : 
+                                                    ((IData)(4U) 
+                                                     + vlSelf->ysyx_24100006_cpu__DOT__pc)))));
     vlSelf->ysyx_24100006_cpu__DOT__reg_write_data_mux__DOT__i0__DOT__data_list[1U] 
         = vlSelf->ysyx_24100006_cpu__DOT__alu_result;
     vlSelf->ysyx_24100006_cpu__DOT__reg_write_data_mux__DOT__i0__DOT__lut_out 

@@ -61,7 +61,8 @@ void Vysyx_24100006_cpu___024root__trace_chg_sub_0(Vysyx_24100006_cpu___024root*
                                               & (3U 
                                                  == (IData)(vlSelf->ysyx_24100006_cpu__DOT__Jump)))
                                               ? vlSelf->ysyx_24100006_cpu__DOT__NPC__DOT____VdfgTmp_hc1f7d439__0
-                                              : 0U))))),32);
+                                              : ((IData)(4U) 
+                                                 + vlSelf->ysyx_24100006_cpu__DOT__pc)))))),32);
         bufp->chgIData(oldp+17,(vlSelf->ysyx_24100006_cpu__DOT__instruction),32);
         bufp->chgCData(oldp+18,(vlSelf->ysyx_24100006_cpu__DOT__aluop),4);
         bufp->chgBit(oldp+19,(vlSelf->ysyx_24100006_cpu__DOT__Reg_Write));

@@ -1,4 +1,4 @@
-
+/* verilator lint_off INCABSPATH */
 `include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_2410000_ctrl_define.h"
 
 // 控制信号宏定义
