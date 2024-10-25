@@ -14,10 +14,10 @@ VerilatedVcdC* tfp = NULL;
 
 static int ebreak = 1;
 
-void is_ebreak(int inst) {
-    if(inst == 1048691){
-        ebreak = 0;
-    }
+void npc_trap() {
+    single_cycle();
+    tfp -> close();
+    exit(0);
 }
 
 void single_cycle(){

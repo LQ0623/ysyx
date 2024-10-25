@@ -7,9 +7,17 @@ module ysyx_24100006_im(
     output [31:0] instruction
 );
 
-    import "DPI-C" function int pmem_read(input int raddr);
-    always@(*)begin
-        inst = pmem_read(pc);
+    // import "DPI-C" function int pmem_read(input int raddr);
+    // always@(*)begin
+    //     inst = pmem_read(pc);
+    // end
+
+    reg [31:0] instructions[1023:0];
+    // initial 用于初始�?
+    initial begin
+        $readmemh("D:/Share_VM/vsrc/inst.txt",instructions);
     end
+
+    assign instruction = instructions[pc[11:2]];
 
 endmodule

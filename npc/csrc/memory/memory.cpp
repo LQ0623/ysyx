@@ -31,3 +31,19 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 
 	return *inst_paddr;
 }
+
+extern "C" void pmem_write(int waddr, int wdata){
+	if(!(waddr >= 0x80000000 && waddr <= 0x87ffffff)) 
+		return ;
+	
+	
+	uint8_t *vaddr = guest_to_host(waddr);
+	uint8_t *iaddr;
+	int i;
+	int j;
+	for(i = 0,j = 0;i < 4;i++){
+		iaddr = vaddr + i;
+		*iaddr = (wdata >> (j * 8)) & 0xFF;
+		j++;
+	}
+}
