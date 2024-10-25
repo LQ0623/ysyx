@@ -2,10 +2,9 @@
     输出一些控制信号
 */
 
-/* verilator lint_off INCABSPATH */
-`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_24100006_ctrl_define.v"
-`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_24100006_inst_define.v"
-/* verilator lint_off INCABSPATH */
+`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_24100006_ctrl_define.vh"
+`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_24100006_inst_define.vh"
+
 
 import "DPI-C" function void npc_trap ();
 

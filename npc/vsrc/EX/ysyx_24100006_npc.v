@@ -1,6 +1,6 @@
-/* verilator lint_off INCABSPATH */
-`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_24100006_ctrl_define.v"
-/* verilator lint_off INCABSPATH */
+
+`include "/home/lq/ysyx-workbench/npc/vsrc/define/ysyx_24100006_ctrl_define.vh"
+
 module ysyx_24100006_npc(
     input[31:0]     pc,
     input[1:0]      Skip_mode,
