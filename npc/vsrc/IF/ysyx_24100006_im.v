@@ -13,7 +13,7 @@ module ysyx_24100006_im(
     // end
 
     reg [31:0] instructions[1023:0];
-    // initial 用于初始�?
+    // initial 用于初始化
     initial begin
         $readmemh("/home/lq/ysyx-workbench/npc/vsrc/inst.txt",instructions);
     end
