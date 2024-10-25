@@ -81,7 +81,7 @@ module ysyx_24100006_controller(
     /* pc的跳转类型 */
     output reg [3:0] Jump,
     /* 立即数的种类 */
-    output [2:0] Imm_Type,
+    output reg [2:0] Imm_Type,
     /* 源操作数的种类 */
     output reg AluSrcA,
     output reg AluSrcB,
