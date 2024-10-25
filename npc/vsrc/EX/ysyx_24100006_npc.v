@@ -1,5 +1,5 @@
 
-`include "ysyx_24100006_ctrl_define.h"
+`include "../define/ysyx_24100006_ctrl_define.h"
 
 // 控制信号宏定义
 // // REG_WRITE
