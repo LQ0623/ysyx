@@ -1,4 +1,4 @@
-`include "./define/*.vh"
+`include "./define/*.v"
 `include "./EX/*.v"
 `include "./ID/*.v"
 `include "./IF/*.v"
