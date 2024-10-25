@@ -54,7 +54,7 @@ module ysyx_24100006_cpu(
 	ysyx_24100006_imm_sext imm_sext(.inst(instruction),.Imm_Type(Imm_Type),.sext_imm(sext_imm));
 	
 
-	ysyx_24100006_alu alu(.rs_data(rs1_data),.aluop(aluop),.rt_data(sext_imm),.result(alu_result).of(of),.cf(cf),.zf(zf));
+	ysyx_24100006_alu alu(.rs_data(rs1_data),.aluop(aluop),.rt_data(sext_imm),.result(alu_result),.of(of),.cf(cf),.zf(zf));
 	
 	// 这里需要修改，不一定写入的内容就是rs_data
 	ysyx_24100006_mem mem(.clk(clk),.Mem_Write(Mem_Write),.waddr(alu_result),.wdata(rs2_data));
