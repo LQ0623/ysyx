@@ -43,7 +43,7 @@ int main() {
     tfp->open("build/sim.vcd") ;
 
     reset_cpu(1);
-    while(ebreak) {
+    while(1) {
         single_cycle();
     }
     tfp -> close();
