@@ -1,5 +1,5 @@
 
-`include "../define/ysyx_24100006_ctrl_define.vh"
+`include "ysyx_24100006_ctrl_define.vh"
 
 module ysyx_24100006_npc(
     input[31:0]     pc,

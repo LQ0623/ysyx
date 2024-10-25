@@ -1,3 +1,10 @@
+`include "./define/*.vh"
+`include "./EX/*.v"
+`include "./ID/*.v"
+`include "./IF/*.v"
+`include "./MEM/*.v"
+
+
 module ysyx_24100006_cpu(
 	input clk,
 	input reset,
