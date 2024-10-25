@@ -215,9 +215,18 @@ module ysyx_24100006_controller(
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                     end
+                    default: begin
+                        Jump            = `ysyx_24100006_NJUMP;
+                        Reg_Write       = `ysyx_24100006_REGNW;
+                        Mem_Write       = `ysyx_24100006_MEMNW;
+                    end
                 endcase
             end
-
+            default: begin
+                Jump            = `ysyx_24100006_NJUMP;
+                Reg_Write       = `ysyx_24100006_REGNW;
+                Mem_Write       = `ysyx_24100006_MEMNW;
+            end
         endcase
     end
 
