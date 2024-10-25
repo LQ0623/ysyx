@@ -14,15 +14,15 @@ VerilatedVcdC* tfp = NULL;
 
 static int ebreak = 1;
 
-void npc_trap() {
-    single_cycle();
-    tfp -> close();
-    exit(0);
-}
-
 void single_cycle(){
     top->clk = 0;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
     top->clk = 1;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
+}
+
+extern "C"  void npc_trap() {
+    single_cycle();
+    tfp -> close();
+    exit(0);
 }
 
 static void reset_cpu(int n){
