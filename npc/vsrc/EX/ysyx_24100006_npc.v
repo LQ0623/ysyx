@@ -45,10 +45,10 @@ module ysyx_24100006_npc(
     output[31:0]    npc
 );
 
-    assign npc  =   (Jump == `ysyx_24100006_NJUMP)? (pc + 4):
-                    (Jump == `ysyx_24100006_JAL)?   (pc + sext_imm):
-                    (Jump == `ysyx_24100006_JALR)?  ((rs_data+ imm_sext) & (~32'b1)):
-                    (Jump == `ysyx_24100006_JBEQ && zf == 1'b1)?  (pc + sext_imm) : 0;  // 这个需要单独的一个信号来控制
+    assign npc  =   (Skip_mode == `ysyx_24100006_NJUMP)? (pc + 4):
+                    (Skip_mode == `ysyx_24100006_JAL)?   (pc + sext_imm):
+                    (Skip_mode == `ysyx_24100006_JALR)?  ((rs_data+ imm_sext) & (~32'b1)):
+                    (Skip_mode == `ysyx_24100006_JBEQ && zf == 1'b1)?  (pc + sext_imm) : 0;  // 这个需要单独的一个信号来控制
 
 endmodule
 

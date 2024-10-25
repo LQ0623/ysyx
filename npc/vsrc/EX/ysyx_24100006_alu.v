@@ -11,11 +11,11 @@ module ysyx_24100006_alu(
     wire[31:0] complement;  // 补码
     wire[31:0] add_sub_result;
 
-    assign b2 = rt_data^{32{alucontrol[0]}};
+    assign complement = rt_data^{32{aluop[0]}};
 	/* verilator lint_off WIDTHEXPAND */
-	assign {cf,add_sub_result} = rs_data + b2 + alucontrol[0];
+	assign {cf,add_sub_result} = rs_data + complement + aluop[0];
 	/* verilator lint_off WIDTHEXPAND */
-    assign of = (~(rs_data[31]^b2[31]))&(rs_data[31]^add_sub_result[31]);
+    assign of = (~(rs_data[31]^complement[31]))&(rs_data[31]^add_sub_result[31]);
 
 
     ysyx_24100006_MuxKey #(2,4,32)  alumux(result,aluop,{

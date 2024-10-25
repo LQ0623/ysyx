@@ -33,6 +33,7 @@ module ysyx_24100006_cpu(
 	wire [31:0] rs2_data;
 	wire [31:0] alu_result;
 	wire [31:0] sext_imm;
+	wire of,zf,cf;
 	/* verilator lint_off UNDRIVEN */
 	/* verilator lint_off UNUSEDSIGNAL */
 	
