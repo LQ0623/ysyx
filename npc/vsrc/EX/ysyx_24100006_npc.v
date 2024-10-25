@@ -1,3 +1,4 @@
+`include "../define/ysyx_24100006_ctrl_define.v"
 module ysyx_24100006_npc(
     input[31:0]     pc,
     input[1:0]      Skip_mode,
