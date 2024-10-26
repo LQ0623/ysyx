@@ -15,8 +15,8 @@ VerilatedVcdC* tfp = NULL;
 static int ebreak = 1;
 
 void single_cycle(){
-    top->clk = 0;top->eval();contextp -> timeInc(1);
-    top->clk = 1;top->eval();contextp -> timeInc(1);
+    top->clk = 0;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
+    top->clk = 1;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
 }
 
 extern "C"  void npc_trap() {
