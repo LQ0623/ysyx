@@ -22,7 +22,7 @@ void single_cycle(){
 extern "C"  void npc_trap() {
     single_cycle();
     tfp -> close();
-    ebreak = 0；
+    ebreak = 0;
 }
 
 static void reset_cpu(int n){
