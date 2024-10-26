@@ -20,10 +20,6 @@ void single_cycle(){
 }
 
 extern "C"  void npc_trap() {
-    single_cycle();
-    // single_cycle();
-    tfp -> close();
-    printf("asdadasdad\n");
     ebreak = 0;
 }
 
