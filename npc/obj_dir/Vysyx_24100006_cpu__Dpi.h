@@ -16,7 +16,7 @@ extern "C" {
 
 
     // DPI IMPORTS
-    // DPI import at /home/lq/ysyx-workbench/npc/vsrc/ID/ysyx_24100006_controller.v:69:30
+    // DPI import at /home/lq/ysyx-workbench/npc/vsrc/ysyx_24100006_cpu.v:1:30
     extern void npc_trap();
 
 #ifdef __cplusplus

@@ -21,7 +21,6 @@ class Vysyx_24100006_cpu___024root final : public VerilatedModule {
     VL_IN8(reset,0,0);
     CData/*3:0*/ ysyx_24100006_cpu__DOT__aluop;
     CData/*0:0*/ ysyx_24100006_cpu__DOT__Reg_Write;
-    CData/*0:0*/ ysyx_24100006_cpu__DOT__Mem_Write;
     CData/*1:0*/ ysyx_24100006_cpu__DOT__Reg_Write_RD;
     CData/*3:0*/ ysyx_24100006_cpu__DOT__Jump;
     CData/*2:0*/ ysyx_24100006_cpu__DOT__Imm_Type;

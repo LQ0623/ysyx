@@ -115,7 +115,7 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___eval_settle(Vysyx_24100006_cpu_
 #ifdef VL_DEBUG
                 Vysyx_24100006_cpu___024root___dump_triggers__stl(vlSelf);
 #endif
-                VL_FATAL_MT("/home/lq/ysyx-workbench/npc/vsrc/ysyx_24100006_cpu.v", 1, "", "Settle region did not converge.");
+                VL_FATAL_MT("/home/lq/ysyx-workbench/npc/vsrc/ysyx_24100006_cpu.v", 2, "", "Settle region did not converge.");
             }
             vlSelf->__VstlIterCount = ((IData)(1U) 
                                        + vlSelf->__VstlIterCount);
@@ -197,7 +197,6 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___ctor_var_reset(Vysyx_24100006_c
     vlSelf->ysyx_24100006_cpu__DOT__instruction = VL_RAND_RESET_I(32);
     vlSelf->ysyx_24100006_cpu__DOT__aluop = VL_RAND_RESET_I(4);
     vlSelf->ysyx_24100006_cpu__DOT__Reg_Write = VL_RAND_RESET_I(1);
-    vlSelf->ysyx_24100006_cpu__DOT__Mem_Write = VL_RAND_RESET_I(1);
     vlSelf->ysyx_24100006_cpu__DOT__Reg_Write_RD = VL_RAND_RESET_I(2);
     vlSelf->ysyx_24100006_cpu__DOT__Jump = VL_RAND_RESET_I(4);
     vlSelf->ysyx_24100006_cpu__DOT__Imm_Type = VL_RAND_RESET_I(3);
