@@ -79,10 +79,13 @@ module ysyx_24100006_cpu(
 	assign x_result 	= alu_result;
 	
 	always@(*)begin
-		$display("instruction_opcode is %x\n",instruction[6:0]);
 		if(instruction[6:0] == 7'b1110011)begin
 			npc_trap();
 		end
+	end
+
+	always @(posedge clk) begin
+		$display("instruction_opcode is %x\n",instruction[6:0]);
 	end
 
 endmodule
