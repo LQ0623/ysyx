@@ -21,6 +21,7 @@ void single_cycle(){
 
 extern "C"  void npc_trap() {
     single_cycle();
+    single_cycle();
     tfp -> close();
     ebreak = 0;
 }
