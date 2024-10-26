@@ -11,7 +11,7 @@ module ysyx_24100006_cpu(
 
 	wire [31:0] instruction;
 	ysyx_24100006_im IM(.pc(pc),.instruction(instruction));
-
+	$display("instruction_opcode is %x\n",instruction[6:0]);
 	wire [3:0] aluop;
 	wire Reg_Write,Mem_Write;
 	wire [1:0] Reg_Write_RD;
