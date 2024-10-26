@@ -22,7 +22,7 @@ void single_cycle(){
 extern "C"  void npc_trap() {
     single_cycle();
     tfp -> close();
-    exit(0);
+    ebreak = 0；
 }
 
 static void reset_cpu(int n){
@@ -43,7 +43,7 @@ int main() {
     tfp->open("build/sim.vcd") ;
 
     reset_cpu(1);
-    while(1) {
+    while(ebreak) {
         single_cycle();
     }
     tfp -> close();
