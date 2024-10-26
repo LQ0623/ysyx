@@ -1,4 +1,4 @@
-import "DPI-C" function void npc_trap ();
+// import "DPI-C" function void npc_trap ();
 module ysyx_24100006_cpu(
 	input clk,
 	input reset,
@@ -78,11 +78,11 @@ module ysyx_24100006_cpu(
 	assign x_pc 		= pc;
 	assign x_result 	= alu_result;
 	
-	always@(*)begin
-		if(instruction[6:0] == 7'b1110011)begin
-			npc_trap();
-		end
-	end
+	// always@(*)begin
+	// 	if(instruction[6:0] == 7'b1110011)begin
+	// 		npc_trap();
+	// 	end
+	// end
 
 	always @(posedge clk) begin
 		$display("instruction_opcode is %x\n",instruction[6:0]);

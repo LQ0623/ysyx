@@ -66,7 +66,7 @@
 `define ysyx_24100006_beq                 3'b000
 
 
-// import "DPI-C" function void npc_trap ();
+import "DPI-C" function void npc_trap ();
 
 module ysyx_24100006_controller(
     input [6:0]opcode,
@@ -91,9 +91,9 @@ module ysyx_24100006_controller(
 
     always @(*) begin
         case(opcode)
-            // `ysyx_24100006_SYSTEM: begin
-            //     npc_trap();
-			// end
+            `ysyx_24100006_SYSTEM: begin
+                npc_trap();
+			end
             `ysyx_24100006_auipc: begin
                 Jump            = `ysyx_24100006_NJUMP;
                 Imm_Type        = `ysyx_24100006_U_TYPE_IMM;
