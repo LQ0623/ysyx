@@ -66,7 +66,7 @@
 `define ysyx_24100006_beq                 3'b000
 
 
-import "DPI-C" function void npc_trap ();
+// import "DPI-C" function void npc_trap ();
 
 module ysyx_24100006_controller(
     input [6:0]opcode,
