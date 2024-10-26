@@ -44,7 +44,9 @@ int main() {
     tfp->open("build/sim.vcd") ;
 
     reset_cpu(1);
+    int count = 0;
     while(ebreak) {
+        printf("count is %d\n",count++);
         single_cycle();
     }
     tfp -> close();
