@@ -45,8 +45,6 @@ VL_ATTR_COLD void Vysyx_24100006_cpu___024root___stl_sequent__TOP__0(Vysyx_24100
     vlSelf->ysyx_24100006_cpu__DOT__instruction = vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
         [(0x3ffU & (vlSelf->ysyx_24100006_cpu__DOT__pc 
                     >> 2U))];
-    VL_WRITEF("instruction_opcode is %x\n\n",7,(0x7fU 
-                                                & vlSelf->ysyx_24100006_cpu__DOT__instruction));
     if ((0x73U == (0x7fU & vlSelf->ysyx_24100006_cpu__DOT__instruction))) {
         Vysyx_24100006_cpu___024unit____Vdpiimwrap_npc_trap_TOP____024unit();
     }

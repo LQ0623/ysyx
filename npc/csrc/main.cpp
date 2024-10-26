@@ -15,14 +15,14 @@ VerilatedVcdC* tfp = NULL;
 static int ebreak = 1;
 
 void single_cycle(){
-    top->clk = 0;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
-    top->clk = 1;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
+    top->clk = 0;top->eval();contextp -> timeInc(1);
+    top->clk = 1;top->eval();contextp -> timeInc(1);
 }
 
 extern "C"  void npc_trap() {
-    single_cycle();
-    single_cycle();
-    tfp -> close();
+    // single_cycle();
+    // single_cycle();
+    // tfp -> close();
     printf("asdadasdad\n");
     ebreak = 0;
 }

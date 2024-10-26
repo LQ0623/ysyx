@@ -41,6 +41,8 @@ VL_INLINE_OPT void Vysyx_24100006_cpu___024root___nba_sequent__TOP__0(Vysyx_2410
     CData/*0:0*/ __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0;
     __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 = 0;
     // Body
+    VL_WRITEF("instruction_opcode is %x\n\n",7,(0x7fU 
+                                                & vlSelf->ysyx_24100006_cpu__DOT__instruction));
     __Vdlyvset__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 = 0U;
     if (vlSelf->ysyx_24100006_cpu__DOT__Reg_Write) {
         __Vdlyvval__ysyx_24100006_cpu__DOT__registerfile__DOT__rf__v0 
@@ -71,8 +73,6 @@ VL_INLINE_OPT void Vysyx_24100006_cpu___024root___nba_sequent__TOP__0(Vysyx_2410
     vlSelf->ysyx_24100006_cpu__DOT__instruction = vlSelf->ysyx_24100006_cpu__DOT__IM__DOT__instructions
         [(0x3ffU & (vlSelf->ysyx_24100006_cpu__DOT__pc 
                     >> 2U))];
-    VL_WRITEF("instruction_opcode is %x\n\n",7,(0x7fU 
-                                                & vlSelf->ysyx_24100006_cpu__DOT__instruction));
     if ((0x73U == (0x7fU & vlSelf->ysyx_24100006_cpu__DOT__instruction))) {
         Vysyx_24100006_cpu___024unit____Vdpiimwrap_npc_trap_TOP____024unit();
     }
