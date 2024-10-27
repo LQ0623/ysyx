@@ -15,8 +15,8 @@ VerilatedVcdC* tfp = NULL;
 static int ebreak = 1;
 
 void single_cycle(){
-    top->clk = 0;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
-    top->clk = 1;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
+    top->clk = 0;top->eval();contextp -> timeInc(1);
+    top->clk = 1;top->eval();contextp -> timeInc(1);
 }
 
 extern "C"  void npc_trap() {
@@ -40,12 +40,13 @@ int main() {
     top->trace(tfp, 0) ;
     tfp->open("build/sim.vcd") ;
 
-    reset_cpu(1);
+    reset_cpu(10);
     int count = 0;
     while(ebreak) {
         printf("count is %d\n",count++);
         single_cycle();
     }
+    tfp->dump(contextp->time());
     tfp -> close();
     return 0;
 }

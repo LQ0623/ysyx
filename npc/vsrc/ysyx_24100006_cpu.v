@@ -14,15 +14,16 @@ module ysyx_24100006_cpu(
 	wire Reg_Write;
 	wire AluSrcA,AluSrcB;
 	wire Mem_Read,Mem_Write;
-	wire write_sext;	// 写入的值是否需要扩展，以及怎么扩展
+	wire [1:0] write_sext;	// 写入的值是否需要扩展，以及怎么扩展
 	wire [3:0] aluop;
 	wire [1:0] Reg_Write_RD;
 	wire [3:0] Jump;
 	wire [2:0] Imm_Type;	
-	wire [7:0] Mem_RMask,Mem_WMask;
+	wire [7:0] Mem_WMask;
+	wire [1:0] Mem_RMask;
 
 	ysyx_24100006_controller controller(.opcode(instruction[6:0]),.funct3(instruction[14:12]),.funct7(instruction[31:25]),
-										.aluop(aluop),.Reg_Write(Reg_Write),.Reg_Write_RD(Reg_Write_RD),.Mem_Write(Mem_Write),
+										.aluop(aluop),.Reg_Write(Reg_Write),.Reg_Write_RD(Reg_Write_RD),
 										.Jump(Jump),.Imm_Type(Imm_Type),.AluSrcA(AluSrcA),.AluSrcB(AluSrcB),
 										.Mem_Read(Mem_Read),.Mem_RMask(Mem_RMask),.Mem_Write(Mem_Write),.Mem_WMask(Mem_WMask),.write_sext(write_sext));
 
