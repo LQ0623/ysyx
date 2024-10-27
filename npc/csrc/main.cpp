@@ -1,24 +1,51 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <nvboard.h>
+#include <stdint.h>
+#include "verilated.h"
+#include "verilated_vcd_c.h"
+#include "Vysyx_24100006_cpu.h"
+#include "Vysyx_24100006_cpu__Dpi.h"
+#include "svdpi.h"
 
-#include "Vtop.h"
+static Vysyx_24100006_cpu *top;
 
-static TOP_NAME dut;
+VerilatedContext* contextp = NULL;
+VerilatedVcdC* tfp = NULL;
 
-void nvboard_bind_all_pins(TOP_NAME* top);
+static int ebreak = 1;
 
+void single_cycle(){
+    top->clk = 0;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
+    top->clk = 1;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
+}
 
-int main(int argc, char** argv) {
+extern "C"  void npc_trap() {
+    ebreak = 0;
+}
+
+static void reset_cpu(int n){
+    top->reset = 1;
+    while(n--) single_cycle();
+    top->reset = 0;
+}
+
+int main() {
     
-    nvboard_bind_all_pins(&dut);
-    nvboard_init();
+    contextp = new VerilatedContext;
+    tfp = new VerilatedVcdC;
+    top = new Vysyx_24100006_cpu;
 
-    while (1) {
-    	nvboard_update();
-        dut.eval();
-        printf("a = %d, b = %d, f = %d\n", dut.a, dut.b, dut.f);
+    contextp->traceEverOn(true);
+
+    top->trace(tfp, 0) ;
+    tfp->open("build/sim.vcd") ;
+
+    reset_cpu(1);
+    int count = 0;
+    while(ebreak) {
+        printf("count is %d\n",count++);
+        single_cycle();
     }
+    tfp -> close();
     return 0;
 }

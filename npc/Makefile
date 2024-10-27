@@ -1,6 +1,8 @@
-TOPNAME = top
-NXDC_FILES = constr/top.nxdc
-INC_PATH ?=
+TOPNAME = ysyx_24100006_cpu
+
+BUILD_DIR = ./build
+OBJ_DIR = $(BUILD_DIR)/obj_dir
+BIN = $(BUILD_DIR)/$(TOPNAME)
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc  \
@@ -14,18 +16,11 @@ default: $(BIN)
 
 $(shell mkdir -p $(BUILD_DIR))
 
-# constraint file
-SRC_AUTO_BIND = $(abspath $(BUILD_DIR)/auto_bind.cpp)
-$(SRC_AUTO_BIND): $(NXDC_FILES)
-	python3 $(NVBOARD_HOME)/scripts/auto_pin_bind.py $^ $@
 
 # project source
 VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
-CSRCS += $(SRC_AUTO_BIND)
 
-# rules for NVBoard
-include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 # rules for verilator
 INCFLAGS = $(addprefix -I, $(INC_PATH))
@@ -44,7 +39,7 @@ run: $(BIN)
 	@$^
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) ./obj_dir
 
 
 all:
@@ -54,8 +49,9 @@ sim:
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
 
-	verilator -Wall --trace-fst --cc --exe --build ./vsrc/top.v ./csrc/main.cpp
+	verilator -Wall --trace --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 
+# verilator -Wall --trace-fst --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 include ../Makefile
 
 
