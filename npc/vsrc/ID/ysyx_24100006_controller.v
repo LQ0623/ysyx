@@ -235,7 +235,7 @@ module ysyx_24100006_controller(
                     `ysyx_24100006_xori: begin
                         Jump            = `ysyx_24100006_NJUMP;
                         Imm_Type        = `ysyx_24100006_I_TYPE_IMM;
-                        aluop           = `ysyx_24100006_or_else_op;
+                        aluop           = `ysyx_24100006_xor_op;
                         AluSrcA         = `ysyx_24100006_A_RS;
                         AluSrcB         = `ysyx_24100006_B_IMM;
                         Reg_Write       = `ysyx_24100006_REGW;
@@ -338,7 +338,7 @@ module ysyx_24100006_controller(
                             end
                             `ysyx_24100006_xor: begin
                                 Jump            = `ysyx_24100006_NJUMP;
-                                aluop           = `ysyx_24100006_or_else_op;
+                                aluop           = `ysyx_24100006_xor_op;
                                 AluSrcA         = `ysyx_24100006_A_RS;
                                 AluSrcB         = `ysyx_24100006_B_RT;
                                 Reg_Write       = `ysyx_24100006_REGW;

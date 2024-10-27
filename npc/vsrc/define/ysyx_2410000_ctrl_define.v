@@ -48,7 +48,7 @@
 `define ysyx_24100006_sra_op                5  // 有符号右移
 `define ysyx_24100006_sll_op                6  // 左移
 `define ysyx_24100006_and_op                7  // 与操作
-`define ysyx_24100006_or_else_op            8  // 抑或操作
+`define ysyx_24100006_xor_op            8  // 抑或操作
 `define ysyx_24100006_or_op                 9  // 或操作
 
 //ALU的源操作数
