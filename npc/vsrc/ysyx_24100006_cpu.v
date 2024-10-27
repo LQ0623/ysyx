@@ -11,6 +11,7 @@ module ysyx_24100006_cpu(
 	wire [31:0] instruction;
 	ysyx_24100006_im IM(.pc(pc),.instruction(instruction));
 
+	/* verilator lint_off UNUSEDSIGNAL */
 	wire Reg_Write;
 	wire AluSrcA,AluSrcB;
 	wire Mem_Read,Mem_Write;
@@ -21,6 +22,7 @@ module ysyx_24100006_cpu(
 	wire [2:0] Imm_Type;	
 	wire [7:0] Mem_WMask;
 	wire [1:0] Mem_RMask;
+	/* verilator lint_off UNUSEDSIGNAL */
 
 	ysyx_24100006_controller controller(.opcode(instruction[6:0]),.funct3(instruction[14:12]),.funct7(instruction[31:25]),
 										.aluop(aluop),.Reg_Write(Reg_Write),.Reg_Write_RD(Reg_Write_RD),
