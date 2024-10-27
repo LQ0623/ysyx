@@ -1,4 +1,3 @@
-// import "DPI-C" function void npc_trap ();
 module ysyx_24100006_cpu(
 	input clk,
 	input reset,
@@ -12,16 +11,20 @@ module ysyx_24100006_cpu(
 	wire [31:0] instruction;
 	ysyx_24100006_im IM(.pc(pc),.instruction(instruction));
 
+	wire Reg_Write;
+	wire AluSrcA,AluSrcB;
+	wire Mem_Read,Mem_Write;
+	wire write_sext;	// 写入的值是否需要扩展，以及怎么扩展
 	wire [3:0] aluop;
-	wire Reg_Write,Mem_Write;
 	wire [1:0] Reg_Write_RD;
 	wire [3:0] Jump;
-	wire [2:0] Imm_Type;
-	wire AluSrcA,AluSrcB;
+	wire [2:0] Imm_Type;	
+	wire [7:0] Mem_RMask,Mem_WMask;
 
 	ysyx_24100006_controller controller(.opcode(instruction[6:0]),.funct3(instruction[14:12]),.funct7(instruction[31:25]),
 										.aluop(aluop),.Reg_Write(Reg_Write),.Reg_Write_RD(Reg_Write_RD),.Mem_Write(Mem_Write),
-										.Jump(Jump),.Imm_Type(Imm_Type),.AluSrcA(AluSrcA),.AluSrcB(AluSrcB));
+										.Jump(Jump),.Imm_Type(Imm_Type),.AluSrcA(AluSrcA),.AluSrcB(AluSrcB),
+										.Mem_Read(Mem_Read),.Mem_RMask(Mem_RMask),.Mem_Write(Mem_Write),.Mem_WMask(Mem_WMask),.write_sext(write_sext));
 
 	wire [4:0] 	rs;
 	wire [4:0] 	rt;
@@ -34,6 +37,7 @@ module ysyx_24100006_cpu(
 	wire [31:0] rs2_data;
 	wire [31:0] alu_result;
 	wire [31:0] sext_imm;
+	wire [31:0] raddr,rdata;
 	wire of,zf,cf;
 	/* verilator lint_off UNDRIVEN */
 	/* verilator lint_off UNUSEDSIGNAL */
@@ -67,22 +71,17 @@ module ysyx_24100006_cpu(
 		1'b1,sext_imm
 	});
 
-	ysyx_24100006_alu alu(.rs_data(alu_a_data),.aluop(aluop),.rt_data(alu_b_data),.result(alu_result),.of(of),.cf(cf),.zf(zf));
+	ysyx_24100006_alu 	alu(.rs_data(alu_a_data),.aluop(aluop),.rt_data(alu_b_data),.result(alu_result),.of(of),.cf(cf),.zf(zf));
 	
-	// 这里需要修改，不一定写入的内容就是rs_data
-	ysyx_24100006_mem mem(.clk(clk),.Mem_Write(Mem_Write),.waddr(alu_result),.wdata(rs2_data));
+	// 这里需要修改，不一定写入的内容就是alu_data
+	ysyx_24100006_mem 	mem(.clk(clk),.Mem_Write(Mem_Write),.Mem_WMask(Mem_WMask),.waddr(alu_result),.wdata(rs2_data),
+							.Mem_Read(Mem_Read),.raddr(raddr),.rdata(rdata));
 
 	// 下一条指令怎么跳转
 	ysyx_24100006_npc NPC(.pc(pc),.Skip_mode(Jump),.sext_imm(sext_imm),.rs_data(rs1_data),.zf(zf),.npc(npc));
 
 	assign x_pc 		= pc;
 	assign x_result 	= alu_result;
-	
-	// always@(*)begin
-	// 	if(instruction[6:0] == 7'b1110011)begin
-	// 		npc_trap();
-	// 	end
-	// end
 
 	always @(posedge clk) begin
 		$display("instruction_opcode is %x\n",instruction[6:0]);
