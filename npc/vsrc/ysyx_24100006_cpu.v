@@ -40,7 +40,7 @@ module ysyx_24100006_cpu(
 	wire [31:0] rs2_data;
 	wire [31:0] alu_result;
 	wire [31:0] sext_imm;
-	wire [31:0] raddr,rdata;
+	wire [31:0] Mem_raddr,Mem_rdata;
 	wire of,zf,cf;
 	/* verilator lint_off UNDRIVEN */
 	/* verilator lint_off UNUSEDSIGNAL */
@@ -50,10 +50,11 @@ module ysyx_24100006_cpu(
 	assign rt 			= instruction[24:20];
 
 	// 选择写入寄存器的内容
-	ysyx_24100006_MuxKey#(3,2,32) reg_write_data_mux(wdata_reg,Reg_Write_RD,{
+	ysyx_24100006_MuxKey#(4,2,32) reg_write_data_mux(wdata_reg,Reg_Write_RD,{
 		2'b00,sext_imm,
 		2'b01,alu_result,
-		2'b10,(pc+4)
+		2'b10,(pc+4),
+		2'b11,Mem_rdata
 	});
 
 	ysyx_24100006_RegisterFile registerfile(.clk(clk),.wdata(wdata_reg),.waddr(waddr_reg),.wen(Reg_Write),
@@ -76,18 +77,14 @@ module ysyx_24100006_cpu(
 
 	ysyx_24100006_alu 	alu(.rs_data(alu_a_data),.aluop(aluop),.rt_data(alu_b_data),.result(alu_result),.of(of),.cf(cf),.zf(zf));
 	
-	// 这里需要修改，不一定写入的内容就是alu_data
+	// 这里需要修改，不一定写入的地址就是alu_data
 	ysyx_24100006_mem 	mem(.clk(clk),.Mem_Write(Mem_Write),.Mem_WMask(Mem_WMask),.waddr(alu_result),.wdata(rs2_data),
-							.Mem_Read(Mem_Read),.raddr(raddr),.rdata(rdata));
+							.Mem_Read(Mem_Read),.raddr(Mem_raddr),.rdata(Mem_rdata));
 
 	// 下一条指令怎么跳转
-	ysyx_24100006_npc NPC(.pc(pc),.Skip_mode(Jump),.sext_imm(sext_imm),.rs_data(rs1_data),.zf(zf),.npc(npc));
+	ysyx_24100006_npc NPC(.pc(pc),.Skip_mode(Jump),.sext_imm(sext_imm),.rs_data(rs1_data),.cmp_result(alu_result[0]),.zf(zf),.npc(npc));
 
 	assign x_pc 		= pc;
 	assign x_result 	= alu_result;
-
-	always @(posedge clk) begin
-		$display("instruction_opcode is %x\n",instruction[6:0]);
-	end
 
 endmodule

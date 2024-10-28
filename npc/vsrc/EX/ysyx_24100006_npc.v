@@ -74,14 +74,20 @@ module ysyx_24100006_npc(
     input[3:0]      Skip_mode,
     input[31:0]     sext_imm,
     input[31:0]     rs_data,
+    input           cmp_result,
     input           zf,         // 判断rs_data是否等于rt_data，相等就会为1
     output[31:0]    npc
 );
 
-    assign npc  =   (Skip_mode == `ysyx_24100006_NJUMP)? (pc + 4):
-                    (Skip_mode == `ysyx_24100006_JAL)?   (pc + sext_imm):
-                    (Skip_mode == `ysyx_24100006_JALR)?  ((rs_data+ sext_imm) & (~32'b1)):
-                    (Skip_mode == `ysyx_24100006_JBEQ && zf == 1'b1)?  (pc + sext_imm) : (pc + 4);  // 这个需要单独的一个信号来控制
+    assign npc  =   (Skip_mode == `ysyx_24100006_NJUMP)?                        (pc + 4):
+                    (Skip_mode == `ysyx_24100006_JAL)?                          (pc + sext_imm):
+                    (Skip_mode == `ysyx_24100006_JALR)?                         ((rs_data+ sext_imm) & (~32'b1)):
+                    (Skip_mode == `ysyx_24100006_JBEQ && zf == 1'b1)?           (pc + sext_imm) :  // 这个需要单独的一个信号来控制
+                    (Skip_mode == `ysyx_24100006_JBNE && zf != 1'b0)?           (pc + sext_imm) :
+                    (Skip_mode == `ysyx_24100006_JBLT && cmp_result == 1'b1)?   (pc + sext_imm) :
+                    (Skip_mode == `ysyx_24100006_JBLTU && cmp_result == 1'b0)?  (pc + sext_imm) :
+                    (Skip_mode == `ysyx_24100006_JBGE && cmp_result == 1'b0)?   (pc + sext_imm) :
+                    (Skip_mode == `ysyx_24100006_JBGEU && cmp_result == 1'b1)?  (pc + sext_imm) : (pc + 4);
 
 endmodule
 
