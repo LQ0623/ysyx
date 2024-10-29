@@ -22,11 +22,11 @@ void single_cycle(){
 
 extern "C"  void npc_trap() {
     ebreak = 0;
-    uint32_t code = top->rootp -> ysyx_24100006_cpu__DOT__registerfile__DOT__rf[1];
-    for(int i = 0;i < 32;i++){
-        code = top->rootp -> ysyx_24100006_cpu__DOT__registerfile__DOT__rf[i];
-        printf("code is %x\n",code);
-    }
+    uint32_t code = top->rootp -> ysyx_24100006_cpu__DOT__registerfile__DOT__rf[10];
+    // for(int i = 0;i < 32;i++){
+    //     code = top->rootp -> ysyx_24100006_cpu__DOT__registerfile__DOT__rf[i];
+    //     printf("code is %x\n",code);
+    // }
     if(code == 0)
 		printf("\033[1;32mHIT GOOD TRAP\033[0m\n");
 	else

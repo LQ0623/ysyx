@@ -169,6 +169,7 @@ module ysyx_24100006_controller(
     always @(*) begin
         case(opcode)
             `ysyx_24100006_SYSTEM: begin
+                $display("12312312\n");
                 npc_trap();
 			end
             `ysyx_24100006_auipc: begin

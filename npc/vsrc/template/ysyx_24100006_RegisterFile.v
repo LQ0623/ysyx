@@ -22,6 +22,9 @@ module ysyx_24100006_RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
     rf[0] <= 32'b0;
   end
 
+  always@(*)begin
+    $display("ra is 0x%x\n",rf[1]);
+  end
   assign rs1_data = rf[rs1];
   assign rs2_data = rf[rs2];
 
