@@ -24,10 +24,10 @@ CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*
 
 
 # rules for verilator
-# INC_PATH += /home/lq/ysyx-workbench/npc/csrc/include
-# INCFLAGS = $(addprefix -I, $(INC_PATH))
-INCFLAGS = -I./include
+INC_PATH += /home/lq/ysyx-workbench/npc/csrc/include
+INCFLAGS = $(addprefix -I, $(INC_PATH))
 CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += -I$(NPC_HOME)/csrc/tb/include
 
 $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 	@rm -rf $(OBJ_DIR)
@@ -52,7 +52,7 @@ sim:
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
 
-	verilator -Wall --trace --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
+	verilator -Wall --trace --cc -f -I$(NPC_HOME)/csrc/tb/include --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 
 # verilator -Wall --trace-fst --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 include ../Makefile
