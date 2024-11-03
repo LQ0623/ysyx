@@ -24,7 +24,7 @@ CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*
 
 
 # rules for verilator
-INC_PATH += $(NPC_HOME)/csrc/include
+INC_PATH += /home/lq/ysyx-workbench/npc/csrc/include
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
 
