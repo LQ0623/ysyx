@@ -1,0 +1,6 @@
+include Vysyx_24100006_cpu.mk
+CPPFLAGS += -I$(NPC_HOME)/csrc/tb/include
+#CPPFLAGS += -DCONFIG_FTRACE=1
+CPPFLAGS += -DCONFIG_TRACE=1
+CPPFLAGS += -DCONFIG_WAVE
+LINK := g++
