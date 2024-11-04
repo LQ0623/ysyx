@@ -23,23 +23,22 @@ VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
 
 
-# rules for verilator
-INC_PATH += /home/lq/ysyx-workbench/npc/csrc/include
-INCFLAGS = $(addprefix -I, $(INC_PATH))
-CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
-CXXFLAGS += -I$(NPC_HOME)/csrc/tb/include
+CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
-$(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
+NPC_EXEC := $(BIN) $(ARGS) $(IMG)
+
+$(BIN): $(VSRCS) $(CSRCS) 
 	@rm -rf $(OBJ_DIR)
+	@mkdir $(OBJ_DIR)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
-		$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
 
 all: default
 
 run: $(BIN)
-	@$^
+	@echo "start build"
+	$(NPC_EXEC)
 
 clean:
 	rm -rf $(BUILD_DIR) ./obj_dir
@@ -52,7 +51,7 @@ sim:
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
 
-	verilator -Wall --trace --cc -CFLAGS -I$(NPC_HOME)/csrc/tb/include --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
+	verilator -Wall --trace --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 
 # verilator -Wall --trace-fst --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
 include ../Makefile
