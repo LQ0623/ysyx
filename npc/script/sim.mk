@@ -1,5 +1,5 @@
 #testbench
-CTB = $(shell find $(abspath $(NPC_HOME)/csrc/tb) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+CTB = $(shell find $(abspath $(NPC_HOME)/csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
 
 
 NPC_EXEC := $(BIN) $(ARGS) $(IMG)
