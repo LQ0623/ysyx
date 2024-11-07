@@ -4,14 +4,18 @@
 void reset_cpu(int n);
 void single_cycle();
 void init_wave();
-void end();
+void close_wave();
+void init_monitor(int , char **);
+void sdb_mainloop();
 
-int main() {
+int main(int args,char *argv[]) {
+
     init_wave();
+    init_monitor(args, argv);
     reset_cpu(10);
-    while(1){
-        single_cycle();
-    }
-    end();
+    
+    sdb_mainloop();
+
+    close_wave();
     return 0;
 }

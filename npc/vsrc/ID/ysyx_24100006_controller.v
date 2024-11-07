@@ -15,7 +15,7 @@
 // 写多少字节的内存
 `define ysyx_24100006_WByte                 8'b00000001
 `define ysyx_24100006_WHWord                8'b00000011   // 半字
-`define ysyx_24100006_WWord                 8'b00000111
+`define ysyx_24100006_WWord                 8'b00001111
 
 // 写入的值是否需要符号扩展
 `define ysyx_24100006_write_one_sext        2   // 进行符号扩展
@@ -251,8 +251,8 @@ module ysyx_24100006_controller(
                         AluSrcB         = `ysyx_24100006_B_IMM;
                         Reg_Write       = `ysyx_24100006_REGW;
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
-                        Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
+                        Mem_Write       = `ysyx_24100006_MEMNW;
                         write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_sri: begin
@@ -265,8 +265,8 @@ module ysyx_24100006_controller(
                                 AluSrcB         = `ysyx_24100006_B_IMM;
                                 Reg_Write       = `ysyx_24100006_REGW;
                                 Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
-                                Mem_Read        = `ysyx_24100006_MEMNW;
-                                Mem_Write       = `ysyx_24100006_MEMNR;
+                                Mem_Read        = `ysyx_24100006_MEMNR;
+                                Mem_Write       = `ysyx_24100006_MEMNW;
                                 write_sext      = `ysyx_24100006_write_no_sext;
                             end
                             `ysyx_24100006_srai: begin
@@ -277,8 +277,8 @@ module ysyx_24100006_controller(
                                 AluSrcB         = `ysyx_24100006_B_IMM;
                                 Reg_Write       = `ysyx_24100006_REGW;
                                 Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
-                                Mem_Read        = `ysyx_24100006_MEMNW;
-                                Mem_Write       = `ysyx_24100006_MEMNR;
+                                Mem_Read        = `ysyx_24100006_MEMNR;
+                                Mem_Write       = `ysyx_24100006_MEMNW;
                                 write_sext      = `ysyx_24100006_write_no_sext;
                             end
                             default: begin

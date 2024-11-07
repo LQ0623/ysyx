@@ -4,14 +4,16 @@
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 #include <svdpi.h>
-// #include <Vysyx_24100006_cpu__Dpi.h>
-// #include <Vysyx_24100006_cpu___024root.h>
+#include <Vysyx_24100006_cpu__Dpi.h>
+#include <Vysyx_24100006_cpu___024root.h>
 #include <common.h>
 extern Vysyx_24100006_cpu *cpu;
 extern word_t inst,pc;
 //circuit
 void single_cycle();
+void cpu_exec(uint32_t n);
 void reset_cpu(int n);
+void instruction_disassemble(char* log_buf, int instruction);    // 反汇编使用
 //wave
 void init_wave();
 void dump_wave_inc();

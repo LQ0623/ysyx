@@ -8,7 +8,7 @@
 // 写多少字节的内存
 `define ysyx_24100006_WByte                 8'b00000001
 `define ysyx_24100006_WHWord                8'b00000011   // 半字
-`define ysyx_24100006_WWord                 8'b00000111
+`define ysyx_24100006_WWord                 8'b00001111
 
 // 写入的值是否需要符号扩展
 `define ysyx_24100006_write_one_sext        2   // 进行符号扩展

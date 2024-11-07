@@ -1,15 +1,10 @@
-#testbench
-CTB = $(shell find $(abspath $(NPC_HOME)/csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
-
-
 NPC_EXEC := $(BIN) $(ARGS) $(IMG)
 #sim
-$(BIN): $(VSRCS) $(CTB)
-	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
+$(BIN): $(VSRCS) $(CSRCS)
 	@echo "$(COLOR_YELLOW)[VERILATE]$(COLOR_NONE) $(notdir $(BUILD_DIR))/$(notdir $(BIN))"
 	@rm -rf $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
-	@$(VERILATOR) $(VERILATOR_FLAGS) \
+	@$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
 	@make -s -C $(OBJ_DIR) -f $(REWRITE)

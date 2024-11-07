@@ -12,8 +12,11 @@ extern Vysyx_24100006_cpu *cpu;
 extern uint32_t gpr[REGNUM];
 extern uint32_t csr[4];
 extern const char *regs[];
-// void init_mem(size_t size);
-// uint8_t *guest_to_host(uint32_t addr);
 
+void init_mem(size_t size);
+uint8_t *guest_to_host(uint32_t addr);
+void isa_reg_display();
+uint32_t isa_reg_str2val(const char *s, bool *success);
+void get_reg();
 
 #endif

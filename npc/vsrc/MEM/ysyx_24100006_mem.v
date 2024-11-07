@@ -12,20 +12,20 @@ module ysyx_24100006_mem(
 );
 
     
-    // import "DPI-C" function int pmem_read(input int raddr);
-    // import "DPI-C" function void pmem_write(input int waddr, input int wdata,input byte wmask);
-    // /* verilator lint_off LATCH */
-    // always@(*)begin
-    //     if(Mem_Write)begin
-    //         pmem_write(waddr,wdata,Mem_WMask);
-    //     end
-    //     else if (Mem_Read)begin
-    //         rdata = pmem_read(raddr);
-    //     end
-    //     else begin
-    //         rdata = 32'h00000000;
-    //     end
-    // end
+    import "DPI-C" function int pmem_read(input int raddr);
+    import "DPI-C" function void pmem_write(input int waddr, input int wdata,input byte wmask);
+    /* verilator lint_off LATCH */
+    always@(*)begin
+        if(Mem_Write)begin
+            pmem_write(waddr & (~32'h3),wdata,Mem_WMask);
+        end
+        else if (Mem_Read)begin
+            rdata = pmem_read(raddr & (~32'h3));
+        end
+        else begin
+            rdata = 32'h00000000;
+        end
+    end
 
 
 endmodule

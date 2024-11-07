@@ -40,7 +40,7 @@ module ysyx_24100006_cpu(
 	wire [31:0] rs2_data;
 	wire [31:0] alu_result;
 	wire [31:0] sext_imm;
-	wire [31:0] Mem_raddr,Mem_rdata;
+	wire [31:0] Mem_rdata;
 	wire of,zf,cf;
 	/* verilator lint_off UNDRIVEN */
 	/* verilator lint_off UNUSEDSIGNAL */
@@ -79,7 +79,7 @@ module ysyx_24100006_cpu(
 	
 	// 这里需要修改，不一定写入的地址就是alu_data
 	ysyx_24100006_mem 	mem(.clk(clk),.Mem_Write(Mem_Write),.Mem_WMask(Mem_WMask),.waddr(alu_result),.wdata(rs2_data),
-							.Mem_Read(Mem_Read),.raddr(Mem_raddr),.rdata(Mem_rdata));
+							.Mem_Read(Mem_Read),.raddr(alu_result),.rdata(Mem_rdata));
 
 	// 下一条指令怎么跳转
 	ysyx_24100006_npc NPC(.pc(pc),.Skip_mode(Jump),.sext_imm(sext_imm),.rs_data(rs1_data),.cmp_result(alu_result[0]),.zf(zf),.npc(npc));

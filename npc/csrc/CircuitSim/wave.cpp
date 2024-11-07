@@ -3,11 +3,15 @@ static VerilatedVcdC* m_trace = nullptr;
 static VerilatedContext* contextp = nullptr;
 
 void init_wave(){
-    Verilated::traceEverOn(true);
-	contextp = new VerilatedContext;	
+    
+	contextp = new VerilatedContext;
 	m_trace = new VerilatedVcdC;
-	cpu -> trace(m_trace, 5);
-	m_trace->open("build/waveform.vcd");
+	cpu = new Vysyx_24100006_cpu;
+	contextp->traceEverOn(true);
+	cpu->trace(m_trace, 5);
+	#ifdef CONFIG_DUMP_WAVE
+		m_trace->open("build/waveform.vcd");
+	#endif
 } 
 
 void dump_wave_inc(){

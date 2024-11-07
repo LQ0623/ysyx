@@ -1,3 +1,4 @@
+#top name
 TOPNAME = ysyx_24100006_cpu
 
 #设置构建文件夹信息
@@ -19,7 +20,6 @@ endif
 VERILATOR_CFLAGS += -MMD -cc -O3 --x-assign fast --x-initial fast --noassert
 VERILATOR_CFLAGS += --trace
 
-
 #source code
 VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
@@ -35,7 +35,7 @@ COLOR_GREEN 		= \033[1;32m
 COLOR_YELLOW 		= \033[33m
 COLOR_NONE  		= \033[0m
 
-.PHONY:clean run 
-
 clean:
-	-rm -rf $(BUILD_DIR)
+	-rm -rf $(BUILD_DIR) result top.dot top.png vsrc/*.png
+
+.PHONY:clean run 
