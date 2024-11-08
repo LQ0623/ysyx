@@ -47,16 +47,19 @@
 `define ysyx_24100006_B_TYPE_IMM            3
 `define ysyx_24100006_U_TYPE_IMM            4
 // 操作
+/**
+    这里cmp和cmpu还有sub只能是奇数，因为需要补码运算
+*/
 `define ysyx_24100006_add_op                0
 `define ysyx_24100006_sub_op                1
-`define ysyx_24100006_cmpu_op               2  // 无符号比较
+`define ysyx_24100006_cmpu_op               9  // 无符号比较
 `define ysyx_24100006_cmp_op                3  // 有符号比较
 `define ysyx_24100006_srl_op                4  // 无符号右移
 `define ysyx_24100006_sra_op                5  // 有符号右移
 `define ysyx_24100006_sll_op                6  // 左移
 `define ysyx_24100006_and_op                7  // 与操作
-`define ysyx_24100006_xor_op            8  // 抑或操作
-`define ysyx_24100006_or_op                 9  // 或操作
+`define ysyx_24100006_xor_op                8  // 异或操作
+`define ysyx_24100006_or_op                 2  // 或操作
 
 //ALU的源操作数
 //AluSrcA

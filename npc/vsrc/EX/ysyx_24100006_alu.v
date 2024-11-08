@@ -36,14 +36,14 @@ module ysyx_24100006_alu(
     ysyx_24100006_MuxKey #(10,4,32)  alumux(result,aluop,{
         4'b0000,add_sub_result,
         4'b0001,add_sub_result,
-        4'b0010,cmpu_result,
+        4'b1001,cmpu_result,
 		4'b0011,cmp_result,
 		4'b0100,srl_result,
 		4'b0101,sra_result,
 		4'b0110,sll_result,
 		4'b0111,and_result,
 		4'b1000,xor_result,
-		4'b1001,or_result
+		4'b0010,or_result
     });
 
     assign zf = ~(|result);
