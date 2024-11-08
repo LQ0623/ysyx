@@ -225,7 +225,6 @@ module ysyx_24100006_controller(
                         aluop           = `ysyx_24100006_add_op;
                         AluSrcA         = `ysyx_24100006_A_RS;
                         AluSrcB         = `ysyx_24100006_B_IMM;
-                        // AluSrcB         = `ysyx_24100006_B_RT;
                         Reg_Write       = `ysyx_24100006_REGW;
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
