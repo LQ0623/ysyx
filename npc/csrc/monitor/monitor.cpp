@@ -99,7 +99,7 @@ void init_monitor(int argc, char *argv[]){
 
     init_sdb();
 
-  //   init_difftest(diff_so_file , img_size);
+    init_difftest(diff_so_file , img_size);
 
     welcome();
 }

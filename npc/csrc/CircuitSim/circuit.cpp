@@ -115,7 +115,9 @@ static void trace_and_difftest() {
 	/**
 	 * 4、是否开启diff test测试
 	 */
-	// IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+	#ifdef CONFIG_DIFFTEST
+		difftest_step();
+	#endif
 }
 
 
