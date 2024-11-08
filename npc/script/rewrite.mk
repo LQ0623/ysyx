@@ -33,7 +33,7 @@ ifeq ($(ENABLE_FTRACE), 1)
 endif
 
 # 是否开启difftest
-ENABLE_DIFFTEST ?= 0
+ENABLE_DIFFTEST ?= 1
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
 endif

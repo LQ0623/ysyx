@@ -24,7 +24,7 @@ void init_mem(size_t size){
 	pmem = (uint8_t *)malloc(size * sizeof(uint8_t));
 	memcpy(pmem , img , sizeof(img));
 	if(pmem == NULL){exit(0);}
-	printf("npc physical memory area [%#x, %#lx]",RESET_VECTOR, RESET_VECTOR + size * sizeof(uint8_t));
+	printf("npc physical memory area [%#x, %#lx]\n",RESET_VECTOR, RESET_VECTOR + size * sizeof(uint8_t));
 }
 
 #define READ 1

@@ -11,7 +11,7 @@ void sdb_set_batch_mode();
 void init_sdb();
 void init_log(const char *log_file);
 void init_ftrace(char *elf_file);
-// void init_difftest(char *ref_so_file, long img_size);
+void init_difftest(char *ref_so_file, long img_size);
 extern "C" void init_disasm();
 
 
@@ -98,8 +98,9 @@ void init_monitor(int argc, char *argv[]){
     #endif
 
     init_sdb();
-
-    init_difftest(diff_so_file , img_size);
+    #ifdef CONFIG_DIFFTEST
+      init_difftest(diff_so_file , img_size);
+    #endif
 
     welcome();
 }

@@ -16,6 +16,7 @@ LDFLAGS   += --gc-sections -e _start
 # NPC的一些参数
 NPCFLAGS += -l $(shell dirname $(IMAGE).bin)/npc_log.txt
 NPCFLAGS += -e $(IMAGE).elf	#这是elf文件
+NPCFLAGS += -d $(NPC_HOME)/tools/nemu-diiff/riscv32-nemu-interpreter-so	#加入difftest测试
 #NPCFLAGS += -b
 
 MAINARGS_MAX_LEN = 64
