@@ -2,16 +2,16 @@ include Vysyx_24100006_cpu.mk
 
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
-# 是否开启监视点的差异比较
-ENABLE_WATCHPOINT ?= 1
-ifeq ($(ENABLE_WATCHPOINT), 1)
-    CPPFLAGS += -DCONFIG_CC_WATCHPOINT
-endif
-
 # 是否开启波形生成
 ENABLE_WAVE ?= 0
 ifeq ($(ENABLE_WAVE), 1)
     CPPFLAGS += -DCONFIG_DUMP_WAVE
+endif
+
+# 是否开启监视点的差异比较
+ENABLE_WATCHPOINT ?= 1
+ifeq ($(ENABLE_WATCHPOINT), 1)
+    CPPFLAGS += -DCONFIG_CC_WATCHPOINT
 endif
 
 # 是否开启trace功能
@@ -24,6 +24,12 @@ endif
 ENABLE_ITRACE ?= 1
 ifeq ($(ENABLE_ITRACE), 1)
     CPPFLAGS += -DCONFIG_ITRACE
+endif
+
+# 是否开启ftrace
+ENABLE_FTRACE ?= 1
+ifeq ($(ENABLE_FTRACE), 1)
+    CPPFLAGS += -DCONFIG_FTRACE
 endif
 
 # 是否开启difftest

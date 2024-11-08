@@ -1,5 +1,6 @@
 #include <circuit.h>
 #include <my_memory.h>
+#include <ftrace.h>
 #include "sdb.h"
 #include <readline/readline.h>
 #include <readline/history.h>

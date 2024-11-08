@@ -46,7 +46,7 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 		return ;
 	
 
-    printf("data is %x\n",wdata);
+    // printf("data is %x\n",wdata);
 	uint8_t *vaddr = guest_to_host(waddr);
 	uint8_t *iaddr;
 	int i;

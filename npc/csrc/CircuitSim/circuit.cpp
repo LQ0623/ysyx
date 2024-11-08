@@ -1,6 +1,7 @@
 #include <circuit.h>
 #include <my_memory.h>
 #include <common.h>
+#include <ftrace.h>
 #include <../monitor/sdb/sdb.h>
 
 Vysyx_24100006_cpu *cpu;
@@ -10,12 +11,13 @@ static void statistic();
 void difftest_step();
 
 #define MAX_INST_TO_PRINT 10
+#define LOG_BUF_SIZE 256
 uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 word_t pc, snpc, dnpc, inst, prev_pc;
 static uint8_t opcode;
 
-bool is_change = false;	// 监视点是否有改变
+static bool is_change = false;	// 监视点是否有改变
 
 void single_cycle(){  //  0 --> 0 > 1 --> 1 > 0 this is a cycle in cpu  _|-|_|-
 	cpu->clk=0;   //negedge 1->0 no
@@ -44,9 +46,9 @@ void assert_fail_msg() {
 /**
  * 反汇编以及写文件
  */
-void record_inst_trace(char *p, uint8_t *inst){
+void instruction_disassemble(char *p, uint8_t *inst){
 	char *ps = p;
-	p += snprintf(p,128, "%#x:",prev_pc);
+	p += snprintf(p, LOG_BUF_SIZE, "%#x:",prev_pc);
 	int ilen = 4;
 	int i;
 	for (i = ilen - 1; i >= 0; i --) {
@@ -58,8 +60,8 @@ void record_inst_trace(char *p, uint8_t *inst){
 	space_len = space_len * 3 + 1;
 	memset(p, ' ', space_len);
 	p += space_len;
-
-	disassemble(p, ps+128-p, (uint64_t)prev_pc, inst, ilen);
+	
+	disassemble(p, ps + LOG_BUF_SIZE - p, (uint64_t)prev_pc, inst, ilen);
 }
 
 /**
@@ -72,24 +74,48 @@ static void trace_and_difftest() {
 	 */
 	#ifdef CONFIG_CC_WATCHPOINT
 		bool point_diff = point_difftest();
-		is_change = true;
+		if(point_diff == true){
+			is_change = true;
+		}
 	#endif
 
 	/**
-	 * 2、是否开启diff test测试
-	 */
-	// IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
-
-	/**
-	 * 3、是否开启instruction trace
+	 * 2、是否开启instruction trace
 	 */
 	#ifdef CONFIG_ITRACE
-		char log_buf[256];
+		char log_buf[LOG_BUF_SIZE] = {0};
 		instruction_disassemble(log_buf, (uint8_t *)&inst);
+		// 输出到屏幕
+		if (g_print_step) { puts(log_buf); }
 		// Write the log buffer to the log file
     	log_write("%s\n", log_buf);
-		if (g_print_step) { puts(log_buf); }
 	#endif
+
+	/**
+	 * 3、是否开启function trace
+	 */
+	#ifdef CONFIG_FTRACE
+		opcode = BITS(inst, 6, 0);	
+		if(opcode == 0b1101111){
+			ftrace_function_call(pc, dnpc, false);
+		}
+		else if(opcode == 0b1100111){
+  			int rd = BITS(inst, 11, 7);
+			uint32_t imm = SEXT(BITS(inst, 31, 20), 12);
+			if(inst == 0x00008067){
+				ftrace_function_ret(pc);	// ret -> jalr x0, 0(x1)
+			}else if(rd == 0 && imm == 0){
+				ftrace_function_call(pc,dnpc,true);	// jr rs1 -> jalr x0, 0(rs1)
+			}else {
+				ftrace_function_call(pc,dnpc,false);
+			}
+		}
+	#endif
+
+	/**
+	 * 4、是否开启diff test测试
+	 */
+	// IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 }
 
 

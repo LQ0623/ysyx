@@ -15,6 +15,7 @@ LDFLAGS   += --gc-sections -e _start
 
 # NPC的一些参数
 NPCFLAGS += -l $(shell dirname $(IMAGE).bin)/npc_log.txt
+NPCFLAGS += -e $(IMAGE).elf	#这是elf文件
 #NPCFLAGS += -b
 
 MAINARGS_MAX_LEN = 64

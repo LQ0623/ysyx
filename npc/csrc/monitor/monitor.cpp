@@ -10,9 +10,9 @@ char *elf_file = NULL;
 void sdb_set_batch_mode();
 void init_sdb();
 void init_log(const char *log_file);
-// void init_ftrace(char *elf_file);
+void init_ftrace(char *elf_file);
 // void init_difftest(char *ref_so_file, long img_size);
-// extern "C" void init_disasm(const char *triple);
+extern "C" void init_disasm();
 
 
 static void welcome() {
@@ -80,22 +80,26 @@ static int parse_args(int argc,char *argv[]){
 
 void init_monitor(int argc, char *argv[]){
 
-  /* Parse arguments. */
-  parse_args(argc, argv);
+    /* Parse arguments. */
+    parse_args(argc, argv);
 
-  init_log(log_file);
+    init_log(log_file);
 
-  init_mem(0x7ffffff);
+    init_mem(0x7ffffff);
 
-  long img_size = load_img();
+    long img_size = load_img();
 
-//   init_ftrace(elf_file);
+    #ifdef CONFIG_FTRACE
+      init_ftrace(elf_file);
+    #endif
 
-//   init_disasm("riscv32-pc-linux-gnu");
+    #ifdef CONFIG_TRACE
+      init_disasm();
+    #endif
 
-  init_sdb();
+    init_sdb();
 
-//   init_difftest(diff_so_file , img_size);
+  //   init_difftest(diff_so_file , img_size);
 
-  welcome();
+    welcome();
 }
