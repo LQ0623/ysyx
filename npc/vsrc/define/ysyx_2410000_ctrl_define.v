@@ -10,18 +10,15 @@
 `define ysyx_24100006_WHWord                8'b00000011   // 半字
 `define ysyx_24100006_WWord                 8'b00001111
 
-// 写入的值是否需要符号扩展
-`define ysyx_24100006_write_one_sext        2   // 进行符号扩展
-`define ysyx_24100006_write_zero_sext       1   // 进行零扩展
-`define ysyx_24100006_write_no_sext         0   // 不进行符号扩展
-
 // MEM_READ
 `define ysyx_24100006_MEMR                  1
 `define ysyx_24100006_MEMNR                 0
-// 读多少字节的内存
+// 读多少字节的内存，以及读取出来之后怎么进行扩展
 `define ysyx_24100006_RByte                 0
-`define ysyx_24100006_RHWord                1   // 半字
-`define ysyx_24100006_RWord                 2
+`define ysyx_24100006_RByteU                1
+`define ysyx_24100006_RHWord                2   // 半字
+`define ysyx_24100006_RHWordU               3   // 半字
+`define ysyx_24100006_RWord                 4
 
 // pc跳转是否加imm
 `define ysyx_24100006_NJUMP                 0
@@ -42,14 +39,14 @@
 // 操作
 `define ysyx_24100006_add_op                0
 `define ysyx_24100006_sub_op                1
-`define ysyx_24100006_cmpu_op               2  // 无符号比较
+`define ysyx_24100006_cmpu_op               9  // 无符号比较
 `define ysyx_24100006_cmp_op                3  // 有符号比较
 `define ysyx_24100006_srl_op                4  // 无符号右移
 `define ysyx_24100006_sra_op                5  // 有符号右移
 `define ysyx_24100006_sll_op                6  // 左移
 `define ysyx_24100006_and_op                7  // 与操作
-`define ysyx_24100006_xor_op            8  // 抑或操作
-`define ysyx_24100006_or_op                 9  // 或操作
+`define ysyx_24100006_xor_op                8  // 异或操作
+`define ysyx_24100006_or_op                 2  // 或操作
 
 //ALU的源操作数
 //AluSrcA

@@ -27,13 +27,19 @@ ifeq ($(ENABLE_ITRACE), 1)
 endif
 
 # 是否开启ftrace
-ENABLE_FTRACE ?= 1
+ENABLE_FTRACE ?= 0
 ifeq ($(ENABLE_FTRACE), 1)
     CPPFLAGS += -DCONFIG_FTRACE
 endif
 
+# 是否开启mtrace
+ENABLE_MTRACE ?= 1
+ifeq ($(ENABLE_MTRACE), 1)
+    CPPFLAGS += -DCONFIG_MTRACE
+endif
+
 # 是否开启difftest
-ENABLE_DIFFTEST ?= 0
+ENABLE_DIFFTEST ?= 1
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
 endif

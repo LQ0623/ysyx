@@ -17,18 +17,15 @@
 `define ysyx_24100006_WHWord                8'b00000011   // 半字
 `define ysyx_24100006_WWord                 8'b00001111
 
-// 写入的值是否需要符号扩展
-`define ysyx_24100006_write_one_sext        2   // 进行符号扩展
-`define ysyx_24100006_write_zero_sext       1   // 进行零扩展
-`define ysyx_24100006_write_no_sext         0   // 不进行符号扩展
-
 // MEM_READ
 `define ysyx_24100006_MEMR                  1
 `define ysyx_24100006_MEMNR                 0
-// 读多少字节的内存
+// 读多少字节的内存，以及读取出来之后怎么进行扩展
 `define ysyx_24100006_RByte                 0
-`define ysyx_24100006_RHWord                1   // 半字
-`define ysyx_24100006_RWord                 2
+`define ysyx_24100006_RByteU                1
+`define ysyx_24100006_RHWord                2   // 半字
+`define ysyx_24100006_RHWordU               3   // 半字
+`define ysyx_24100006_RWord                 4
 
 // pc跳转是否加imm
 `define ysyx_24100006_NJUMP                 0
@@ -47,16 +44,19 @@
 `define ysyx_24100006_B_TYPE_IMM            3
 `define ysyx_24100006_U_TYPE_IMM            4
 // 操作
+/**
+    这里cmp和cmpu还有sub只能是奇数，因为需要补码运算
+*/
 `define ysyx_24100006_add_op                0
 `define ysyx_24100006_sub_op                1
-`define ysyx_24100006_cmpu_op               2  // 无符号比较
+`define ysyx_24100006_cmpu_op               9  // 无符号比较
 `define ysyx_24100006_cmp_op                3  // 有符号比较
 `define ysyx_24100006_srl_op                4  // 无符号右移
 `define ysyx_24100006_sra_op                5  // 有符号右移
 `define ysyx_24100006_sll_op                6  // 左移
 `define ysyx_24100006_and_op                7  // 与操作
-`define ysyx_24100006_xor_op            8  // 抑或操作
-`define ysyx_24100006_or_op                 9  // 或操作
+`define ysyx_24100006_xor_op                8  // 异或操作
+`define ysyx_24100006_or_op                 2  // 或操作
 
 //ALU的源操作数
 //AluSrcA
@@ -156,14 +156,12 @@ module ysyx_24100006_controller(
     output reg AluSrcB,
     /* 是否读内存 */
     output reg Mem_Read,
-    /* 写内存是多少字节 */
-    output reg [1:0] Mem_RMask,
+    /* 读内存是读多少字节，以及如何扩展 */
+    output reg [2:0] Mem_RMask,
     /* 是否写内存 */
     output reg Mem_Write,
     /* 写内存是多少字节 */
-    output reg [7:0] Mem_WMask,
-    /* 写入的值是否需要符号扩展 */
-    output reg [1:0] write_sext
+    output reg [7:0] Mem_WMask
 );
 
     always @(*) begin
@@ -182,7 +180,6 @@ module ysyx_24100006_controller(
                 Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                 Mem_Write       = `ysyx_24100006_MEMNW;
                 Mem_Read        = `ysyx_24100006_MEMNR;
-                write_sext      = `ysyx_24100006_write_no_sext;
             end
             `ysyx_24100006_lui: begin
                 Jump            = `ysyx_24100006_NJUMP;
@@ -191,7 +188,6 @@ module ysyx_24100006_controller(
                 Reg_Write_RD    = `ysyx_24100006_REG_IMM;
                 Mem_Write       = `ysyx_24100006_MEMNW;
                 Mem_Read        = `ysyx_24100006_MEMNR;
-                write_sext      = `ysyx_24100006_write_no_sext;
             end
             `ysyx_24100006_jal: begin
                 Jump            = `ysyx_24100006_JAL;
@@ -203,7 +199,6 @@ module ysyx_24100006_controller(
                 Reg_Write_RD    = `ysyx_24100006_REG_PC_PLUS_4;
                 Mem_Write       = `ysyx_24100006_MEMNW;
                 Mem_Read        = `ysyx_24100006_MEMNR;
-                write_sext      = `ysyx_24100006_write_no_sext;
             end
             `ysyx_24100006_jalr: begin
                 Jump            = `ysyx_24100006_JALR;
@@ -215,7 +210,6 @@ module ysyx_24100006_controller(
                 Reg_Write_RD    = `ysyx_24100006_REG_PC_PLUS_4;
                 Mem_Write       = `ysyx_24100006_MEMNW;
                 Mem_Read        = `ysyx_24100006_MEMNR;
-                write_sext      = `ysyx_24100006_write_no_sext;
             end
             `ysyx_24100006_I_type: begin
                 case(funct3)
@@ -229,7 +223,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_slti: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -241,7 +234,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_sltiu: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -253,7 +245,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Read        = `ysyx_24100006_MEMNR;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_sri: begin
                         case(funct7)
@@ -267,7 +258,6 @@ module ysyx_24100006_controller(
                                 Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
-                                write_sext      = `ysyx_24100006_write_no_sext;
                             end
                             `ysyx_24100006_srai: begin
                                 Jump            = `ysyx_24100006_NJUMP;
@@ -279,14 +269,12 @@ module ysyx_24100006_controller(
                                 Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
-                                write_sext      = `ysyx_24100006_write_no_sext;
                             end
                             default: begin
                                 Jump            = `ysyx_24100006_NJUMP;
                                 Reg_Write       = `ysyx_24100006_REGNW;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
-                                write_sext      = `ysyx_24100006_write_no_sext;
                             end
                         endcase
                     end
@@ -300,7 +288,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_xori: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -312,7 +299,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_ori: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -324,7 +310,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_slli: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -336,14 +321,12 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     default: begin
                         Jump            = `ysyx_24100006_NJUMP;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                 endcase
             end
@@ -360,7 +343,6 @@ module ysyx_24100006_controller(
                                 Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
-                                write_sext      = `ysyx_24100006_write_no_sext;
                             end
                             `ysyx_24100006_sub: begin
                                 Jump            = `ysyx_24100006_NJUMP;
@@ -371,14 +353,12 @@ module ysyx_24100006_controller(
                                 Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
-                                write_sext      = `ysyx_24100006_write_no_sext;
                             end
                             default: begin
                                 Jump            = `ysyx_24100006_NJUMP;
                                 Reg_Write       = `ysyx_24100006_REGNW;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
-                                write_sext      = `ysyx_24100006_write_no_sext;
                             end
                         endcase
                     end
@@ -391,7 +371,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_slt: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -402,7 +381,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_sltu: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -413,7 +391,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_xor: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -424,7 +401,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_sr: begin
                         case(funct7)
@@ -437,7 +413,6 @@ module ysyx_24100006_controller(
                                 Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
-                                write_sext      = `ysyx_24100006_write_no_sext;
                             end
                             `ysyx_24100006_sra: begin
                                 Jump            = `ysyx_24100006_NJUMP;
@@ -448,14 +423,12 @@ module ysyx_24100006_controller(
                                 Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
-                                write_sext      = `ysyx_24100006_write_no_sext;
                             end
                             default: begin
                                 Jump            = `ysyx_24100006_NJUMP;
                                 Reg_Write       = `ysyx_24100006_REGNW;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
-                                Mem_Read        = `ysyx_24100006_MEMNR;
-                                write_sext      = `ysyx_24100006_write_no_sext;
+                                Mem_Read        = `ysyx_24100006_MEMNR;  
                             end
                         endcase
                     end
@@ -468,7 +441,6 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_and: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -479,14 +451,12 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_REG_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     default: begin
                         Jump            = `ysyx_24100006_NJUMP;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                 endcase
             end
@@ -502,7 +472,6 @@ module ysyx_24100006_controller(
                         Mem_Write       = `ysyx_24100006_MEMW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
                         Mem_WMask       = `ysyx_24100006_WByte;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     `ysyx_24100006_sh: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -513,8 +482,7 @@ module ysyx_24100006_controller(
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMW;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        Mem_WMask       = `ysyx_24100006_WHWord;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_WMask       = `ysyx_24100006_WHWord; 
                     end
                     `ysyx_24100006_sw: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -526,14 +494,12 @@ module ysyx_24100006_controller(
                         Mem_Write       = `ysyx_24100006_MEMW;
                         Mem_WMask       = `ysyx_24100006_WWord;
                         Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
                     end
                     default: begin
                         Jump            = `ysyx_24100006_NJUMP;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_Read        = `ysyx_24100006_MEMNR;  
                     end
                 endcase
             end
@@ -541,6 +507,7 @@ module ysyx_24100006_controller(
                 case(funct3)
                     // 这个指令需要0扩展
                     `ysyx_24100006_lbu: begin
+                        $display("lb\n");
                         Jump            = `ysyx_24100006_NJUMP;
                         Imm_Type        = `ysyx_24100006_I_TYPE_IMM;
                         aluop           = `ysyx_24100006_add_op;
@@ -550,8 +517,7 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_MEMR_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMR;
-                        Mem_RMask       = `ysyx_24100006_RByte;
-                        write_sext      = `ysyx_24100006_write_zero_sext;
+                        Mem_RMask       = `ysyx_24100006_RByteU;
                     end
                     `ysyx_24100006_lb: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -564,7 +530,6 @@ module ysyx_24100006_controller(
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMR;
                         Mem_RMask       = `ysyx_24100006_RByte;
-                        write_sext      = `ysyx_24100006_write_one_sext;
                     end
                     `ysyx_24100006_lw: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -576,8 +541,7 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_MEMR_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMR;
-                        Mem_RMask       = `ysyx_24100006_RWord;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_RMask       = `ysyx_24100006_RWord;   
                     end
                     `ysyx_24100006_lh: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -590,7 +554,6 @@ module ysyx_24100006_controller(
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMR;
                         Mem_RMask       = `ysyx_24100006_RHWord;
-                        write_sext      = `ysyx_24100006_write_one_sext;
                     end
                     `ysyx_24100006_lhu: begin
                         Jump            = `ysyx_24100006_NJUMP;
@@ -602,15 +565,13 @@ module ysyx_24100006_controller(
                         Reg_Write_RD    = `ysyx_24100006_MEMR_RESULT;
                         Mem_Write       = `ysyx_24100006_MEMNW;
                         Mem_Read        = `ysyx_24100006_MEMR;
-                        Mem_RMask       = `ysyx_24100006_RHWord;
-                        write_sext      = `ysyx_24100006_write_zero_sext;
+                        Mem_RMask       = `ysyx_24100006_RHWordU;
                     end
                     default: begin
                         Jump            = `ysyx_24100006_NJUMP;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_Read        = `ysyx_24100006_MEMNR;  
                     end
                 endcase
             end
@@ -625,8 +586,7 @@ module ysyx_24100006_controller(
                         AluSrcB         = `ysyx_24100006_B_RT;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_Read        = `ysyx_24100006_MEMNR;  
                     end
                     `ysyx_24100006_bne: begin
                         Jump            = `ysyx_24100006_JBNE;
@@ -636,8 +596,7 @@ module ysyx_24100006_controller(
                         AluSrcB         = `ysyx_24100006_B_RT;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_Read        = `ysyx_24100006_MEMNR;  
                     end
                     `ysyx_24100006_blt: begin
                         Jump            = `ysyx_24100006_JBLT;
@@ -647,8 +606,7 @@ module ysyx_24100006_controller(
                         AluSrcB         = `ysyx_24100006_B_RT;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_Read        = `ysyx_24100006_MEMNR;  
                     end
                     `ysyx_24100006_bge: begin
                         Jump            = `ysyx_24100006_JBGE;
@@ -658,8 +616,7 @@ module ysyx_24100006_controller(
                         AluSrcB         = `ysyx_24100006_B_RT;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_Read        = `ysyx_24100006_MEMNR;   
                     end
                     `ysyx_24100006_bltu: begin
                         Jump            = `ysyx_24100006_JBLTU;
@@ -669,8 +626,7 @@ module ysyx_24100006_controller(
                         AluSrcB         = `ysyx_24100006_B_RT;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_Read        = `ysyx_24100006_MEMNR;       
                     end
                     `ysyx_24100006_bgeu: begin
                         Jump            = `ysyx_24100006_JBGEU;
@@ -680,15 +636,13 @@ module ysyx_24100006_controller(
                         AluSrcB         = `ysyx_24100006_B_RT;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_Read        = `ysyx_24100006_MEMNR;        
                     end
                     default: begin
                         Jump            = `ysyx_24100006_NJUMP;
                         Reg_Write       = `ysyx_24100006_REGNW;
                         Mem_Write       = `ysyx_24100006_MEMNW;
-                        Mem_Read        = `ysyx_24100006_MEMNR;
-                        write_sext      = `ysyx_24100006_write_no_sext;
+                        Mem_Read        = `ysyx_24100006_MEMNR;         
                     end
                 endcase
             end
@@ -696,8 +650,7 @@ module ysyx_24100006_controller(
                 Jump            = `ysyx_24100006_NJUMP;
                 Reg_Write       = `ysyx_24100006_REGNW;
                 Mem_Write       = `ysyx_24100006_MEMNW;
-                Mem_Read        = `ysyx_24100006_MEMNR;
-                write_sext      = `ysyx_24100006_write_no_sext;
+                Mem_Read        = `ysyx_24100006_MEMNR;       
             end
         endcase
     end

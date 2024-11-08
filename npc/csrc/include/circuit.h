@@ -8,7 +8,7 @@
 #include <Vysyx_24100006_cpu___024root.h>
 #include <common.h>
 extern Vysyx_24100006_cpu *cpu;
-extern word_t inst,pc;
+extern word_t inst,pc,dnpc;
 //circuit
 void single_cycle();
 void cpu_exec(uint32_t n);

@@ -23,36 +23,45 @@ struct diff_context_t {
   word_t pc;
 };
 
+/**
+ * 内存拷贝
+ */
 __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
   // assert(0);
-  // void *nemu_buf = (void *)guest_to_host(addr);
-  // if(direction == DIFFTEST_TO_REF)  //dut -> ref (buf -> addr(nemu_buf))
-  //   memcpy(nemu_buf , buf , n);
-  // else                              //ref -> dut (addr(nemu_buf) -> buf)
-  //   memcpy(buf , nemu_buf, n);
+  void *nemu_buf = (void *)guest_to_host(addr);
+  if(direction == DIFFTEST_TO_REF)  //dut -> ref (buf -> addr(nemu_buf))
+    memcpy(nemu_buf , buf , n);
+  else                              //ref -> dut (addr(nemu_buf) -> buf)
+    memcpy(buf , nemu_buf, n);
 }
 
+/**
+ * 寄存器拷贝
+ */
 __EXPORT void difftest_regcpy(void *dut, bool direction) {
   // assert(0);
-  // int i = 0;
-  // struct diff_context_t *dut_state = (struct diff_context_t *)dut;
-  // if(direction == DIFFTEST_TO_REF){
-  //   for(i = 0;i < NR_GPR ; i++){
-  //     cpu.gpr[i] = dut_state->gpr[i];
-  //   }
-  //   cpu.pc = dut_state->pc;
-  // }
-  // else{
-  //   for(i = 0;i < NR_GPR ; i++){
-  //     dut_state->gpr[i] = cpu.gpr[i];
-  //   }
-  //   dut_state->pc = cpu.pc;
-  // }
+  int i = 0;
+  struct diff_context_t *dut_state = (struct diff_context_t *)dut;
+  if(direction == DIFFTEST_TO_REF){
+    for(i = 0;i < NR_GPR ; i++){
+      cpu.gpr[i] = dut_state->gpr[i];
+    }
+    cpu.pc = dut_state->pc;
+  }
+  else{
+    for(i = 0;i < NR_GPR ; i++){
+      dut_state->gpr[i] = cpu.gpr[i];
+    }
+    dut_state->pc = cpu.pc;
+  }
 }
 
+/**
+ * 差异执行
+ */
 __EXPORT void difftest_exec(uint64_t n) {
-  assert(0);
-  // cpu_exec(n);
+  // assert(0);
+  cpu_exec(n);
 }
 
 __EXPORT void difftest_raise_intr(word_t NO) {
