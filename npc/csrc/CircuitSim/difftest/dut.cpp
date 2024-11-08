@@ -64,9 +64,10 @@ bool static checkregs(struct CPU_state *ref_r){
     }
     for(int i = 0;i < REGNUM;i++){
         // nemu的gpr与npc的gpr相比
-        if(ref_r -> gpr[i] != gpr[i])
+        if(ref_r -> gpr[i] != gpr[i]){
             Log("PC = 0x%x, Difftest Reg Compare failed at GPR[%d], Difftest Get " FMT_WORD ", NEMU Get " FMT_WORD, pc, i, ref_r->gpr[i], gpr[i]);
             flag = false;
+        }
     }
     return flag;
 }
