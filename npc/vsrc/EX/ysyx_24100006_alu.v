@@ -33,7 +33,7 @@ module ysyx_24100006_alu(
 	assign srl_result   = rs_data >> rt_data[4:0];
 	assign sll_result   = rs_data << rt_data[4:0];
 
-    ysyx_24100006_MuxKey #(2,4,32)  alumux(result,aluop,{
+    ysyx_24100006_MuxKey #(10,4,32)  alumux(result,aluop,{
         4'b0000,add_sub_result,
         4'b0001,add_sub_result,
         4'b0010,cmpu_result,

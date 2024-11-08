@@ -1,58 +1,41 @@
+#top name
 TOPNAME = ysyx_24100006_cpu
 
+#设置构建文件夹信息
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
 
+REWRITE = $(NPC_HOME)/script/rewrite.mk
+
+#verilator variable
+ifeq ($(VERILATOR_ROOT),)
 VERILATOR = verilator
-VERILATOR_CFLAGS += -MMD --build -cc  \
-				-O3 --x-assign fast --x-initial fast --noassert
+else
+export VERILATOR_ROOT
+VERILATOR = $(VERILATOR_ROOT)/bin/verilator
+endif
 
-BUILD_DIR = ./build
-OBJ_DIR = $(BUILD_DIR)/obj_dir
-BIN = $(BUILD_DIR)/$(TOPNAME)
+#verilator flag
+VERILATOR_CFLAGS += -MMD -cc -O3 --x-assign fast --x-initial fast --noassert
+VERILATOR_CFLAGS += --trace
 
-default: $(BIN)
-
-$(shell mkdir -p $(BUILD_DIR))
-
-
-# project source
+#source code
 VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
 
+#sim
+include $(NPC_HOME)/script/sim.mk
 
-# rules for verilator
-INCFLAGS = $(addprefix -I, $(INC_PATH))
-CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
-
-$(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
-	@rm -rf $(OBJ_DIR)
-	$(VERILATOR) $(VERILATOR_CFLAGS) \
-		--top-module $(TOPNAME) $^ \
-		$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
-		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
-
-all: default
-
-run: $(BIN)
-	@$^
-
-clean:
-	rm -rf $(BUILD_DIR) ./obj_dir
-
-
-all:
-	@echo "Write this Makefile by your self."
-
-sim:
-	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	@echo "Write this Makefile by your self."
-
-	verilator -Wall --trace --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
-
-# verilator -Wall --trace-fst --cc --exe --build --top-module $(TOPNAME) $(VSRCS) $(CSRCS)
+#main makefile in all project
 include ../Makefile
 
+COLOR_RED   		= \033[1;31m
+COLOR_GREEN 		= \033[1;32m
+COLOR_YELLOW 		= \033[33m
+COLOR_NONE  		= \033[0m
 
-.PHONY: all clean run
+clean:
+	-rm -rf $(BUILD_DIR) result top.dot top.png vsrc/*.png
+
+.PHONY:clean run 

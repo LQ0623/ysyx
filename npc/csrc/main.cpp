@@ -1,51 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include "verilated.h"
-#include "verilated_vcd_c.h"
-#include "Vysyx_24100006_cpu.h"
-#include "Vysyx_24100006_cpu__Dpi.h"
-#include "svdpi.h"
+#include <circuit.h>
+#include <my_memory.h>
 
-static Vysyx_24100006_cpu *top;
+void reset_cpu(int n);
+void single_cycle();
+void init_wave();
+void close_wave();
+void init_monitor(int , char **);
+void sdb_mainloop();
 
-VerilatedContext* contextp = NULL;
-VerilatedVcdC* tfp = NULL;
+int main(int args,char *argv[]) {
 
-static int ebreak = 1;
-
-void single_cycle(){
-    top->clk = 0;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
-    top->clk = 1;top->eval();contextp -> timeInc(1);tfp->dump(contextp->time());
-}
-
-extern "C"  void npc_trap() {
-    ebreak = 0;
-}
-
-static void reset_cpu(int n){
-    top->reset = 1;
-    while(n--) single_cycle();
-    top->reset = 0;
-}
-
-int main() {
+    init_wave();
+    init_monitor(args, argv);
+    reset_cpu(10);
     
-    contextp = new VerilatedContext;
-    tfp = new VerilatedVcdC;
-    top = new Vysyx_24100006_cpu;
+    sdb_mainloop();
 
-    contextp->traceEverOn(true);
-
-    top->trace(tfp, 0) ;
-    tfp->open("build/sim.vcd") ;
-
-    reset_cpu(1);
-    int count = 0;
-    while(ebreak) {
-        printf("count is %d\n",count++);
-        single_cycle();
-    }
-    tfp -> close();
+    close_wave();
     return 0;
 }
