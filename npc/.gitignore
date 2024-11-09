@@ -10,4 +10,4 @@
 !.gitignore
 !README.md
 build/
-npc/yosys-sta/
+yosys-sta/
