@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <common.h>
+#include <mtrace.h>
 static char * img_file = NULL;
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
@@ -100,6 +101,10 @@ void init_monitor(int argc, char *argv[]){
     init_sdb();
     #ifdef CONFIG_DIFFTEST
       init_difftest(diff_so_file , img_size);
+    #endif
+
+    #ifdef CONFIG_MTRACE
+      init_mtrace_log();
     #endif
 
     welcome();

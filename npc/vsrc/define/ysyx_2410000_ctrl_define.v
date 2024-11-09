@@ -10,18 +10,15 @@
 `define ysyx_24100006_WHWord                8'b00000011   // 半字
 `define ysyx_24100006_WWord                 8'b00001111
 
-// 写入的值是否需要符号扩展
-`define ysyx_24100006_write_one_sext        2   // 进行符号扩展
-`define ysyx_24100006_write_zero_sext       1   // 进行零扩展
-`define ysyx_24100006_write_no_sext         0   // 不进行符号扩展
-
 // MEM_READ
 `define ysyx_24100006_MEMR                  1
 `define ysyx_24100006_MEMNR                 0
-// 读多少字节的内存
+// 读多少字节的内存，以及读取出来之后怎么进行扩展
 `define ysyx_24100006_RByte                 0
-`define ysyx_24100006_RHWord                1   // 半字
-`define ysyx_24100006_RWord                 2
+`define ysyx_24100006_RByteU                1
+`define ysyx_24100006_RHWord                2   // 半字
+`define ysyx_24100006_RHWordU               3   // 半字
+`define ysyx_24100006_RWord                 4
 
 // pc跳转是否加imm
 `define ysyx_24100006_NJUMP                 0

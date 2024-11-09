@@ -17,10 +17,10 @@ module ysyx_24100006_mem(
     /* verilator lint_off LATCH */
     always@(*)begin
         if(Mem_Write)begin
-            pmem_write(waddr & (~32'h3),wdata,Mem_WMask);
+            pmem_write(waddr,wdata,Mem_WMask);
         end
         else if (Mem_Read)begin
-            rdata = pmem_read(raddr & (~32'h3));
+            rdata = pmem_read(raddr);
         end
         else begin
             rdata = 32'h00000000;

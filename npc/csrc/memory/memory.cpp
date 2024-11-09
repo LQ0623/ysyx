@@ -1,5 +1,6 @@
 #include <my_memory.h>
 #include <common.h>
+#include <mtrace.h>
 
 static const uint32_t img[] = {
 	0x00000413,
@@ -27,9 +28,6 @@ void init_mem(size_t size){
 	printf("npc physical memory area [%#x, %#lx]\n",RESET_VECTOR, RESET_VECTOR + size * sizeof(uint8_t));
 }
 
-#define READ 1
-#define WRITE 0
-
 uint8_t *guest_to_host(uint32_t paddr){return pmem + (paddr - RESET_VECTOR);}
 
 extern "C" uint32_t pmem_read(uint32_t paddr){
@@ -38,6 +36,10 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 
 	uint32_t *inst_paddr = (uint32_t *)guest_to_host(paddr);
 
+	#ifdef CONFIG_MTRACE
+		mtrace_log_write(paddr, 32, 'r', 0);
+	#endif
+
 	return *inst_paddr;
 }
 
@@ -45,6 +47,9 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 	if(!(waddr >= 0x80000000 && waddr <= 0x87ffffff)) 
 		return ;
 	
+	#ifdef CONFIG_MTRACE
+		mtrace_log_write(waddr, wmask, 'w', wdata);
+	#endif
 
     // printf("data is %x\n",wdata);
 	uint8_t *vaddr = guest_to_host(waddr);
