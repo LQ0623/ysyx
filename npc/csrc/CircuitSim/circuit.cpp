@@ -48,7 +48,7 @@ void assert_fail_msg() {
  */
 void instruction_disassemble(char *p, uint8_t *inst){
 	char *ps = p;
-	p += snprintf(p, LOG_BUF_SIZE, "%#x:",prev_pc);
+	p += snprintf(p, LOG_BUF_SIZE, "%#x:",pc);
 	int ilen = 4;
 	int i;
 	for (i = ilen - 1; i >= 0; i --) {
@@ -61,7 +61,7 @@ void instruction_disassemble(char *p, uint8_t *inst){
 	memset(p, ' ', space_len);
 	p += space_len;
 	
-	disassemble(p, ps + LOG_BUF_SIZE - p, (uint64_t)prev_pc, inst, ilen);
+	disassemble(p, ps + LOG_BUF_SIZE - p, (uint64_t)pc, inst, ilen);
 }
 
 /**

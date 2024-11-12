@@ -1,6 +1,9 @@
 #include <my_memory.h>
 #include <common.h>
 #include <mtrace.h>
+#include <device.h>
+
+extern bool is_skip_diff;
 
 static const uint32_t img[] = {
 	0x00000413,
@@ -34,6 +37,12 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	if(!(paddr >= 0x80000000 && paddr <= 0x87ffffff)) 
 		return 0;
 
+	/**
+	 * 如果是设备访问内存，直接不用进行difftest
+	 */
+	if(paddr == RTC_ADDR || paddr == RTC_ADDR + 4){
+		is_skip_diff = true;
+	}
 	uint32_t *inst_paddr = (uint32_t *)guest_to_host(paddr);
 
 	#ifdef CONFIG_MTRACE
@@ -44,12 +53,21 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 }
 
 extern "C" void pmem_write(int waddr, int wdata,char wmask){
-	if(!(waddr >= 0x80000000 && waddr <= 0x87ffffff)) 
+	if(!(waddr >= 0x80000000 && waddr <= 0x87ffffff)){
 		return ;
+	}
+	if(waddr == SERIAL_PORT){
+		is_skip_diff = true;
+	}
 	
 	#ifdef CONFIG_MTRACE
 		mtrace_log_write(waddr, wmask, 'w', wdata);
 	#endif
+
+	if(waddr == SERIAL_PORT) {
+		putc((char)wdata,stderr); 
+		return;
+	}
 
     // printf("data is %x\n",wdata);
 	uint8_t *vaddr = guest_to_host(waddr);

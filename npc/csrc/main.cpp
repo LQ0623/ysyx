@@ -1,5 +1,6 @@
 #include <circuit.h>
 #include <my_memory.h>
+#include <utils.h>
 
 void reset_cpu(int n);
 void single_cycle();
@@ -9,7 +10,7 @@ void init_monitor(int , char **);
 void sdb_mainloop();
 
 int main(int args,char *argv[]) {
-
+    get_time();
     init_wave();
     init_monitor(args, argv);
     reset_cpu(10);
