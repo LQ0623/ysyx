@@ -85,7 +85,7 @@ void difftest_step() {
         }
         //copy reg to ref to skip this inst
         ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
-        printf("%#x\n",dut_r.pc);
+        // printf("%#x\n",dut_r.pc);
         return;
     }
     CPU_state ref_r;

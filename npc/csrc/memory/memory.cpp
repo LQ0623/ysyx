@@ -6,6 +6,7 @@
 extern bool is_skip_diff;
 extern word_t pc,dnpc;
 static int count = 0;
+static uint64_t timer = 0;
 
 static const uint32_t img[] = {
 	0x00000413,
@@ -37,7 +38,7 @@ void init_mem(size_t size){
 uint8_t *guest_to_host(uint32_t paddr){return pmem + (paddr - RESET_VECTOR);}
 
 extern "C" uint32_t pmem_read(uint32_t paddr){
-	if(!(paddr >= 0x80000000 && paddr <= 0x87ffffff)) 
+	if(!((paddr >= 0x80000000 && paddr <= 0x87ffffff) || (paddr == RTC_ADDR) || (paddr == RTC_ADDR + 4))) 
 		return 0;
 
 	/**
@@ -46,10 +47,18 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	if(paddr == RTC_ADDR || paddr == RTC_ADDR + 4){
 		is_skip_diff = true;
 	}
-	// else if(paddr == SERIAL_PORT){
-	// 	printf("count read:%d\n",count++);
-	// 	return 0;
-	// }
+
+	if(paddr == RTC_ADDR+4) {
+		timer = get_time(); 
+		return (uint32_t)(timer >> 32);
+	}
+	else if(paddr == RTC_ADDR + 4){
+		return (uint32_t)(timer >> 32);
+	}
+	else if(paddr == SERIAL_PORT){
+		printf("count read:%d\n",count++);
+		return 0;
+	}
 	uint32_t *inst_paddr = (uint32_t *)guest_to_host(paddr);
 
 	#ifdef CONFIG_MTRACE
@@ -65,7 +74,7 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 	}
 	
 	if(waddr == SERIAL_PORT){
-		printf("%#x\n",pc);
+		// printf("%#x\n",pc);
 		is_skip_diff = true;
 	}
 	
