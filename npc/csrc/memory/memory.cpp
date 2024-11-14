@@ -81,7 +81,7 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask,int nowpc){
 	
 	if(waddr == SERIAL_PORT){
 		printf("%#x,now pc:%#x\n",pc,nowpc);
-		is_skip_diff = true;
+		// is_skip_diff = true;
 	}
 	
 	#ifdef CONFIG_MTRACE

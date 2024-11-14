@@ -90,8 +90,9 @@ void difftest_step() {
     }
     CPU_state ref_r;
     ref_difftest_exec(1);
-    printf("123asdasdasd\n\n");
+    printf("123asdasdasd\n");
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    printf("ref_r.pc: %#x\n\n",ref_r.pc);
 
     if(!checkregs(&ref_r)){
         isa_reg_display();
