@@ -56,6 +56,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
 #endif
 
   cpu.pc = s->dnpc;
+  printf("nemu_pc:%#x\n",cpu.pc);
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
   p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
