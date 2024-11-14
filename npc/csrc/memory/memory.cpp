@@ -27,6 +27,7 @@ static const uint32_t img[] = {
 
 static uint8_t *pmem = NULL;
 static word_t device_write = 0;
+static word_t device_read = 0;
 
 void init_mem(size_t size){ 
 	pmem = (uint8_t *)malloc(size * sizeof(uint8_t));
@@ -73,13 +74,13 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	return *inst_paddr;
 }
 
-extern "C" void pmem_write(int waddr, int wdata,char wmask){
+extern "C" void pmem_write(int waddr, int wdata,char wmask,int nowpc){
 	if(!((waddr >= 0x80000000 && waddr <= 0x87ffffff) || (waddr == SERIAL_PORT))){
 		return ;
 	}
 	
 	if(waddr == SERIAL_PORT){
-		// printf("%#x\n",pc);
+		printf("%#x,now pc:%#x\n",pc,nowpc);
 		is_skip_diff = true;
 	}
 	
