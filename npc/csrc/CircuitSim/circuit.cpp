@@ -134,7 +134,7 @@ void cpu_exec(uint32_t n){
 		exec_once();
 		snpc = pc + 4;
 		inst = cpu->rootp -> ysyx_24100006_cpu__DOT__instruction;
-		pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc;
+		pc = cpu->rootp -> ysyx_24100006_cpu__DOT__npc;
 		dnpc = cpu->rootp -> ysyx_24100006_cpu__DOT__npc;
 		printf("cpp pc:%#x\n",pc);
 		printf("is_skip:%d\n",is_skip_diff);
