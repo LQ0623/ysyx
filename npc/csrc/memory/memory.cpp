@@ -52,7 +52,12 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 		timer = get_time(); 
 		return (uint32_t)(timer >> 32);
 	}
-	else if(paddr == RTC_ADDR + 4){
+	else if(paddr == RTC_ADDR) {
+		device_read++;
+		return (uint32_t)timer;
+	}
+	else if(paddr == RTC_ADDR + 4 && device_read != 0){
+		device_read++;
 		return (uint32_t)(timer >> 32);
 	}
 	else if(paddr == SERIAL_PORT){
