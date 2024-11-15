@@ -507,7 +507,7 @@ module ysyx_24100006_controller(
                 case(funct3)
                     // 这个指令需要0扩展
                     `ysyx_24100006_lbu: begin
-                        $display("lb\n");
+                        // $display("lb\n");
                         Jump            = `ysyx_24100006_NJUMP;
                         Imm_Type        = `ysyx_24100006_I_TYPE_IMM;
                         aluop           = `ysyx_24100006_add_op;

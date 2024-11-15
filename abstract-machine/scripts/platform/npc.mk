@@ -17,8 +17,8 @@ LDFLAGS   += --gc-sections -e _start
 NPCFLAGS += -l $(shell dirname $(IMAGE).bin)/npc_log.txt
 NPCFLAGS += -e $(IMAGE).elf	#这是elf文件
 
-NPCFLAGS += -d $(NPC_HOME)/tools/nemu-diff/riscv32-nemu-interpreter-so	#加入difftest测试
-#NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/spike-diff/build/riscv32-spike-so
+#NPCFLAGS += -d $(NPC_HOME)/tools/nemu-diff/riscv32-nemu-interpreter-so	#加入difftest测试
+NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/spike-diff/build/riscv32-spike-so
 NPCFLAGS += -b
 
 MAINARGS_MAX_LEN = 64
@@ -34,6 +34,6 @@ image: image-dep
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $(IMAGE).elf $(IMAGE).bin
 
 run: insert-arg
-	LD_PRELOAD=$(shell gcc -print-file-name=libasan.so) $(MAKE) -C $(NPC_HOME) ISA=$(ISA) run ARGS="$(NPCFLAGS)" IMG=$(IMAGE).bin
+	$(MAKE) -C $(NPC_HOME) ISA=$(ISA) run ARGS="$(NPCFLAGS)" IMG=$(IMAGE).bin
 
 .PHONY: insert-arg

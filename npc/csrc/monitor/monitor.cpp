@@ -107,5 +107,9 @@ void init_monitor(int argc, char *argv[]){
       init_mtrace_log();
     #endif
 
+    #ifdef CONFIG
+      init_device();
+    #endif
+
     welcome();
 }

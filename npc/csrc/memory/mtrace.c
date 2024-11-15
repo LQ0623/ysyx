@@ -26,9 +26,9 @@ void mtrace_log_write(paddr_t addr, int len, char operate,word_t data){
     }
     
     if(operate == 'r'){
-        fprintf(file, "This has read addr : 0x%x, len : %d\n", addr, len);
+        fprintf(file, "This has read addr : %#x, len : %d\n", addr, len);
     }else if(operate == 'w'){
-        fprintf(file, "This has wrote addr : 0x%x, len : %d, the data is %x\n", addr, len, data);
+        fprintf(file, "This has wrote addr : %#x, len : %d, the data is %#x\n", addr, len, data);
     }
     fclose(file);
 

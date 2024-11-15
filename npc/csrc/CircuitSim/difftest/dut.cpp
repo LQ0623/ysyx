@@ -62,12 +62,12 @@ bool static checkregs(struct CPU_state *ref_r){
     for(int i = 0;i < REGNUM;i++){
         // nemu的gpr与npc的gpr相比
         if(ref_r -> gpr[i] != gpr[i]){
-            Log("PC = 0x%x, Difftest Reg Compare failed at %s, Difftest Get " FMT_WORD ", NPC Get " FMT_WORD, pc, regs[i], ref_r->gpr[i], gpr[i]);
+            Log("PC = 0x%x, Difftest Reg Compare failed at %s, Difftest reg Get " FMT_WORD ", NPC reg Get " FMT_WORD, pc, regs[i], ref_r->gpr[i], gpr[i]);
             flag = false;
         }
     }
     if(ref_r -> pc != pc){
-        Log("ref_r: " FMT_WORD "\tpc:" FMT_WORD "\tdnpc:" FMT_WORD, ref_r->pc, pc, dnpc);
+        Log("ref_r pc: " FMT_WORD "\tpc:" FMT_WORD "\tdnpc:" FMT_WORD, ref_r->pc, pc, dnpc);
         flag = false;
     }
     return flag;
@@ -75,21 +75,31 @@ bool static checkregs(struct CPU_state *ref_r){
 
 void difftest_step() {
     if(ref_difftest_memcpy == NULL) return;
+
+    CPU_state ref_r;
+    ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    // 因为如果设备跳过之后，给定的pc是npc，所以在执行完一拍之后才能对上拍
+    if(ref_r.pc == pc){
+        return;
+    }
+
     if(is_skip_diff == true){
         is_skip_diff = false;
         //get dut reg into CPU_state struct
         CPU_state dut_r;
-        dut_r.pc = pc;
+        dut_r.pc = dnpc;
         for(int i = 0;i < REGNUM;i++){
             dut_r.gpr[i] = gpr[i];
         }
+        // printf("%#x\n",dut_r.pc);
         //copy reg to ref to skip this inst
         ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
         return;
     }
-    CPU_state ref_r;
+    
     ref_difftest_exec(1);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    // printf("ref_r.pc: %#x\n\n",ref_r.pc);
 
     if(!checkregs(&ref_r)){
         isa_reg_display();

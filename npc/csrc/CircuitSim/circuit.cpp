@@ -48,7 +48,7 @@ void assert_fail_msg() {
  */
 void instruction_disassemble(char *p, uint8_t *inst){
 	char *ps = p;
-	p += snprintf(p, LOG_BUF_SIZE, "%#x:",prev_pc);
+	p += snprintf(p, LOG_BUF_SIZE, "%#x:",pc);
 	int ilen = 4;
 	int i;
 	for (i = ilen - 1; i >= 0; i --) {
@@ -61,7 +61,7 @@ void instruction_disassemble(char *p, uint8_t *inst){
 	memset(p, ' ', space_len);
 	p += space_len;
 	
-	disassemble(p, ps + LOG_BUF_SIZE - p, (uint64_t)prev_pc, inst, ilen);
+	disassemble(p, ps + LOG_BUF_SIZE - p, (uint64_t)pc, inst, ilen);
 }
 
 /**
@@ -125,7 +125,7 @@ static void trace_and_difftest() {
 static void exec_once(){
 	single_cycle();
 }
-
+extern bool is_skip_diff;
 void cpu_exec(uint32_t n){
 	//max inst to print to stdout
 	g_print_step = (n < MAX_INST_TO_PRINT);
@@ -136,6 +136,8 @@ void cpu_exec(uint32_t n){
 		inst = cpu->rootp -> ysyx_24100006_cpu__DOT__instruction;
 		pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc;
 		dnpc = cpu->rootp -> ysyx_24100006_cpu__DOT__npc;
+		// printf("cpp pc:%#x\n",pc);
+		// printf("is_skip:%d\n",is_skip_diff);
 		get_reg();
 		g_nr_guest_inst ++;
 		#ifdef CONFIG_TRACE
