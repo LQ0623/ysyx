@@ -13,6 +13,7 @@ void init_sdb();
 void init_log(const char *log_file);
 void init_ftrace(char *elf_file);
 void init_difftest(char *ref_so_file, long img_size);
+void init_device();
 extern "C" void init_disasm();
 
 

@@ -17,8 +17,4 @@ void reset_cpu(int n);
 void init_wave();
 void dump_wave_inc();
 void close_wave();
-//some simulator action
-#define BITMASK(bits) ((1ull << (bits)) - 1)
-#define BITS(x, hi, lo) (((int64_t)(x) >> (lo)) & BITMASK((hi) - (lo) + 1)) // similar to x[hi:lo] in verilog
-#define SEXT(x, len) ({ struct { int64_t n : len; } __x = { .n = static_cast<int64_t>(x) }; (uint64_t)__x.n; })
 #endif

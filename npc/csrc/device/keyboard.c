@@ -3,7 +3,6 @@
 
 #define KEYDOWN_MASK 0x8000
 
-#ifndef CONFIG_TARGET_AM
 #include <SDL2/SDL.h>
 
 // Note that this is not the standard
@@ -16,14 +15,14 @@ f(LSHIFT) f(Z) f(X) f(C) f(V) f(B) f(N) f(M) f(COMMA) f(PERIOD) f(SLASH) f(RSHIF
 f(LCTRL) f(APPLICATION) f(LALT) f(SPACE) f(RALT) f(RCTRL) \
 f(UP) f(DOWN) f(LEFT) f(RIGHT) f(INSERT) f(DELETE) f(HOME) f(END) f(PAGEUP) f(PAGEDOWN)
 
-#define NEMU_KEY_NAME(k) NEMU_KEY_ ## k,
+#define NPC_KEY_NAME(k) NPC_KEY_ ## k,
 
 enum {
-  NEMU_KEY_NONE = 0,
+  NPC_KEY_NONE = 0,
   MAP(NPC_KEYS, NPC_KEY_NAME)
 };
 
-#define SDL_KEYMAP(k) keymap[SDL_SCANCODE_ ## k] = NEMU_KEY_ ## k;
+#define SDL_KEYMAP(k) keymap[SDL_SCANCODE_ ## k] = NPC_KEY_ ## k;
 static uint32_t keymap[256] = {};
 
 static void init_keymap() {
@@ -41,7 +40,7 @@ static void key_enqueue(uint32_t am_scancode) {
 }
 
 static uint32_t key_dequeue() {
-  uint32_t key = NEMU_KEY_NONE;
+  uint32_t key = NPC_KEY_NONE;
   if (key_f != key_r) {
     key = key_queue[key_f];
     key_f = (key_f + 1) % KEY_QUEUE_LEN;
@@ -50,7 +49,7 @@ static uint32_t key_dequeue() {
 }
 
 void send_key(uint8_t scancode, bool is_keydown) {
-  if (keymap[scancode] != NEMU_KEY_NONE) {
+  if (keymap[scancode] != NPC_KEY_NONE) {
     uint32_t am_scancode = keymap[scancode] | (is_keydown ? KEYDOWN_MASK : 0);
     key_enqueue(am_scancode);
   }
@@ -65,6 +64,7 @@ static void i8042_data_io_handler(uint32_t offset, int len, bool is_write) {
 }
 
 void init_i8042() {
+  printf("init_i8042\n");
   i8042_data_port_base = (uint32_t *)KBD_ADDR;
-  i8042_data_port_base[0] = NEMU_KEY_NONE;
+  i8042_data_port_base[0] = NPC_KEY_NONE;
 }
