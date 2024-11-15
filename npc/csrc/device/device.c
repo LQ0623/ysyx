@@ -27,7 +27,7 @@ void device_update() {
       case SDL_QUIT:
         exit(0);
         break;
-#ifdef CONFIG_HAS_KEYBOARD
+#ifdef CONFIG_KEYBOARD
       // If a key was pressed
       case SDL_KEYDOWN:
       case SDL_KEYUP: {
@@ -52,7 +52,7 @@ void sdl_clear_event_queue() {
 
 void init_device() {
 
-#ifdef CONFIG_KEYBOARD
+#ifdef CONFIG_DEVICE
   init_i8042();
 #endif
 

@@ -4,7 +4,6 @@ module ysyx_24100006_cpu(
 );
 	wire [31:0]pc;
 	wire [31:0]npc;
-	wire [31:0]old_pc;
 	ysyx_24100006_pc PC(.clk(clk),.reset(reset),.npc(npc),.pc(pc));
 
 	wire [31:0] instruction;
@@ -85,8 +84,9 @@ module ysyx_24100006_cpu(
 	assign mem_addr = alu_result & (~32'h3);	// 对齐到4字节边界
 	assign place = alu_result - mem_addr;		// 计算实际地址与字节之间的偏移
 	assign RealMemWmask = Mem_WMask << place;	// 
+	// 这里需要修改，不一定写入的地址就是alu_data
 	ysyx_24100006_mem 	mem(.clk(clk),.Mem_Write(Mem_Write),.Mem_WMask(RealMemWmask),.waddr(mem_addr),.wdata(rs2_data),
-							.Mem_Read(Mem_Read),.raddr(mem_addr),.rdata(rdraw),.pc(pc));
+							.Mem_Read(Mem_Read),.raddr(mem_addr),.rdata(rdraw));
 
 	// ysyx_24100006_mem 	mem(.clk(clk),.Mem_Write(Mem_Write),.Mem_WMask(Mem_WMask),.waddr(mem_addr),.wdata(rs2_data),
 	// 						.Mem_Read(Mem_Read),.raddr(mem_addr),.rdata(Mem_rdata));
@@ -104,8 +104,7 @@ module ysyx_24100006_cpu(
 		3'b100,Mem_rdata[31:0]
 	});
 
-	assign old_pc = pc;
 	// 下一条指令怎么跳转
-	ysyx_24100006_npc NPC(.pc(old_pc),.Skip_mode(Jump),.sext_imm(sext_imm),.rs_data(rs1_data),.cmp_result(alu_result[0]),.zf(zf),.npc(npc));
+	ysyx_24100006_npc NPC(.pc(pc),.Skip_mode(Jump),.sext_imm(sext_imm),.rs_data(rs1_data),.cmp_result(alu_result[0]),.zf(zf),.npc(npc));
 
 endmodule

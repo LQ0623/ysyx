@@ -20,7 +20,7 @@ f(UP) f(DOWN) f(LEFT) f(RIGHT) f(INSERT) f(DELETE) f(HOME) f(END) f(PAGEUP) f(PA
 
 enum {
   NEMU_KEY_NONE = 0,
-  MAP(NEMU_KEYS, NEMU_KEY_NAME)
+  MAP(NPC_KEYS, NPC_KEY_NAME)
 };
 
 #define SDL_KEYMAP(k) keymap[SDL_SCANCODE_ ## k] = NEMU_KEY_ ## k;

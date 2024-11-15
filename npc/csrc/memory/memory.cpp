@@ -37,14 +37,14 @@ void init_mem(size_t size){
 uint8_t *guest_to_host(uint32_t paddr){return pmem + (paddr - RESET_VECTOR);}
 
 extern "C" uint32_t pmem_read(uint32_t paddr){
-	if(!((paddr >= 0x80000000 && paddr <= 0x87ffffff) || (paddr == RTC_ADDR) || (paddr == RTC_ADDR + 4))) 
+	if(!((paddr >= 0x80000000 && paddr <= 0x87ffffff) || (paddr == RTC_ADDR) || (paddr == RTC_ADDR + 4) || (paddr == KBD_ADDR))) 
 		return 0;
 
 	/**
 	 * 如果是设备访问内存，直接不用进行difftest
 	 */
 	if(paddr == RTC_ADDR || paddr == RTC_ADDR + 4 || paddr == KBD_ADDR){
-		printf("KBD_ADDR:%d\n",paddr==KBD_ADDR);
+		// printf("KBD_ADDR:%d\n",paddr==KBD_ADDR);
 		is_skip_diff = true;
 	}
 

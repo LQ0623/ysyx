@@ -24,9 +24,6 @@ VERILATOR_CFLAGS += --trace
 VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
 
-#sta
-include $(NPC_HOME)/script/yosys-sta.mk
-
 #sim
 include $(NPC_HOME)/script/sim.mk
 
@@ -39,6 +36,6 @@ COLOR_YELLOW 		= \033[33m
 COLOR_NONE  		= \033[0m
 
 clean:
-	-rm -rf $(BUILD_DIR) result mtrace.log
+	-rm -rf $(BUILD_DIR) result top.dot top.png vsrc/*.png
 
 .PHONY:clean run 

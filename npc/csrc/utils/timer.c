@@ -16,22 +16,20 @@
 #include <common.h>
 #include <sys/time.h>
 static uint64_t boot_time = 0;
-static uint64_t count = 0;
 
 static uint64_t get_time_internal() {
   struct timeval now;
   gettimeofday(&now, NULL);
   uint64_t us = now.tv_sec * 1000000 + now.tv_usec;
-  // printf("count: %ld\n",count++);
   return us;
 }
 
 uint64_t get_time() {
   if (boot_time == 0) boot_time = get_time_internal();
-  // printf("boot = %lu\n",boot_time);
+  //printf("boot = %llu\n",boot_time);
   uint64_t now = get_time_internal();
-  // printf("now = %lu\n",now);
-  // printf("now - boottime = %lu\n",now - boot_time);
+  //printf("now = %llu\n",now);
+  //printf("now - boottime = %llu\n",now - boot_time);
   return now - boot_time;
 }
 
