@@ -85,10 +85,6 @@ module ysyx_24100006_cpu(
 	assign mem_addr = alu_result & (~32'h3);	// 对齐到4字节边界
 	assign place = alu_result - mem_addr;		// 计算实际地址与字节之间的偏移
 	assign RealMemWmask = Mem_WMask << place;	// 
-	
-	always@(pc)begin
-		$display("pc:%x",pc);
-	end
 	ysyx_24100006_mem 	mem(.clk(clk),.Mem_Write(Mem_Write),.Mem_WMask(RealMemWmask),.waddr(mem_addr),.wdata(rs2_data),
 							.Mem_Read(Mem_Read),.raddr(mem_addr),.rdata(rdraw),.pc(pc));
 
