@@ -43,7 +43,8 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	/**
 	 * 如果是设备访问内存，直接不用进行difftest
 	 */
-	if(paddr == RTC_ADDR || paddr == RTC_ADDR + 4){
+	if(paddr == RTC_ADDR || paddr == RTC_ADDR + 4 || paddr == KBD_ADDR){
+		printf("KBD_ADDR:%d\n",paddr==KBD_ADDR);
 		is_skip_diff = true;
 	}
 

@@ -44,6 +44,11 @@ ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
 endif
 
+# ENABLE_KEYBOARD ?= 1
+# ifeq ($(ENABLE_KEYBOARD), 1)
+#     CPPFLAGS += -DCONFIG_KEYBOARD
+# endif
+
 # 开启反汇编
 ENABLE_DISASSEMBLE ?= 1
 
