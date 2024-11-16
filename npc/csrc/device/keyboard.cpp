@@ -1,9 +1,8 @@
 #include <utils.h>
+#include <debug.h>
 #include <device.h>
 
 #define KEYDOWN_MASK 0x8000
-
-#include <SDL2/SDL.h>
 
 // Note that this is not the standard
 #define NPC_KEYS(f) \
@@ -39,7 +38,7 @@ static void key_enqueue(uint32_t am_scancode) {
   Assert(key_r != key_f, "key queue overflow!");
 }
 
-static uint32_t key_dequeue() {
+uint32_t key_dequeue() {
   uint32_t key = NPC_KEY_NONE;
   if (key_f != key_r) {
     key = key_queue[key_f];
@@ -55,16 +54,18 @@ void send_key(uint8_t scancode, bool is_keydown) {
   }
 }
 
-static uint32_t *i8042_data_port_base = NULL;
+// static uint32_t *i8042_data_port_base = NULL;
 
-static void i8042_data_io_handler(uint32_t offset, int len, bool is_write) {
-  assert(!is_write);
-  assert(offset == 0);
-  i8042_data_port_base[0] = key_dequeue();
-}
+// static void i8042_data_io_handler(uint32_t offset, int len, bool is_write) {
+//   assert(!is_write);
+//   assert(offset == 0);
+//   i8042_data_port_base[0] = key_dequeue();
+// }
 
-void init_i8042() {
-  printf("init_i8042\n");
-  i8042_data_port_base = (uint32_t *)KBD_ADDR;
-  i8042_data_port_base[0] = NPC_KEY_NONE;
-}
+// void init_i8042() {
+//   printf("init_i8042\n");
+//   i8042_data_port_base = (uint32_t *)KBD_ADDR;
+//   printf("%p\n",i8042_data_port_base);
+//   i8042_data_port_base[0] = NPC_KEY_NONE;
+//   printf("init_i8042 end\n");
+// }

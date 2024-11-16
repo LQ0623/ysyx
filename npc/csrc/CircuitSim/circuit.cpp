@@ -2,6 +2,7 @@
 #include <my_memory.h>
 #include <common.h>
 #include <ftrace.h>
+#include <device.h>
 #include <../monitor/sdb/sdb.h>
 
 Vysyx_24100006_cpu *cpu;
@@ -147,6 +148,7 @@ void cpu_exec(uint32_t n){
 				break;
 			}
 		#endif
+		IFDEF(CONFIG_DEVICE, device_update());
 		n--;
 	}
 }

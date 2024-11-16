@@ -1,13 +1,14 @@
 
 #include <common.h>
 #include <utils.h>
-#include <SDL2/SDL.h>
+#include <device.h>
 
 #define TIMER_HZ 60
 
 void init_i8042();
 
 void send_key(uint8_t, bool);
+// void vga_update_screen();
 
 void device_update() {
   static uint64_t last = 0;
@@ -19,14 +20,15 @@ void device_update() {
 
   // IFDEF(CONFIG_HAS_VGA, vga_update_screen());
 
-
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
+    printf("11\n");
     switch (event.type) {
       case SDL_QUIT:
+        printf("KEY_BOARD exit\n");
         exit(0);
         break;
-      #ifdef CONFIG_KEYBOARD
+      #ifdef ENBALE_KEYBOARD
       // If a key was pressed
       case SDL_KEYDOWN:
       case SDL_KEYUP: {
@@ -42,17 +44,8 @@ void device_update() {
 
 }
 
-void sdl_clear_event_queue() {
-#ifndef CONFIG_TARGET_AM
-  SDL_Event event;
-  while (SDL_PollEvent(&event));
-#endif
-}
-
 void init_device() {
 
-#ifdef CONFIG_DEVICE
-  init_i8042();
-#endif
+  printf("\n\n\n\n\n\n\n\n\ninit device\n\n\n\n\n\n\n\n\n");
 
 }

@@ -55,6 +55,9 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	else if(paddr == RTC_ADDR) {
 		return (uint32_t)timer;
 	}
+	else if(paddr == KBD_ADDR){
+		return (uint32_t)key_dequeue();
+	}
 	uint32_t *inst_paddr = (uint32_t *)guest_to_host(paddr);
 
 	#ifdef CONFIG_MTRACE
@@ -64,7 +67,7 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	return *inst_paddr;
 }
 
-extern "C" void pmem_write(int waddr, int wdata,char wmask,int now_pc){
+extern "C" void pmem_write(int waddr, int wdata,char wmask){
 	if(!((waddr >= 0x80000000 && waddr <= 0x87ffffff) || (waddr == SERIAL_PORT))){
 		return ;
 	}

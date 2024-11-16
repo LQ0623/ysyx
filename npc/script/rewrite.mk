@@ -39,7 +39,7 @@ ifeq ($(ENABLE_MTRACE), 1)
 endif
 
 # 是否开启difftest
-ENABLE_DIFFTEST ?= 1
+ENABLE_DIFFTEST ?= 0
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
 endif
@@ -48,6 +48,12 @@ ENABLE_DEVICE ?= 1
 ifeq ($(ENABLE_DEVICE), 1)
     CPPFLAGS += -DCONFIG_DEVICE
 endif
+
+ENBALE_KEYBOARD ?= 1
+ifeq ($(ENBALE_KEYBOARD), 1)
+    CPPFLAGS += -DCONFIG_HAS_KEYBOARD
+endif
+
 
 # 开启反汇编
 ENABLE_DISASSEMBLE ?= 1
@@ -63,5 +69,7 @@ $(LIBCAPSTONE):
 	$(MAKE) -C $(NPC_HOME)/tools/capstone
 endif
 
-LIBS += -lreadline
+# LIBS += -lreadline
+LIBS += -lreadline $(shell pkg-config --libs sdl2)
+
 LINK := g++

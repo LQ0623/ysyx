@@ -1,3 +1,12 @@
+#ifndef __DEVICE_H__
+#define __DEVICE_H__
+
+#include <stdbool.h>
+#include <common.h>
+#include <utils.h>
+#include <SDL2/SDL.h>
+#include "macro.h"
+
 #define DEVICE_BASE     0xa0000000
 #define MMIO_BASE       0xa0000000
 
@@ -9,3 +18,10 @@
 #define DISK_ADDR       (DEVICE_BASE + 0x0000300)
 #define FB_ADDR         (MMIO_BASE   + 0x1000000)
 #define AUDIO_SBUF_ADDR (MMIO_BASE   + 0x1200000)
+
+
+void init_device();
+void device_update();
+extern uint32_t key_dequeue();
+
+#endif
