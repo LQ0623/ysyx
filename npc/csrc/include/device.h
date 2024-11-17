@@ -19,6 +19,9 @@
 #define FB_ADDR         (MMIO_BASE   + 0x1000000)
 #define AUDIO_SBUF_ADDR (MMIO_BASE   + 0x1200000)
 
+#if CONFIG_MBASE + CONFIG_MSIZE > 0x100000000ul
+    #define PMEM64 1
+#endif
 
 void init_device();
 void device_update();

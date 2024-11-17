@@ -1,5 +1,6 @@
 #include <utils.h>
 #include <debug.h>
+#include <keyboard.h>
 #include <device.h>
 
 #define KEYDOWN_MASK 0x8000

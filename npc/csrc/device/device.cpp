@@ -2,6 +2,9 @@
 #include <common.h>
 #include <utils.h>
 #include <device.h>
+#include <vga.h>
+#include <keyboard.h>
+#include <map.h>
 
 #define TIMER_HZ 60
 
@@ -46,6 +49,9 @@ void device_update() {
 
 void init_device() {
 
+  init_map();
+  init_keymap();
+  init_vga();
   printf("\n\n\n\n\n\n\n\n\ninit device\n\n\n\n\n\n\n\n\n");
 
 }
