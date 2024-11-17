@@ -84,6 +84,7 @@ void difftest_step() {
     }
 
     if(is_skip_diff == true){
+        ref_difftest_exec(1);
         is_skip_diff = false;
         //get dut reg into CPU_state struct
         CPU_state dut_r;

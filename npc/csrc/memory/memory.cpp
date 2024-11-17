@@ -2,6 +2,7 @@
 #include <common.h>
 #include <mtrace.h>
 #include <device.h>
+#include <vga.h>
 
 extern bool is_skip_diff;
 extern word_t pc,dnpc;
@@ -37,7 +38,7 @@ void init_mem(size_t size){
 uint8_t *guest_to_host(uint32_t paddr){return pmem + (paddr - RESET_VECTOR);}
 
 extern "C" uint32_t pmem_read(uint32_t paddr){
-	if(!((paddr >= 0x80000000 && paddr <= 0x87ffffff) || (paddr == RTC_ADDR) || (paddr == RTC_ADDR + 4))) 
+	if(!((paddr >= 0x80000000 && paddr <= 0x87ffffff) || (paddr == RTC_ADDR) || (paddr == RTC_ADDR + 4) || (paddr == KBD_ADDR))) 
 		return 0;
 
 	/**
@@ -55,6 +56,12 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	else if(paddr == RTC_ADDR) {
 		return (uint32_t)timer;
 	}
+	else if(paddr == KBD_ADDR){
+		return (uint32_t)key_dequeue();
+	}
+	else if(paddr == VGACTL_ADDR + 4){
+		update_vga();
+	}
 	uint32_t *inst_paddr = (uint32_t *)guest_to_host(paddr);
 
 	#ifdef CONFIG_MTRACE
@@ -64,7 +71,7 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	return *inst_paddr;
 }
 
-extern "C" void pmem_write(int waddr, int wdata,char wmask,int now_pc){
+extern "C" void pmem_write(int waddr, int wdata,char wmask){
 	if(!((waddr >= 0x80000000 && waddr <= 0x87ffffff) || (waddr == SERIAL_PORT))){
 		return ;
 	}
