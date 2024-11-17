@@ -27,7 +27,7 @@ static uint32_t keymap[256] = {};
 
 void init_keymap() {
   MAP(NPC_KEYS, SDL_KEYMAP);
-  printf("init key\n");
+  // printf("init key\n");
 }
 
 #define KEY_QUEUE_LEN 1024

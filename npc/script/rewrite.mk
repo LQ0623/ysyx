@@ -9,13 +9,13 @@ ifeq ($(ENABLE_WAVE), 1)
 endif
 
 # 是否开启监视点的差异比较
-ENABLE_WATCHPOINT ?= 1
+ENABLE_WATCHPOINT ?= 0
 ifeq ($(ENABLE_WATCHPOINT), 1)
     CPPFLAGS += -DCONFIG_CC_WATCHPOINT
 endif
 
 # 是否开启trace功能
-ENABLE_TRACE ?= 1
+ENABLE_TRACE ?= 0
 ifeq ($(ENABLE_TRACE), 1)
     CPPFLAGS += -DCONFIG_TRACE
 endif
@@ -54,6 +54,10 @@ ifeq ($(ENBALE_KEYBOARD), 1)
     CPPFLAGS += -DCONFIG_KEYBOARD
 endif
 
+ENBALE_VGA ?= 1
+ifeq ($(ENBALE_VGA), 1)
+    CPPFLAGS += -DCONFIG_VGA
+endif
 
 # 开启反汇编
 ENABLE_DISASSEMBLE ?= 1

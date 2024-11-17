@@ -2,6 +2,7 @@
 #include <common.h>
 #include <mtrace.h>
 #include <device.h>
+#include <vga.h>
 
 extern bool is_skip_diff;
 extern word_t pc,dnpc;
@@ -57,6 +58,9 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	}
 	else if(paddr == KBD_ADDR){
 		return (uint32_t)key_dequeue();
+	}
+	else if(paddr == VGACTL_ADDR + 4){
+		update_vga();
 	}
 	uint32_t *inst_paddr = (uint32_t *)guest_to_host(paddr);
 

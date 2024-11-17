@@ -50,8 +50,12 @@ void device_update() {
 void init_device() {
 
   init_map();
-  init_keymap();
-  init_vga();
-  printf("\n\n\n\n\n\n\n\n\ninit device\n\n\n\n\n\n\n\n\n");
+  #ifdef CONFIG_KEYBOARD
+    init_keymap();
+  #endif
+  #ifdef CONFIG_VGA
+    init_vga();
+  #endif
+  // printf("\n\n\n\n\n\n\n\n\ninit device\n\n\n\n\n\n\n\n\n");
 
 }

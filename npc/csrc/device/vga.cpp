@@ -3,10 +3,11 @@
 #include <common.h>
 #include <vga.h>
 
+// #define VGA_W 800
+// #define VGA_H 600
 
-
-#define VGA_W 800
-#define VGA_H 600
+#define VGA_W 400
+#define VGA_H 300
 
 SDL_Window *win = NULL;
 SDL_Renderer *rdr = NULL;
@@ -51,7 +52,7 @@ void init_vga() {
   }
   printf("SLD init successful \n");
   
-  win = SDL_CreateWindow("riscv64-npc",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,VGA_W,VGA_H,0);    //创建窗口
+  win = SDL_CreateWindow("riscv32e-npc",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,VGA_W,VGA_H,0);    //创建窗口
   if (!win) {
     printf("Window creation failed: %s\n", SDL_GetError());
     assert(0);
