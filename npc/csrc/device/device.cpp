@@ -25,13 +25,13 @@ void device_update() {
 
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
-    printf("11\n");
+    // printf("11\n");
     switch (event.type) {
       case SDL_QUIT:
         printf("KEY_BOARD exit\n");
         exit(0);
         break;
-      #ifdef ENBALE_KEYBOARD
+      #ifdef CONFIG_KEYBOARD
       // If a key was pressed
       case SDL_KEYDOWN:
       case SDL_KEYUP: {

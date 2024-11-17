@@ -5,8 +5,8 @@
 
 
 
-#define VGA_W 400
-#define VGA_H 300
+#define VGA_W 800
+#define VGA_H 600
 
 SDL_Window *win = NULL;
 SDL_Renderer *rdr = NULL;

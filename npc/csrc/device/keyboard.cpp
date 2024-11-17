@@ -25,8 +25,9 @@ enum {
 #define SDL_KEYMAP(k) keymap[SDL_SCANCODE_ ## k] = NPC_KEY_ ## k;
 static uint32_t keymap[256] = {};
 
-static void init_keymap() {
-  MAP(NPC_KEYS, SDL_KEYMAP)
+void init_keymap() {
+  MAP(NPC_KEYS, SDL_KEYMAP);
+  printf("init key\n");
 }
 
 #define KEY_QUEUE_LEN 1024

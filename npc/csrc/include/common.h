@@ -19,8 +19,8 @@ typedef uint32_t word_t;
 #define FMT_WORD "0x%08x"
 
 typedef word_t vaddr_t;
-typedef word_t paddr_t;
-#define FMT_PADDR MUXDEF(PMEM64, "0x%016"PRIx64, "0x%08"PRIx32)
+typedef MUXDEF(PMEM64, uint64_t, uint32_t) paddr_t;
+#define FMT_PADDR MUXDEF(PMEM64, "0x%016" PRIx64, "0x%08" PRIx32)
 typedef uint16_t ioaddr_t;
 
 #include <debug.h>
