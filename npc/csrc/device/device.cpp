@@ -11,7 +11,7 @@
 void init_i8042();
 
 void send_key(uint8_t, bool);
-// void vga_update_screen();
+void update_vga();
 
 void device_update() {
   static uint64_t last = 0;
@@ -21,7 +21,7 @@ void device_update() {
   }
   last = now;
 
-  // IFDEF(CONFIG_HAS_VGA, vga_update_screen());
+  IFDEF(CONFIG_VGA, update_vga());
 
   SDL_Event event;
   while (SDL_PollEvent(&event)) {

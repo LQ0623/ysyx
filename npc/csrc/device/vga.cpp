@@ -3,11 +3,11 @@
 #include <common.h>
 #include <vga.h>
 
-// #define VGA_W 800
-// #define VGA_H 600
+#define VGA_W 800
+#define VGA_H 600
 
-#define VGA_W 400
-#define VGA_H 300
+// #define VGA_W 400
+// #define VGA_H 300
 
 SDL_Window *win = NULL;
 SDL_Renderer *rdr = NULL;
