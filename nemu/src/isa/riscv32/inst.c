@@ -151,7 +151,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 011 ????? 01100 11", mulhu  , Rt, uint64_t a = src1; uint64_t b = src2;uint64_t temp = a * b; R(rd) = BITS(temp, 63, 32));
 
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
-  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, isa_raise_intr(1, cpu.pc)); // 环境调用
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, s->dnpc = isa_raise_intr(1, s->pc)); // 环境调用
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 
