@@ -24,6 +24,8 @@
 #define Mr vaddr_read
 #define Mw vaddr_write
 
+char etrace_file_path[] = "./etrace.log"; 
+
 enum {
   TYPE_I, TYPE_U, TYPE_S,
   TYPE_N, // none
@@ -37,6 +39,37 @@ enum {
 #define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while(0)
 #define immJ() do { *imm = (SEXT(BITS(i, 31, 31), 1) << 20) | (BITS(i, 19, 12) << 12) | (BITS(i, 20, 20) << 11) | (BITS(i, 30, 21) << 1); } while(0)
 #define immB() do { *imm = (SEXT(BITS(i, 31, 31), 1) << 12) | (BITS(i, 7, 7) << 11) | (BITS(i, 30, 25) << 5) | (BITS(i, 11, 8) << 1); } while (0)
+
+void init_etrace_log(){
+
+#ifdef CONFIG_ETRACE
+
+    FILE *file = fopen(etrace_file_path, "w");
+    if(file == NULL){
+        panic("打开或创建文件时出错");
+    }
+
+    fclose(file);
+#endif
+
+}
+
+void etrace_log_write(word_t NO, vaddr_t epc){
+
+#ifdef CONFIG_ETRACE
+
+    FILE *file = fopen(etrace_file_path, "a+");
+    if(file == NULL){
+        panic("打开文件时出错");
+    }
+    
+    fprintf(file, "The operation is %d at " FMT_PADDR "\n", NO, epc);
+
+    fclose(file);
+
+#endif
+
+}
 
 static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int *csri, int type) {
   uint32_t i = s->isa.inst.val;
@@ -152,7 +185,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , Rt, s->dnpc = SR(MEPC));
 
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
-  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, s->dnpc = isa_raise_intr((R(17) == -1? 1:11), s->pc)); // 通过使用a7寄存器的值来判断是否为系统调用还是yield调用
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, etrace_log_write((R(17) == -1? 1:11), s->pc); s->dnpc = isa_raise_intr((R(17) == -1? 1:11), s->pc)); // 通过使用a7寄存器的值来判断是否为系统调用还是yield调用
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 

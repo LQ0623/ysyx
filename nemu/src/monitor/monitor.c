@@ -26,6 +26,7 @@ void init_disasm();
 void init_inst_buffer();
 void init_mtrace_log();
 void init_dtrace_log();
+void init_etrace_log();
 void init_ftrace(char* elf_file);
 
 static void welcome() {
@@ -150,6 +151,10 @@ void init_monitor(int argc, char *argv[]) {
 
 #ifdef CONFIG_DTRACE
   init_dtrace_log();
+#endif
+
+#ifdef CONFIG_DTRACE
+  init_etrace_log();
 #endif
 
 #ifdef CONFIG_FTRACE
