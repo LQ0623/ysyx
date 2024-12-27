@@ -63,7 +63,14 @@ void etrace_log_write(word_t NO, vaddr_t epc){
         panic("打开文件时出错");
     }
     
-    fprintf(file, "The operation is %d at " FMT_PADDR "\n", NO, epc);
+    char *operation = NULL;
+    if(NO == 1){
+      operation = "yield";
+    }else if(NO == 11){
+      operation = "ecall";
+    }
+
+    fprintf(file, "The operation is %s at " FMT_PADDR "\n", operation, epc);
 
     fclose(file);
 
