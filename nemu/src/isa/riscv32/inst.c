@@ -38,7 +38,7 @@ enum {
 #define immJ() do { *imm = (SEXT(BITS(i, 31, 31), 1) << 20) | (BITS(i, 19, 12) << 12) | (BITS(i, 20, 20) << 11) | (BITS(i, 30, 21) << 1); } while(0)
 #define immB() do { *imm = (SEXT(BITS(i, 31, 31), 1) << 12) | (BITS(i, 7, 7) << 11) | (BITS(i, 30, 25) << 5) | (BITS(i, 11, 8) << 1); } while (0)
 
-static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, word_t *csri, int type) {
+static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int *csri, int type) {
   uint32_t i = s->isa.inst.val;
   int rs1 = BITS(i, 19, 15);
   int rs2 = BITS(i, 24, 20);
@@ -57,7 +57,7 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_
 
 static int decode_exec(Decode *s) {
   int rd = 0;
-  word_t csri = 0;
+  int csri = 0;
   word_t src1 = 0, src2 = 0, imm = 0;
   s->dnpc = s->snpc;
   uint32_t i = s->isa.inst.val;
@@ -111,8 +111,8 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 001 ????? 00000 11", lh     , I, R(rd) = SEXT(Mr(src1 + imm, 2), 16));
   INSTPAT("??????? ????? ????? 101 ????? 00000 11", lhu    , I, R(rd) = Mr(src1 + imm, 2));
   INSTPAT("??????? ????? ????? 000 ????? 00000 11", lb     , I, R(rd) = SEXT(Mr(src1 + imm, 1), 8));
-  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, word_t t = SR(csri); SR(csri) = src1 | t; R(rd) = t);
-  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , I, word_t t = SR(csri); SR(csri) = src1; R(rd) = t);   // csrw指令实际使用的是这条指令
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, int t = SR(csri); SR(csri) = src1 | t; R(rd) = t);
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , I, int t = SR(csri); SR(csri) = src1; R(rd) = t);   // csrw指令实际使用的是这条指令
 
   
   INSTPAT("??????? ????? ????? 001 ????? 01000 11", sh     , S, Mw(src1 + imm, 2, src2));
