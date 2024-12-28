@@ -20,8 +20,11 @@
 #include <ftrace/ftrace.h>
 
 #define R(i) gpr(i)
+#define SR(i) csr(i)
 #define Mr vaddr_read
 #define Mw vaddr_write
+
+char etrace_file_path[] = "./etrace.log"; 
 
 enum {
   TYPE_I, TYPE_U, TYPE_S,
@@ -37,11 +40,50 @@ enum {
 #define immJ() do { *imm = (SEXT(BITS(i, 31, 31), 1) << 20) | (BITS(i, 19, 12) << 12) | (BITS(i, 20, 20) << 11) | (BITS(i, 30, 21) << 1); } while(0)
 #define immB() do { *imm = (SEXT(BITS(i, 31, 31), 1) << 12) | (BITS(i, 7, 7) << 11) | (BITS(i, 30, 25) << 5) | (BITS(i, 11, 8) << 1); } while (0)
 
-static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int type) {
+void init_etrace_log(){
+
+#ifdef CONFIG_ETRACE
+
+    FILE *file = fopen(etrace_file_path, "w");
+    if(file == NULL){
+        panic("打开或创建文件时出错");
+    }
+
+    fclose(file);
+#endif
+
+}
+
+void etrace_log_write(word_t NO, vaddr_t epc){
+
+#ifdef CONFIG_ETRACE
+
+    FILE *file = fopen(etrace_file_path, "a+");
+    if(file == NULL){
+        panic("打开文件时出错");
+    }
+    
+    char *operation = NULL;
+    if(NO == 1){
+      operation = "yield";
+    }else if(NO == 11){
+      operation = "ecall";
+    }
+
+    fprintf(file, "The operation is %s at " FMT_PADDR "\n", operation, epc);
+
+    fclose(file);
+
+#endif
+
+}
+
+static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int *csri, int type) {
   uint32_t i = s->isa.inst.val;
   int rs1 = BITS(i, 19, 15);
   int rs2 = BITS(i, 24, 20);
   *rd     = BITS(i, 11, 7);
+  *csri   = BITS(i, 31, 20);
   switch (type) {
     case TYPE_I: src1R();          immI(); break;
     case TYPE_U:                   immU(); break;
@@ -55,6 +97,7 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_
 
 static int decode_exec(Decode *s) {
   int rd = 0;
+  int csri = 0;
   word_t src1 = 0, src2 = 0, imm = 0;
   s->dnpc = s->snpc;
   uint32_t i = s->isa.inst.val;
@@ -62,7 +105,7 @@ static int decode_exec(Decode *s) {
 
 #define INSTPAT_INST(s) ((s)->isa.inst.val)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
-  decode_operand(s, &rd, &src1, &src2, &imm, concat(TYPE_, type)); \
+  decode_operand(s, &rd, &src1, &src2, &imm, &csri, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
 
@@ -70,7 +113,6 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc  , U, R(rd) = s->pc + imm);
   INSTPAT("??????? ????? ????? 100 ????? 00000 11", lbu    , I, R(rd) = Mr(src1 + imm, 1));
   INSTPAT("??????? ????? ????? 000 ????? 01000 11", sb     , S, Mw(src1 + imm, 1, src2));
-  INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
 
   INSTPAT("??????? ????? ????? ??? ????? 01101 11", lui    , U, R(rd) = imm);
   
@@ -109,7 +151,9 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 001 ????? 00000 11", lh     , I, R(rd) = SEXT(Mr(src1 + imm, 2), 16));
   INSTPAT("??????? ????? ????? 101 ????? 00000 11", lhu    , I, R(rd) = Mr(src1 + imm, 2));
   INSTPAT("??????? ????? ????? 000 ????? 00000 11", lb     , I, R(rd) = SEXT(Mr(src1 + imm, 1), 8));
-  
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, int t = SR(csri); SR(csri) = src1 | t; R(rd) = t);
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , I, int t = SR(csri); SR(csri) = src1; R(rd) = t);   // csrw指令实际使用的是这条指令
+
   
   INSTPAT("??????? ????? ????? 001 ????? 01000 11", sh     , S, Mw(src1 + imm, 2, src2));
   INSTPAT("??????? ????? ????? 010 ????? 01000 11", sw     , S, Mw(src1 + imm, 4, src2));
@@ -145,8 +189,10 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 001 ????? 01100 11", mulh   , Rt, int64_t a = (int32_t)src1; int64_t b = (int32_t)src2;int64_t temp = a * b; R(rd) = BITS(temp, 63, 32));
   INSTPAT("0000001 ????? ????? 010 ????? 01100 11", mulhsu , Rt, int64_t a = (int32_t)src1; uint64_t b = src2;int64_t temp = a * b; R(rd) = BITS(temp, 63, 32));
   INSTPAT("0000001 ????? ????? 011 ????? 01100 11", mulhu  , Rt, uint64_t a = src1; uint64_t b = src2;uint64_t temp = a * b; R(rd) = BITS(temp, 63, 32));
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , Rt, s->dnpc = SR(MEPC));
 
-
+  INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, etrace_log_write((R(17) == -1? 1:11), s->pc); s->dnpc = isa_raise_intr((R(17) == -1? 1:11), s->pc)); // 通过使用a7寄存器的值来判断是否为系统调用还是yield调用
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 
