@@ -5,24 +5,24 @@
 
 #define ELF_MAGIC "\x7f" "ELF"
 
-// #ifdef __LP64__
-// # define Elf_Ehdr Elf64_Ehdr
-// # define Elf_Phdr Elf64_Phdr
-// # define Elf_Word Elf64_Word
-// # define Elf_Addr Elf64_Addr
-// # define Elf_Off  Elf64_Off
-// #else
-// # define Elf_Ehdr Elf32_Ehdr
-// # define Elf_Phdr Elf32_Phdr
-// # define Elf_Word Elf32_Word
-// # define Elf_Addr Elf32_Addr
-// # define Elf_Off  Elf32_Off
-// #endif
+#ifdef __LP64__
+# define Elf_Ehdr Elf64_Ehdr
+# define Elf_Phdr Elf64_Phdr
+# define Elf_Word Elf64_Word
+# define Elf_Addr Elf64_Addr
+# define Elf_Off  Elf64_Off
+#else
+# define Elf_Ehdr Elf32_Ehdr
+# define Elf_Phdr Elf32_Phdr
+# define Elf_Word Elf32_Word
+# define Elf_Addr Elf32_Addr
+# define Elf_Off  Elf32_Off
+#endif
 
 // // 写入数据
 // static void disk_mem(Elf_Off offset,Elf_Word file_size,Elf_Word mem_size,Elf_Addr vaddr){
 //   void* buf = malloc(file_size);
-//   ramdisk_read(buf, offset, file_size);
+//   ramdisk_read(buf, offset, mem_size);
 //   memcpy((void*)vaddr, buf, file_size);
 //   memset((void*)(vaddr+file_size), 0, mem_size - file_size);
 // }
@@ -55,6 +55,9 @@
 //       panic("cannot read 获取program_headers段的所有信息 file");
 //   }
 
+//   //循环遍历LOAD类型并加载到内存中
+//   //加载区间     [VirtAddr, VirtAddr + MemSiz)
+//   //.bss清零区间 [VirtAddr + FileSiz, VirtAddr + MemSiz)
 //   int program_headers_num = elf_header.e_phnum;
 //   for(int i = 0;i < program_headers_num;i++){
 //     if(phdr[i].p_type == PT_LOAD){
@@ -67,7 +70,7 @@
 
 void naive_uload(PCB *pcb, const char *filename) {
   // uintptr_t entry = loader(pcb, filename);
-  // Log("Jump to entry = %p", entry);
+  // Log("Jump to entry = %d", entry);
   // ((void(*)())entry) ();
 }
 
