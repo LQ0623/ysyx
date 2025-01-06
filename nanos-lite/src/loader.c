@@ -25,6 +25,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   // 检查ELF文件头
   Elf_Ehdr elf_header;
   ramdisk_read(&elf_header, 0, sizeof(Elf_Ehdr));
+  panic("asd");
   // check valid elf
   assert((*(uint32_t *)elf_header.e_ident == 0x464c457f));
 
@@ -46,6 +47,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
   return elf_header.e_entry;
 }
+
 
 void naive_uload(PCB *pcb, const char *filename) {;
   uintptr_t entry = loader(pcb, filename);
