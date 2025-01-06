@@ -22,7 +22,7 @@ extern uint8_t ramdisk_end;
 # define Elf_Off  Elf32_Off
 #endif
 
-// 这里不是通过fopen打开文件进行操作，而是通过直接读取文件来进行操作
+// 这里不是通过fopen打开文件进行操作，而是通过ramdisk_read和ramdisk_write函数来进行操作
 static uintptr_t loader(PCB *pcb, const char *filename) {
 
   printf("%d\n",((&ramdisk_end) - (&ramdisk_start)));
