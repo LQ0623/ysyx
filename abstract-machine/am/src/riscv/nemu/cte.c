@@ -45,7 +45,8 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
  */
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   // 需要在kstack的底部创建一个以entry为入口的上下文结构
-  Context *c = (Context *)kstack.end - 1;
+  // 现在有了CP，只需要在CP的底部创建一个Context就行
+  Context *c = (Context *)(kstack.end - sizeof(Context));
   c->mepc = (uintptr_t)entry;
   c->mstatus = 0x1800;
   // c->gpr[12] = (uintptr_t)arg;
