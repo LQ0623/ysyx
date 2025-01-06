@@ -19,36 +19,32 @@
 # define Elf_Off  Elf32_Off
 #endif
 
-// 写入数据
-static void disk_mem(Elf_Off offset,Elf_Word file_size,Elf_Word mem_size,Elf_Addr vaddr){
-  void* buf = malloc(file_size);
-  ramdisk_read(buf, offset, mem_size);
-  memcpy((void*)vaddr, buf, file_size);
-  memset((void*)(vaddr+file_size), 0, mem_size - file_size);
-}
-
+// 这里不是通过fopen打开文件进行操作，而是通过直接读取文件来进行操作
 static uintptr_t loader(PCB *pcb, const char *filename) {
 
   // 检查ELF文件头
   Elf_Ehdr elf_header;
+  ramdisk_read(&elf_header, 0, sizeof(Elf_Ehdr));
+  // check valid elf
+  assert((*(uint32_t *)elf_header.e_ident == 0x464c457f));
 
   // 获取program header的信息
   Elf_Phdr *phdr = (Elf_Phdr*)malloc(elf_header.e_phnum * sizeof(Elf_Phdr));
 
+  ramdisk_read(phdr, elf_header.e_phoff, sizeof(Elf_Phdr)*elf_header.e_phnum);
   //循环遍历LOAD类型并加载到内存中
   //加载区间     [VirtAddr, VirtAddr + MemSiz)
   //.bss清零区间 [VirtAddr + FileSiz, VirtAddr + MemSiz)
   int program_headers_num = elf_header.e_phnum;
   for(int i = 0;i < program_headers_num;i++){
-    if(phdr[i].p_type == PT_LOAD){
-      disk_mem(phdr[i].p_offset, phdr[i].p_filesz, phdr[i].p_memsz, phdr[i].p_vaddr);
+    if (phdr[i].p_type == PT_LOAD) {
+      ramdisk_read((void*)phdr[i].p_vaddr, phdr[i].p_offset, phdr[i].p_memsz);
+      // set .bss with zeros
+      memset((void*)(phdr[i].p_vaddr+phdr[i].p_filesz), 0, phdr[i].p_memsz - phdr[i].p_filesz);
     }
   }
 
   return elf_header.e_entry;
-
-  // TODO();
-  // return 0;
 }
 
 void naive_uload(PCB *pcb, const char *filename) {;
