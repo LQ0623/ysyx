@@ -5,7 +5,7 @@
 
 #define ELF_MAGIC "\x7f" "ELF"
 
-#ifdef __LP64__
+#ifdef __LP32__
 # define Elf_Ehdr Elf64_Ehdr
 # define Elf_Phdr Elf64_Phdr
 # define Elf_Word Elf64_Word
@@ -24,7 +24,6 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
   // 检查ELF文件头
   Elf_Ehdr elf_header;
-  panic("asd");
   ramdisk_read(&elf_header, 0, sizeof(Elf_Ehdr));
   
   // check valid elf
