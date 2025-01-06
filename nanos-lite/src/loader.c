@@ -24,8 +24,9 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
   // 检查ELF文件头
   Elf_Ehdr elf_header;
-  ramdisk_read(&elf_header, 0, sizeof(Elf_Ehdr));
   panic("asd");
+  ramdisk_read(&elf_header, 0, sizeof(Elf_Ehdr));
+  
   // check valid elf
   assert((*(uint32_t *)elf_header.e_ident == 0x464c457f));
 
