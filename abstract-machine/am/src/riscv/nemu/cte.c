@@ -39,6 +39,11 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
   return true;
 }
 
+/**
+ * kstack是栈的范围 
+ * entry是内核线程的入口 
+ * arg则是内核线程的参数
+ */
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   Context *c = (Context *)kstack.end - 1;
   c->mepc = (uintptr_t)entry;
