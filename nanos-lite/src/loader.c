@@ -5,9 +5,6 @@
 
 #define ELF_MAGIC "\x7f" "ELF"
 
-extern uint8_t ramdisk_start;
-extern uint8_t ramdisk_end;
-
 #ifdef __LP64__
 # define Elf_Ehdr Elf64_Ehdr
 # define Elf_Phdr Elf64_Phdr
@@ -25,7 +22,6 @@ extern uint8_t ramdisk_end;
 // 这里不是通过fopen打开文件进行操作，而是通过直接读取文件来进行操作
 static uintptr_t loader(PCB *pcb, const char *filename) {
 
-  printf("%d\n",((&ramdisk_end) - (&ramdisk_start)));
   // 检查ELF文件头
   Elf_Ehdr elf_header;
   ramdisk_read(&elf_header, 0, sizeof(Elf_Ehdr));
