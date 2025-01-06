@@ -1,5 +1,4 @@
 #include <proc.h>
-#include <load.h>
 
 #define MAX_NR_PROC 4
 
