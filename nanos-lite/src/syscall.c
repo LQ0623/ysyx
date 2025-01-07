@@ -2,14 +2,18 @@
 #include "syscall.h"
 void do_syscall(Context *c) {
   uintptr_t a[4];
-  // uintptr_t return_value;
+  // uintptr_t ret_value;
   a[0]          = c->GPR1;
   a[1]          = c->GPR2;
   a[2]          = c->GPR3;
   a[3]          = c->GPR4;
-  // return_value  = c->GPRx;
+  // ret_value    = c->GPRx;
 
   switch (a[0]) {
+    case SYS_yield:
+      Log("sys_yield");
+      yield();
+      break;
     // case SYS_exit:
     //   Log("[sys_exit]");
     //   halt(0);
