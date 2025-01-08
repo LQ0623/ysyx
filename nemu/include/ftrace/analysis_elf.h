@@ -7,7 +7,8 @@
 
 typedef struct analysis_elf
 {
-    char* name;
+    // char* name;
+    char name[100];
     Elf32_Addr addr;
     unsigned char info;
     Elf64_Xword size;
