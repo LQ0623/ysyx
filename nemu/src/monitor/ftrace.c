@@ -1,7 +1,7 @@
 #include <ftrace/ftrace.h>
 #include <ftrace/analysis_elf.h>
 
-// Func_Name_Collation func_name[];
+Func_Name_Collation func_name[MAX_FUNC];
 // 用于恢复被尾调用删除的ret语句
 TailRecNode *tail_rec_head = NULL; // linklist with head, dynamic allocated
 // count_inv 表示调用的深度

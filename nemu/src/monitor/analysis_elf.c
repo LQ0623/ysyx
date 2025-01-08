@@ -4,7 +4,7 @@
 
 #define ELF_MAGIC "\x7f" "ELF"
 
-Func_Name_Collation func_name[MAX_FUNC];
+// Func_Name_Collation func_name[MAX_FUNC];
 size_t symbol_table_entry_count;
 
 void analysis_elf(Func_Name_Collation* func_name,char* elf_file){
