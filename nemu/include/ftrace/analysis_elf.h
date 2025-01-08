@@ -3,7 +3,7 @@
 
 #include <common.h>
 #include <elf.h>
-#define MAX_FUNC 1024
+#define MAX_FUNC 4096
 
 typedef struct analysis_elf
 {
