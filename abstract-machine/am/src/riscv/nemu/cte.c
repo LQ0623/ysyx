@@ -47,7 +47,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   // 需要在kstack的底部创建一个以entry为入口的上下文结构
   // 现在有了CP，只需要在CP的底部创建一个Context就行
   Context *c = (Context *)(kstack.end - sizeof(Context) - 1);
-  c->mepc = (uintptr_t)entry - 4;
+  c->mepc = (uintptr_t)entry;
   c->mstatus = 0x1800;
   // 在riscv32中，对于整数和指针类型的参数，前8个参数通常通过x10 - x17这8个通用寄存器来传递
   c->gpr[10] = (uintptr_t)arg;
