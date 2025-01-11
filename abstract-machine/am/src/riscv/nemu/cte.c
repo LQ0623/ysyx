@@ -51,11 +51,6 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   c->mstatus = 0x1800;
   // 在riscv32中，对于整数和指针类型的参数，前8个参数通常通过x10 - x17这8个通用寄存器来传递
   c->gpr[10] = (uintptr_t)arg;
-
-  //配合difftest,0x1800指的是机器模式
-  c->mstatus = 0x00001800;
-  c->mcause  = 0;
-  c->pdir   = NULL;
   return c;
 }
 
