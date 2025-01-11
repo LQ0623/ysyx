@@ -59,7 +59,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   ctx->mstatus=0x1800;
   ctx->mcause=11;
   ctx->gpr[10 /*a0*/]=(uintptr_t)arg;
-  ctx->gpr[2 /*sp*/]=(uintptr_t)(kstack.end - sizeof(Context));
+  // ctx->gpr[2 /*sp*/]=(uintptr_t)(kstack.end - sizeof(Context));
   return ctx;
 }
 
