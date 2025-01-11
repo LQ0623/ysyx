@@ -57,7 +57,7 @@ __am_asm_trap:
   or t1, t1, a0
   csrw mstatus, t1
 
-  mv a0, sp
+  mv a0, sp // #传入当前上下文
   call __am_irq_handle
 
   // 修改栈顶指针为am_irq_handle函数的返回值，因为这里注册函数是schedule，返回值就是我们即将执行的上下文的指针
