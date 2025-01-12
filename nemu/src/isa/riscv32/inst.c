@@ -66,10 +66,10 @@ void etrace_log_write(word_t NO, vaddr_t epc){
     char *operation = NULL;
     switch (NO)
     {
-      case EVENT_YIELD:
+      case 1:
         operation = "EVENT_YIELD";
         break;
-      case EVENT_SYSCALL:
+      case 11:
         operation = "EVENT_SYSCALL";
         break;
       default:
