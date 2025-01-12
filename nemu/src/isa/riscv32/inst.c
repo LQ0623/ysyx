@@ -73,7 +73,7 @@ void etrace_log_write(word_t NO, vaddr_t epc){
         operation = "EVENT_SYSCALL";
         break;
       default:
-        operation = "UNKOWN EVENT id";
+        sprintf(operation ,"UNKOWN EVENT id = %d",NO);
         break;
     }
 
