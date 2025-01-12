@@ -127,7 +127,7 @@ static int decode_exec(Decode *s) {
       ftrace_function_call(s->pc,s->dnpc,false);  // 防止j指令进行跳转
     })
   );
-  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, R(rd) = s->pc+4,s->dnpc=(src1+imm)&(~(word_t)1);IFDEF(CONFIG_FTRACE,
+  INSTPAT("??????? ????? ????? 010 ????? 11001 11", jalr   , I, R(rd) = s->pc+4,s->dnpc=(src1+imm)&(~(word_t)1);IFDEF(CONFIG_FTRACE,
     if(s->isa.inst.val == 0x00008067){
       ftrace_function_ret(s->pc); // ret -> jalr x0, 0(x1)
     } else if(rd == 0 && imm == 0){
