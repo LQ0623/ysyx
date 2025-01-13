@@ -3,11 +3,12 @@
 
 #include <common.h>
 #include <elf.h>
-#define MAX_FUNC 1024
+#define MAX_FUNC 40960
 
 typedef struct analysis_elf
 {
-    char* name;
+    // char* name;
+    char name[100];
     Elf32_Addr addr;
     unsigned char info;
     Elf64_Xword size;

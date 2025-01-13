@@ -64,16 +64,22 @@ void etrace_log_write(word_t NO, vaddr_t epc){
     }
     
     char *operation = NULL;
-    if(NO == 1){
-      operation = "yield";
-    }else if(NO == 11){
-      operation = "ecall";
+    switch (NO)
+    {
+      case 1:
+        operation = "EVENT_YIELD";
+        break;
+      case 11:
+        operation = "EVENT_SYSCALL";
+        break;
+      default:
+        sprintf(operation ,"UNKOWN EVENT id = %d",NO);
+        break;
     }
 
     fprintf(file, "The operation is %s at " FMT_PADDR "\n", operation, epc);
 
     fclose(file);
-
 #endif
 
 }

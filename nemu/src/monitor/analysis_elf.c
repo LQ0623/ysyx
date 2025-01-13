@@ -4,7 +4,7 @@
 
 #define ELF_MAGIC "\x7f" "ELF"
 
-Func_Name_Collation func_name[MAX_FUNC];
+// Func_Name_Collation func_name[MAX_FUNC];
 size_t symbol_table_entry_count;
 
 void analysis_elf(Func_Name_Collation* func_name,char* elf_file){
@@ -83,12 +83,12 @@ void analysis_elf(Func_Name_Collation* func_name,char* elf_file){
             size_t name_length = strlen(strtab + symbol.st_name) + 1;
 
             // 为符号名称分配内存
-            func_name[count].name = (char *)malloc(name_length);
-            if (!func_name[count].name) {
-                // 处理内存分配失败
-                panic("malloc");
-                exit(1);
-            }
+            // func_name[count].name = (char *)malloc(name_length);
+            // if (!func_name[count].name) {
+            //     // 处理内存分配失败
+            //     panic("malloc");
+            //     exit(1);
+            // }
 
             // 拷贝符号名称
             strncpy(func_name[count].name, strtab + symbol.st_name, name_length);

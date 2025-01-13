@@ -42,7 +42,7 @@ f(30) f(31)
 __am_asm_trap:
   addi sp, sp, -CONTEXT_SIZE
 
-  MAP(REGS, PUSH)
+  MAP(REGS, PUSH) // 将寄存器压栈
 
   csrr t0, mcause
   csrr t1, mstatus
@@ -57,8 +57,11 @@ __am_asm_trap:
   or t1, t1, a0
   csrw mstatus, t1
 
-  mv a0, sp
+  mv a0, sp // #传入当前上下文
   call __am_irq_handle
+
+  // 修改栈顶指针为am_irq_handle函数的返回值，因为这里注册函数是schedule，返回值就是我们即将执行的上下文的指针
+  mv sp, a0 
 
   LOAD t1, OFFSET_STATUS(sp)
   LOAD t2, OFFSET_EPC(sp)

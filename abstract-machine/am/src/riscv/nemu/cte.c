@@ -10,17 +10,16 @@ Context* __am_irq_handle(Context *c) {
     switch (c->mcause) {
       case EVENT_YIELD:
         ev.event = EVENT_YIELD;
-        c->mepc += 4; 
+        c->mepc += 0x4; 
         break;
       case 11:
         ev.event = EVENT_SYSCALL;
-        c->mepc += 4;
+        c->mepc += 0x4;
         break;
       default: ev.event = EVENT_ERROR; break;
     }
 
     c = user_handler(ev, c);
-    //printf("\nmcause:%tu\tmstatus:%p\tmepc:%p\n",(void*)c->mcause,(void*)c->mstatus,(void*)c->mepc);
     assert(c != NULL);
   }
 
@@ -39,13 +38,32 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
   return true;
 }
 
+/**
+ * kstack是栈的范围 ，因为
+ * entry是内核线程的入口 
+ * arg则是内核线程的参数
+ */
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
-  Context *c = (Context *)kstack.end - 1;
-  c->mepc = (uintptr_t)entry;
-  c->mstatus = 0x1800;
-  c->gpr[12] = (uintptr_t)arg;
+  // 需要在kstack的底部创建一个以entry为入口的上下文结构
+  // 现在有了CP，只需要在CP的底部创建一个Context就行
+  // Context *c    = (Context *)kstack.end - 1;
+  Context *c  = (Context *)(kstack.end - sizeof(Context));
+  c->mepc       = (uintptr_t)entry;
+  c->mstatus    = 0x1800;
+  // 在riscv32中，对于整数和指针类型的参数，前8个参数通常通过x10 - x17这8个通用寄存器来传递
+  c->gpr[10]    = (uintptr_t)arg;
   return c;
 }
+// Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
+//   Context *ctx = kstack.end - sizeof(Context);
+//   ctx->mepc=(uintptr_t)entry;
+//   ctx->mstatus=0x1800;
+//   ctx->mcause=11;
+//   ctx->gpr[10 /*a0*/]=(uintptr_t)arg;
+//   ctx->gpr[2 /*sp*/]=(uintptr_t)(kstack.end - sizeof(Context));
+//   return ctx;
+// }
+
 
 void yield() {
 #ifdef __riscv_e
