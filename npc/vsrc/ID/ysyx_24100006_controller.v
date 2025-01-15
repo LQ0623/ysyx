@@ -237,7 +237,6 @@ module ysyx_24100006_controller(
                                 Jump            = `ysyx_24100006_JUMPMRET;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
-
                             end
                             `ysyx_24100006_ebreak:begin
                                 $display("12312312\n");
