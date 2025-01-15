@@ -1,4 +1,8 @@
 // 不带默认值的选择器模板
+/**
+  key：选择条件
+  lut：保存根据输入的 key 值从查找表 lut 中选择对应的数据作为输出 out
+*/
 module ysyx_24100006_MuxKey #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (
   output [DATA_LEN-1:0] out,
   input [KEY_LEN-1:0] key,

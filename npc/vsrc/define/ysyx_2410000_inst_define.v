@@ -13,6 +13,11 @@
 //function
   //ysyx_24100006_SYSTEM
 `define ysyx_24100006_ebreak              12'b000000000001
+`define ysyx_24100006_ecall               12'b000000000000
+`define ysyx_24100006_mret                12'b001100000010
+`define ysyx_24100006_inv                 3'b000
+`define ysyx_24100006_csrrw               3'b001
+`define ysyx_24100006_csrrs               3'b010
 
   //ysyx_24100006_I_type
 `define ysyx_24100006_addi                3'b000

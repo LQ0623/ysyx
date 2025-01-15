@@ -1,3 +1,6 @@
+/**
+	PC模块
+*/
 module ysyx_24100006_pc(
     input clk,
     input reset,

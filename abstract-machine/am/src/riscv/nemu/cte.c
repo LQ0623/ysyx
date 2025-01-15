@@ -54,15 +54,6 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   c->gpr[10]    = (uintptr_t)arg;
   return c;
 }
-// Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
-//   Context *ctx = kstack.end - sizeof(Context);
-//   ctx->mepc=(uintptr_t)entry;
-//   ctx->mstatus=0x1800;
-//   ctx->mcause=11;
-//   ctx->gpr[10 /*a0*/]=(uintptr_t)arg;
-//   ctx->gpr[2 /*sp*/]=(uintptr_t)(kstack.end - sizeof(Context));
-//   return ctx;
-// }
 
 
 void yield() {

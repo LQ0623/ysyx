@@ -16,7 +16,7 @@ const char *regs[] = {
 
 void get_reg(){
     for(int i = 0;i < REGNUM; i++){
-        gpr[i] = cpu->rootp -> ysyx_24100006_cpu__DOT__registerfile__DOT__rf[i];
+        gpr[i] = cpu->rootp -> ysyx_24100006_cpu__DOT__GPR__DOT__rf[i];
     }
 }
 

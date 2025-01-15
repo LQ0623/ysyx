@@ -8,6 +8,14 @@ Context* __am_irq_handle(Context *c) {
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
+      case EVENT_YIELD:
+        ev.event = EVENT_YIELD;
+        c->mepc += 0x4; 
+        break;
+      case 11:
+        ev.event = EVENT_SYSCALL;
+        c->mepc += 0x4;
+        break;
       default: ev.event = EVENT_ERROR; break;
     }
 
@@ -31,7 +39,12 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 }
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
-  return NULL;
+  Context *c    = (Context *)(kstack.end - sizeof(Context));
+  c->mepc       = (uintptr_t)entry;
+  c->mstatus    = 0x1800;
+  // 在riscv32中，对于整数和指针类型的参数，前8个参数通常通过x10 - x17这8个通用寄存器来传递
+  c->gpr[10]    = (uintptr_t)arg;
+  return c;
 }
 
 void yield() {

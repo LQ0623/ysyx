@@ -1,7 +1,13 @@
 // 控制信号宏定义
-// REG_WRITE
-`define ysyx_24100006_REGW                  1
-`define ysyx_24100006_REGNW                 0
+// 是否发生异常
+`define ysyx_24100006_NIRQ                  0
+`define ysyx_24100006_IRQ                   1
+// GPR_WRITE
+`define ysyx_24100006_GPRW                  1
+`define ysyx_24100006_GPRNW                 0
+// CSR_WRITE
+`define ysyx_24100006_CSRW                  1
+`define ysyx_24100006_CSRNW                 0
 // MEM_WRITE
 `define ysyx_24100006_MEMW                  1
 `define ysyx_24100006_MEMNW                 0
@@ -30,6 +36,7 @@
 `define ysyx_24100006_JBGE                  6
 `define ysyx_24100006_JBLTU                 7
 `define ysyx_24100006_JBGEU                 8
+`define ysyx_24100006_JUMPMRET              9
 // 指令的imm的类型
 `define ysyx_24100006_I_TYPE_IMM            0
 `define ysyx_24100006_J_TYPE_IMM            1
@@ -55,8 +62,9 @@
 //AluSrcB
 `define ysyx_24100006_B_IMM                 1
 `define ysyx_24100006_B_RT                  0
-//写寄存器的内容
-`define ysyx_24100006_REG_IMM               0   // 写回寄存器的是符号扩展之后的立即数
-`define ysyx_24100006_REG_RESULT            1   // 写回寄存器的是alu计算的结果
-`define ysyx_24100006_REG_PC_PLUS_4         2   // 写回寄存器的是pc+4的结果
+//写通用寄存器的内容
+`define ysyx_24100006_GPR_IMM               0   // 写回寄存器的是符号扩展之后的立即数
+`define ysyx_24100006_GPR_RESULT            1   // 写回寄存器的是alu计算的结果
+`define ysyx_24100006_GPR_PC_PLUS_4         2   // 写回寄存器的是pc+4的结果
 `define ysyx_24100006_MEMR_RESULT           3   // 写回寄存器的是读内存的结果
+`define ysyx_24100006_CSR                   4   // 写CSR系统寄存器的值到通用寄存器中
