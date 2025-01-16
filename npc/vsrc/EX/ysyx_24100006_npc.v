@@ -90,7 +90,6 @@
 */
 module ysyx_24100006_npc(
     input[31:0]     pc,
-    input           irq,    // irq为高电平说明这个ecall事件发生
     input[31:0]     mtvec,
     input[31:0]     mepc,
     input[3:0]      Skip_mode,
@@ -100,12 +99,6 @@ module ysyx_24100006_npc(
     input           zf,         // 判断rs_data是否等于rt_data，相等就会为1
     output[31:0]    npc
 );
-    // TODO:调试使用
-    // always @(irq) begin
-    //     if(irq == `ysyx_24100006_IRQ)begin
-    //         $display("irq is %b,npc is %h,mtvec is %h\n",irq,npc,mtvec);
-    //     end
-    // end
 
     assign npc  =   (Skip_mode == `ysyx_24100006_NJUMP)?                        (pc + 4):
                     (Skip_mode == `ysyx_24100006_JAL)?                          (pc + sext_imm):
@@ -118,7 +111,6 @@ module ysyx_24100006_npc(
                     (Skip_mode == `ysyx_24100006_JBGEU && cmp_result == 1'b0)?  (pc + sext_imm) :
                     (Skip_mode == `ysyx_24100006_JUMPMRET)?                     (mepc)          : 
                     (Skip_mode == `ysyx_24100006_JUMPECALL)?                    (mtvec)         : (pc + 4);
-                    // (irq       == `ysyx_24100006_IRQ)?                          (mtvec)         : (pc + 4);
 
 endmodule
 

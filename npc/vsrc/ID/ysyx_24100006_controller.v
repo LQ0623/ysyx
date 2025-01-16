@@ -228,7 +228,6 @@ module ysyx_24100006_controller(
                                 Csr_Write       = `ysyx_24100006_CSRW;
                                 Csr_Write_RD    = `ysyx_24100006_EPC;
                                 Jump            = `ysyx_24100006_JUMPECALL;
-                                // Jump            = `ysyx_24100006_NJUMP;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
                             end

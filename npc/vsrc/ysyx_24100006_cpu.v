@@ -118,13 +118,6 @@ module ysyx_24100006_cpu(
 		2'b01,rs1_data,
 		2'b10,(rdata_csr | rs1_data)
 	});
-	
-	// TODO:这里需要删掉，只是调试使用
-	// always @(*) begin
-	// 	if(Csr_Write_RD == 2'b00)begin
-	// 		$display("pc is %h,wdata_csr is %h\n",pc,wdata_csr);
-	// 	end
-	// end
 
 	// 系统寄存器
 	// TODO:需要写CSR寄存器的指令有mret、csrrs、csrrw三条，所以这里的wdata和waddr需要使用MUX进行选值
@@ -204,7 +197,6 @@ module ysyx_24100006_cpu(
 	// 计算npc
 	ysyx_24100006_npc NPC(
 		.pc(pc),
-		.irq(irq),
 		.mtvec(mtvec),
 		.mepc(mepc),
 		.Skip_mode(Jump),
