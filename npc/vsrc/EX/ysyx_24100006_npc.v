@@ -43,6 +43,7 @@
 `define ysyx_24100006_JBLTU                 7
 `define ysyx_24100006_JBGEU                 8
 `define ysyx_24100006_JUMPMRET              9
+`define ysyx_24100006_JUMPECALL             10
 // 指令的imm的类型
 `define ysyx_24100006_I_TYPE_IMM            0
 `define ysyx_24100006_J_TYPE_IMM            1
@@ -99,6 +100,12 @@ module ysyx_24100006_npc(
     input           zf,         // 判断rs_data是否等于rt_data，相等就会为1
     output[31:0]    npc
 );
+    // TODO:调试使用
+    // always @(irq) begin
+    //     if(irq == `ysyx_24100006_IRQ)begin
+    //         $display("irq is %b,npc is %h,mtvec is %h\n",irq,npc,mtvec);
+    //     end
+    // end
 
     assign npc  =   (Skip_mode == `ysyx_24100006_NJUMP)?                        (pc + 4):
                     (Skip_mode == `ysyx_24100006_JAL)?                          (pc + sext_imm):
@@ -110,7 +117,8 @@ module ysyx_24100006_npc(
                     (Skip_mode == `ysyx_24100006_JBGE && cmp_result == 1'b0)?   (pc + sext_imm) :
                     (Skip_mode == `ysyx_24100006_JBGEU && cmp_result == 1'b0)?  (pc + sext_imm) :
                     (Skip_mode == `ysyx_24100006_JUMPMRET)?                     (mepc)          : 
-                    (irq       == `ysyx_24100006_IRQ)?                          (mtvec)         : (pc + 4);
+                    (Skip_mode == `ysyx_24100006_JUMPECALL)?                    (mtvec)         : (pc + 4);
+                    // (irq       == `ysyx_24100006_IRQ)?                          (mtvec)         : (pc + 4);
 
 endmodule
 

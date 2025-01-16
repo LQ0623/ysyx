@@ -47,6 +47,7 @@
 `define ysyx_24100006_JBLTU                 7
 `define ysyx_24100006_JBGEU                 8
 `define ysyx_24100006_JUMPMRET              9
+`define ysyx_24100006_JUMPECALL             10
 // 指令的imm的类型
 `define ysyx_24100006_I_TYPE_IMM            0
 `define ysyx_24100006_J_TYPE_IMM            1
@@ -220,13 +221,14 @@ module ysyx_24100006_controller(
                     `ysyx_24100006_inv:begin
                         case (funct12)
                             `ysyx_24100006_ecall:begin
-                                $display("ecall\n");
+                                // $display("ecall\n");
                                 irq             = `ysyx_24100006_IRQ;
                                 irq_no          = `ysyx_24100006_MECALL;
                                 Gpr_Write       = `ysyx_24100006_GPRNW;
                                 Csr_Write       = `ysyx_24100006_CSRW;
                                 Csr_Write_RD    = `ysyx_24100006_EPC;
-                                Jump            = `ysyx_24100006_NJUMP;
+                                Jump            = `ysyx_24100006_JUMPECALL;
+                                // Jump            = `ysyx_24100006_NJUMP;
                                 Mem_Read        = `ysyx_24100006_MEMNR;
                                 Mem_Write       = `ysyx_24100006_MEMNW;
                             end

@@ -48,12 +48,17 @@ module ysyx_24100006_CSR #(ADDR_WIDTH = 12, DATA_WIDTH = 32) (
   always @(posedge clk) begin
     if (wen)begin
       rf[waddr_in] <= wdata;
+      // TODO:调试使用
+      // if(waddr_in == 2'b11)begin
+      //   $display("mepc is %h\n",wdata);
+      // end
     end
   end
 
   always @(posedge clk) begin
     if(irq)begin
       rf[2] <= {{24'b0},irq_no};
+      rf[3] <= wdata;
     end
     rf[0] <= 32'h1800;
   end

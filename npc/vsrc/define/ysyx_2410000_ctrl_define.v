@@ -37,6 +37,7 @@
 `define ysyx_24100006_JBLTU                 7
 `define ysyx_24100006_JBGEU                 8
 `define ysyx_24100006_JUMPMRET              9
+`define ysyx_24100006_JUMPECALL             10
 // 指令的imm的类型
 `define ysyx_24100006_I_TYPE_IMM            0
 `define ysyx_24100006_J_TYPE_IMM            1
@@ -68,3 +69,8 @@
 `define ysyx_24100006_GPR_PC_PLUS_4         2   // 写回寄存器的是pc+4的结果
 `define ysyx_24100006_MEMR_RESULT           3   // 写回寄存器的是读内存的结果
 `define ysyx_24100006_CSR                   4   // 写CSR系统寄存器的值到通用寄存器中
+
+//写系统寄存器的内容
+`define ysyx_24100006_EPC                   0   // 写mepc到寄存器
+`define ysyx_24100006_CW                    1   // csrrw指令使用
+`define ysyx_24100006_CS                    2   // csrrs指令使用，将通用寄存器取出来的值与CSR寄存器的值进行或操作
