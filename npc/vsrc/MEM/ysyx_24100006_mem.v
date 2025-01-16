@@ -1,5 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 /* verilator lint_off UNDRIVEN */
+/**
+    使用DPI-C进行内存读写
+*/
 module ysyx_24100006_mem(
     input clk,
     input Mem_Write,

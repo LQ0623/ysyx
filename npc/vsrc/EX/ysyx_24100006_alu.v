@@ -1,3 +1,6 @@
+/**
+	计算模块
+*/
 module ysyx_24100006_alu(
     input[31:0]     rs_data,
     input[31:0]     rt_data,

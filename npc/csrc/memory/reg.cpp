@@ -3,6 +3,7 @@
 #include <circuit.h>
 
 word_t gpr[REGNUM];
+word_t csr[4];
 
 void isa_reg_display();
 
@@ -16,14 +17,23 @@ const char *regs[] = {
 
 void get_reg(){
     for(int i = 0;i < REGNUM; i++){
-        gpr[i] = cpu->rootp -> ysyx_24100006_cpu__DOT__registerfile__DOT__rf[i];
+        gpr[i] = cpu->rootp -> ysyx_24100006_cpu__DOT__GPR__DOT__rf[i];
     }
+    csr[0] = cpu->rootp -> ysyx_24100006_cpu__DOT__CSR__DOT__rf[0];
+    csr[1] = cpu->rootp -> ysyx_24100006_cpu__DOT__CSR__DOT__rf[1];
+    csr[2] = cpu->rootp -> ysyx_24100006_cpu__DOT__CSR__DOT__rf[3];
+    csr[3] = cpu->rootp -> ysyx_24100006_cpu__DOT__CSR__DOT__rf[2];
+    //0:mstatus 1:mtvec 2:mepc 3:mcause
 }
 
 void isa_reg_display(){
     for(int i = 0;i < REGNUM;i++){
         printf("%s = " FMT_WORD "\n",regs[i],gpr[i]);
     }
+    printf("dut-mstatus = %#x\n",csr[0]);
+    printf("dut-mtvec = %#x\n",csr[1]);
+    printf("dut-mepc = %#x\n",csr[2]);
+    printf("dut-mcause = %#x\n",csr[3]);
 }
 
 word_t isa_reg_str2val(const char *s, bool *success){

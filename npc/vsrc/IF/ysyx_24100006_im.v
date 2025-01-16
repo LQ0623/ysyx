@@ -1,5 +1,5 @@
 /**
-    模拟指令存储
+    模拟指令存储，使用DPI-C进行读取指令
 */
 module ysyx_24100006_im(
     /* verilator lint_off UNUSEDSIGNAL */
