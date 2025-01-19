@@ -26,7 +26,7 @@ extern uint8_t ramdisk_end;
 static uintptr_t loader(PCB *pcb, const char *filename) {
 
   // 打印文件长度
-  printf("文件长度为 %x\n",((&ramdisk_end) - (&ramdisk_start)));
+  printf("文件长度为 0x%x\n",((&ramdisk_end) - (&ramdisk_start)));
   // 检查ELF文件头
   Elf_Ehdr elf_header;
   ramdisk_read(&elf_header, 0, sizeof(Elf_Ehdr));
