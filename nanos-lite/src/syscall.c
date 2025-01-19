@@ -10,14 +10,14 @@ void do_syscall(Context *c) {
   a[3]          = c->GPR4;
   printf("%d\n",a[0]);
   switch (a[0]) {
+    case SYS_exit:
+      Log("sys_exit( %d(status) )", a[1]);
+      halt(0);
+      break;
     case SYS_yield:
       Log("sys_yield");
       c->GPRx = 0;
       yield();
-      break;
-    case SYS_exit:
-      Log("sys_exit( %d(status) )", a[1]);
-      halt(0);
       break;
     case SYS_write:
       Log("[sys_wirte] fd:%d",a[1]);
