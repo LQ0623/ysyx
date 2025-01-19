@@ -15,12 +15,16 @@ void do_syscall(Context *c) {
       halt(0);
       break;
     case SYS_yield:
+      #ifdef CONFIG_STRACE
       Log("sys_yield");
+      #endif
       c->GPRx = 0;
       yield();
       break;
     case SYS_write:
+      #ifdef CONFIG_STRACE
       Log("[sys_wirte] fd:%d",a[1]);
+      #endif
       c->GPRx = fs_write(a[1],(void *)a[2],a[3]);
       break;
     default: panic("Unhandled syscall ID = %d", a[0]);

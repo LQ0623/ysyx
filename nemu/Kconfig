@@ -166,6 +166,9 @@ config FTRACE
 config ETRACE
   bool "Enable etrace"
   default y
+config STRACE
+  bool "Enable strace"
+  default y
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
