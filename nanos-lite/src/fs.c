@@ -46,6 +46,7 @@ void init_fs() {
 size_t fs_write(int fd, const void *buf, size_t len){
   
   assert(buf != NULL);
+  printf("asdasdasd\n");
 
   size_t ret_len = 0;
 
