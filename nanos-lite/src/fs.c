@@ -53,7 +53,7 @@ size_t fs_write(int fd, const void *buf, size_t len){
   {
     case FD_STDOUT :case FD_STDERR:  //写串口
       ret_len = len;
-      Log("sys_write %s.buf *= %lx,len = %lx",fs_fs_write[FD_STDOUT],buf,len);
+      // Log("sys_write %s.buf *= %lx,len = %lx",fs_fs_write[FD_STDOUT],buf,len); // 只是调试使用
       for (uint16_t i=0;i<len;++i)
       {
         putch(((char *)buf)[i]);
