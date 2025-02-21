@@ -32,7 +32,7 @@ module ysyx_24100006_cpu(
 	wire [7:0] irq_no;
 	/* verilator lint_off UNUSEDSIGNAL */
 
-	ysyx_24100006_controller controller(
+	ysyx_24100006_controller_remake controller(
 		.opcode(instruction[6:0]),
 		.funct3(instruction[14:12]),
 		.funct7(instruction[31:25]),
