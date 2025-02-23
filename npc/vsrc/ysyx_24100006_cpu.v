@@ -32,7 +32,7 @@ module ysyx_24100006_cpu(
 	wire [7:0] irq_no;
 	/* verilator lint_off UNUSEDSIGNAL */
 
-	ysyx_24100006_controller controller(
+	ysyx_24100006_controller_remake controller(
 		.opcode(instruction[6:0]),
 		.funct3(instruction[14:12]),
 		.funct7(instruction[31:25]),
@@ -164,6 +164,7 @@ module ysyx_24100006_cpu(
 		.zf(zf)
 	);
 	
+	/* 为了对齐地址 */
 	assign mem_addr = alu_result & (~32'h3);	// 对齐到4字节边界
 	assign place = alu_result - mem_addr;		// 计算实际地址与字节之间的偏移
 	assign RealMemWmask = Mem_WMask << place;	// 
