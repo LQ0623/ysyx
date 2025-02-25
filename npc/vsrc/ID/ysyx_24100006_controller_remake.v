@@ -233,9 +233,9 @@ module ysyx_24100006_controller_remake(
                         else if(opcode == `ysyx_24100006_load || opcode == `ysyx_24100006_S_type)begin
                             state <= EXE_L;
                         end
-                        else if(opcode == `ysyx_24100006_jal || opcode == `ysyx_24100006_jalr || (opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak))begin
-                            state <= IF;
-                        end
+                        // else if(opcode == `ysyx_24100006_jal || opcode == `ysyx_24100006_jalr || (opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak))begin
+                        //     state <= IF;
+                        // end
                         else begin
                             state <= EXE_R_I;
                         end
@@ -257,49 +257,6 @@ module ysyx_24100006_controller_remake(
         end
     end
 
-    // always @(state or opcode) begin
-    //     if(reset)begin
-    //         IFW     = 1;
-    //         IDW     = 0;
-    //         EXEW    = 0;
-    //         MEMW    = 0;
-    //     end
-    //     else begin
-    //         case(state)
-    //             IF:begin
-    //                 IFW     = 1;
-    //                 IDW     = 0;
-    //                 EXEW    = 0;
-    //                 MEMW    = 0;
-    //             end
-    //             ID:begin
-    //                 IFW     = 1;
-    //                 IDW     = 0;
-    //                 EXEW    = 0;
-    //                 MEMW    = 0;
-    //             end
-    //             EXE_R_I:begin
-                    
-    //             end
-    //             EXE_B:begin
-
-    //             end
-    //             EXE_L:begin
-
-    //             end
-    //             MEM:begin
-
-    //             end
-    //             WB_R_I:begin
-
-    //             end
-    //             WB_L:begin
-
-    //             end 
-    //         endcase
-    //     end
-    // end
-
     /*
         是否更新PC
     */
@@ -311,9 +268,9 @@ module ysyx_24100006_controller_remake(
             MEM: begin
                 PCW <= (opcode == `ysyx_24100006_S_type ? 1 : 0);   // s类型指令
             end
-            ID: begin
-                PCW <= (opcode == `ysyx_24100006_jal || opcode == `ysyx_24100006_jalr || (opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) ? 1 : 0);  // j, jr, jal
-            end
+            // ID: begin
+            //     PCW <= (opcode == `ysyx_24100006_jal || opcode == `ysyx_24100006_jalr || (opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) ? 1 : 0);  // j, jr, jal
+            // end
             default: PCW <= 0;
         endcase
     end
@@ -429,7 +386,7 @@ module ysyx_24100006_controller_remake(
         ) : 2'b00;
 
     // 跳转类型
-    assign Jump = (state == ID) &&  
+    assign Jump = (state == WB_R_I) &&  
         (opcode == `ysyx_24100006_jal) ? `ysyx_24100006_JAL :
         (opcode == `ysyx_24100006_jalr) ? `ysyx_24100006_JALR :
         (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_JUMPECALL :

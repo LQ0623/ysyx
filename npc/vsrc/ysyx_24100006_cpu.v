@@ -215,6 +215,7 @@ module ysyx_24100006_cpu(
 
 	// 计算npc
 	ysyx_24100006_npc NPC(
+		.clk(clk),	// 增加一个周期的延迟
 		.pc(pc),
 		.mtvec(mtvec),
 		.mepc(mepc),
@@ -269,8 +270,10 @@ module ysyx_24100006_cpu(
 		.wen(1'b1)
 	);
 
-	// always @(pc or PCW) begin
-	// 	$display("%x",pc);
-	// end
+	always @(posedge PCW) begin
+		if(npc != 32'h80000014)begin
+			$display(" %x %x %x %x",Jump,npc,instruction_temp,instruction);
+		end
+	end
 
 endmodule
