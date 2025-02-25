@@ -4,6 +4,7 @@
 module ysyx_24100006_pc(
     input clk,
     input reset,
+	input PCW,	// 是否更新PC
     input[31:0] npc,
     output[31:0] pc
 );
@@ -16,7 +17,7 @@ module ysyx_24100006_pc(
 		.rst(reset),
 		.din(npc),
 		.dout(pc),
-		.wen(1'b1)
+		.wen(PCW)
 	);	
 
 endmodule
