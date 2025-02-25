@@ -15,7 +15,7 @@ ifeq ($(ENABLE_WATCHPOINT), 1)
 endif
 
 # 是否开启trace功能
-ENABLE_TRACE ?= 1
+ENABLE_TRACE ?= 0
 ifeq ($(ENABLE_TRACE), 1)
     CPPFLAGS += -DCONFIG_TRACE
 endif
