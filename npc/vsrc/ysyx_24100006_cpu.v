@@ -4,17 +4,21 @@ module ysyx_24100006_cpu(
 );
 	wire [31:0]pc;
 	wire [31:0]npc;
+	wire PCW;			// 控制是否更新PC
+	// wire IRW;
 	ysyx_24100006_pc PC(
 		.clk(clk),
 		.reset(reset),
+		.PCW(PCW),
 		.npc(npc),
 		.pc(pc)
 	);
 
-	wire [31:0] instruction;
+	wire [31:0] instruction_temp;	// 指令寄存器读出的数据
+	wire [31:0] instruction;		// IR保存之后读取出来的数据
 	ysyx_24100006_im IM(
 		.pc(pc),
-		.instruction(instruction)
+		.instruction(instruction_temp)
 	);
 
 	/* verilator lint_off UNUSEDSIGNAL */
@@ -33,6 +37,9 @@ module ysyx_24100006_cpu(
 	/* verilator lint_off UNUSEDSIGNAL */
 
 	ysyx_24100006_controller_remake controller(
+		.clk(clk),
+		.reset(reset),
+		.PCW(PCW),
 		.opcode(instruction[6:0]),
 		.funct3(instruction[14:12]),
 		.funct7(instruction[31:25]),
@@ -62,9 +69,19 @@ module ysyx_24100006_cpu(
 	wire [4:0] 	rd;
 	wire [4:0] 	waddr_gpr;
 	wire [31:0] wdata_gpr;
+
+	// 读取寄存器的值
+	wire [31:0] rs1_data_temp;
+	wire [31:0] rs2_data_temp;
+	// 中间寄存器保存的值
 	wire [31:0] rs1_data;
 	wire [31:0] rs2_data;
+
+	// ALU计算的结果
+	wire [31:0] alu_result_temp;
+	// 中间寄存器保存的结果
 	wire [31:0] alu_result;
+
 	wire [31:0] sext_imm;
 	wire [31:0] Mem_rdata,Mem_rdata_extend;
 
@@ -99,8 +116,8 @@ module ysyx_24100006_cpu(
 		.wen(Gpr_Write),
 		.rs1(rs),
 		.rs2(rt),
-		.rs1_data(rs1_data),
-		.rs2_data(rs2_data)
+		.rs1_data(rs1_data_temp),
+		.rs2_data(rs2_data_temp)
 	);
 
 
@@ -158,12 +175,13 @@ module ysyx_24100006_cpu(
 		.rs_data(alu_a_data),
 		.aluop(aluop),
 		.rt_data(alu_b_data),
-		.result(alu_result),
+		.result(alu_result_temp),
 		.of(of),
 		.cf(cf),
 		.zf(zf)
 	);
 	
+	/* 为了对齐地址 */
 	assign mem_addr = alu_result & (~32'h3);	// 对齐到4字节边界
 	assign place = alu_result - mem_addr;		// 计算实际地址与字节之间的偏移
 	assign RealMemWmask = Mem_WMask << place;	// 
@@ -196,6 +214,7 @@ module ysyx_24100006_cpu(
 
 	// 计算npc
 	ysyx_24100006_npc NPC(
+		.clk(clk),	// 增加一个周期的延迟
 		.pc(pc),
 		.mtvec(mtvec),
 		.mepc(mepc),
@@ -206,5 +225,54 @@ module ysyx_24100006_cpu(
 		.zf(zf),
 		.npc(npc)
 	);
+
+	// 增加三个寄存器
+	/**
+		IR寄存器：保存取出的指令
+	*/
+	// TODO：这里没写完
+	ysyx_24100006_Reg #(32,32'h00000000) IR(
+		.clk(clk),
+		.rst(reset),
+		.din(instruction_temp),
+		.dout(instruction),
+		.wen(1'b1)
+	);
+	
+	/**
+		alu_src_a寄存器：保存寄存器取出的值
+	*/
+	ysyx_24100006_Reg #(32,32'h00000000) alu_src_a(
+		.clk(clk),
+		.rst(reset),
+		.din(rs1_data_temp),
+		.dout(rs1_data),
+		.wen(1'b1)
+	);
+
+	ysyx_24100006_Reg #(32,32'h00000000) alu_src_b(
+		.clk(clk),
+		.rst(reset),
+		.din(rs2_data_temp),
+		.dout(rs2_data),
+		.wen(1'b1)
+	);
+
+	/**
+		alu_res寄存器：保存alu计算的结果
+	*/
+	ysyx_24100006_Reg #(32,32'h00000000) alu_res(
+		.clk(clk),
+		.rst(reset),
+		.din(alu_result_temp),
+		.dout(alu_result),
+		.wen(1'b1)
+	);
+
+	always @(posedge PCW) begin
+		if(instruction == 32'h00100073)begin
+			$display(" %x %x %x %x",Jump,npc,instruction_temp,instruction);
+		end
+	end
 
 endmodule
