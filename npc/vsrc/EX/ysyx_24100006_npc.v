@@ -113,7 +113,7 @@ module ysyx_24100006_npc(
                     (Skip_mode == `ysyx_24100006_JBGEU && cmp_result == 1'b0)?  (pc + sext_imm) :
                     (Skip_mode == `ysyx_24100006_JUMPMRET)?                     (mepc)          : 
                     (Skip_mode == `ysyx_24100006_JUMPECALL)?                    (mtvec)         : (pc + 4);
-    always @(posedge clk) begin
+    always @(posedge clk)begin
         npc <= npc_temp;
     end
 

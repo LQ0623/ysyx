@@ -205,17 +205,18 @@ module ysyx_24100006_controller_remake(
 );
 
     // 设置状态：IF、ID、EXE、MEM、WB多个状态
-    parameter IF        = 3'b000;
-    parameter ID        = 3'b001;
-    parameter EXE_R_I   = 3'b010;
-    parameter EXE_B     = 3'b011;
-    parameter EXE_L     = 3'b100;
-    parameter MEM       = 3'b101;
-    parameter WB_R_I    = 3'b110;
-    parameter WB_L      = 3'b111;
+    parameter IF        = 4'b0000;
+    parameter ID        = 4'b0001;
+    parameter EXE_R_I   = 4'b0010;
+    parameter EXE_B     = 4'b0011;
+    parameter EXE_L     = 4'b0100;
+    parameter MEM       = 4'b0101;
+    parameter WB_R_I    = 4'b0110;
+    parameter WB_L      = 4'b0111;
+    parameter TEMP      = 4'b1000;
 
 
-    reg [2:0] state;
+    reg [3:0] state;
 
     always @(posedge clk) begin
         if(reset == 1)begin
@@ -224,6 +225,9 @@ module ysyx_24100006_controller_remake(
         else begin
                 case(state)
                     IF: begin
+                        state <= TEMP;
+                    end
+                    TEMP: begin
                         state <= ID;
                     end
                     ID: begin
@@ -233,9 +237,6 @@ module ysyx_24100006_controller_remake(
                         else if(opcode == `ysyx_24100006_load || opcode == `ysyx_24100006_S_type)begin
                             state <= EXE_L;
                         end
-                        // else if(opcode == `ysyx_24100006_jal || opcode == `ysyx_24100006_jalr || (opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak))begin
-                        //     state <= IF;
-                        // end
                         else begin
                             state <= EXE_R_I;
                         end
@@ -253,6 +254,9 @@ module ysyx_24100006_controller_remake(
                     EXE_B, WB_R_I, WB_L:begin
                         state <= IF;
                     end
+                    default:begin
+                        state <= IF;
+                    end
                 endcase
         end
     end
@@ -268,9 +272,6 @@ module ysyx_24100006_controller_remake(
             MEM: begin
                 PCW <= (opcode == `ysyx_24100006_S_type ? 1 : 0);   // s类型指令
             end
-            // ID: begin
-            //     PCW <= (opcode == `ysyx_24100006_jal || opcode == `ysyx_24100006_jalr || (opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) ? 1 : 0);  // j, jr, jal
-            // end
             default: PCW <= 0;
         endcase
     end
@@ -281,7 +282,7 @@ module ysyx_24100006_controller_remake(
     assign irq_no = (state == ID) && (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_MECALL : 0;    //  只有ecall语句会使用这个信号
     
     // ALU操作类型
-    assign aluop = (state == EXE_R_I || state == EXE_B || state == EXE_L) &&
+    assign aluop = 
         /* auipc指令 */
         (opcode == `ysyx_24100006_auipc) ? `ysyx_24100006_add_op :
         /* jal/jalr指令 */
@@ -329,9 +330,9 @@ module ysyx_24100006_controller_remake(
         ) : 4'b0;
 
     // 通用寄存器写使能
-    assign Gpr_Write = (state == WB_R_I || state == WB_L) &&
+    assign Gpr_Write = (state == WB_R_I || state == WB_L) ?
         /* SYSTEM指令 */
-        (opcode == `ysyx_24100006_SYSTEM) ? (
+        ((opcode == `ysyx_24100006_SYSTEM) ? (
             (funct3 == `ysyx_24100006_csrrw || funct3 == `ysyx_24100006_csrrs) ? `ysyx_24100006_GPRW : 
             // (funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) ? npc_trap() : 
             `ysyx_24100006_GPRNW
@@ -343,10 +344,10 @@ module ysyx_24100006_controller_remake(
         opcode == `ysyx_24100006_jalr ||
         opcode == `ysyx_24100006_I_type ||
         opcode == `ysyx_24100006_R_type ||
-        opcode == `ysyx_24100006_load) ? `ysyx_24100006_GPRW : `ysyx_24100006_GPRNW;
+        opcode == `ysyx_24100006_load) ? `ysyx_24100006_GPRW : `ysyx_24100006_GPRNW) : `ysyx_24100006_GPRNW;
 
     // 通用寄存器写回数据选择
-    assign Gpr_Write_RD = (state == WB_R_I || state == WB_L) &&
+    assign Gpr_Write_RD = 
         /* SYSTEM指令 */
         (opcode == `ysyx_24100006_SYSTEM) ? (
             (funct3 == `ysyx_24100006_csrrw || funct3 == `ysyx_24100006_csrrs) ? 
@@ -369,14 +370,14 @@ module ysyx_24100006_controller_remake(
         3'b0;
 
     // 系统寄存器写使能
-    assign Csr_Write = (state == WB_R_I || state == EXE_R_I) &&
-        (opcode == `ysyx_24100006_SYSTEM) ? 
+    assign Csr_Write = (state == WB_R_I || state == EXE_R_I) ? 
+        ((opcode == `ysyx_24100006_SYSTEM) ? 
             ((funct3 == `ysyx_24100006_csrrw || funct3 == `ysyx_24100006_csrrs) ? `ysyx_24100006_CSRW : 
             (funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_CSRW : 
-            `ysyx_24100006_CSRNW) : `ysyx_24100006_CSRNW;
+            `ysyx_24100006_CSRNW) : `ysyx_24100006_CSRNW) : `ysyx_24100006_CSRNW;
 
     // CSR写回数据选择
-    assign Csr_Write_RD = (state == WB_R_I || state == EXE_R_I) && 
+    assign Csr_Write_RD = 
         (opcode == `ysyx_24100006_SYSTEM) ? (
             (funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ecall) ? 
             `ysyx_24100006_EPC :
@@ -386,8 +387,8 @@ module ysyx_24100006_controller_remake(
         ) : 2'b00;
 
     // 跳转类型
-    assign Jump = (state == WB_R_I) &&  
-        (opcode == `ysyx_24100006_jal) ? `ysyx_24100006_JAL :
+    assign Jump = (state == WB_R_I) ?
+        ((opcode == `ysyx_24100006_jal) ? `ysyx_24100006_JAL :
         (opcode == `ysyx_24100006_jalr) ? `ysyx_24100006_JALR :
         (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_JUMPECALL :
         (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_mret) ? `ysyx_24100006_JUMPMRET :
@@ -398,10 +399,10 @@ module ysyx_24100006_controller_remake(
             (funct3 == `ysyx_24100006_bge) ? `ysyx_24100006_JBGE :
             (funct3 == `ysyx_24100006_bltu) ? `ysyx_24100006_JBLTU :
             (funct3 == `ysyx_24100006_bgeu) ? `ysyx_24100006_JBGEU : `ysyx_24100006_NJUMP
-        ) : `ysyx_24100006_NJUMP;
+        ) : `ysyx_24100006_NJUMP) : `ysyx_24100006_NJUMP;
 
     // 立即数类型
-    assign Imm_Type = (state == ID) && 
+    assign Imm_Type = 
         (opcode == `ysyx_24100006_auipc || opcode == `ysyx_24100006_lui) ? `ysyx_24100006_U_TYPE_IMM :
         (opcode == `ysyx_24100006_jal) ? `ysyx_24100006_J_TYPE_IMM :
         (opcode == `ysyx_24100006_jalr || opcode == `ysyx_24100006_I_type || opcode == `ysyx_24100006_load) ? `ysyx_24100006_I_TYPE_IMM :
@@ -409,7 +410,7 @@ module ysyx_24100006_controller_remake(
         (opcode == `ysyx_24100006_B_type) ? `ysyx_24100006_B_TYPE_IMM : 3'b0;
 
     // ALU源A选择
-    assign AluSrcA = (state == EXE_B || state == EXE_L || state == EXE_R_I) &&
+    assign AluSrcA = 
         /* auipc/jal/jalr使用PC */
         ((opcode == `ysyx_24100006_auipc) || 
         (opcode == `ysyx_24100006_jal) || 
@@ -419,7 +420,7 @@ module ysyx_24100006_controller_remake(
         `ysyx_24100006_A_RS;
 
     // ALU源B选择 
-    assign AluSrcB = (state == EXE_B || state == EXE_L || state == EXE_R_I) &&
+    assign AluSrcB = 
         /* 需要立即数的指令 */
         ((opcode == `ysyx_24100006_auipc) ||
         (opcode == `ysyx_24100006_jal) ||
@@ -432,12 +433,12 @@ module ysyx_24100006_controller_remake(
         `ysyx_24100006_B_RT;
 
     // 内存读使能
-    assign Mem_Read = (state == WB_L || state == WB_R_I) &&
-        (opcode == `ysyx_24100006_load) ? `ysyx_24100006_MEMR : 
-        `ysyx_24100006_MEMNR;
+    assign Mem_Read = (state == WB_L) ?
+        ((opcode == `ysyx_24100006_load) ? `ysyx_24100006_MEMR : 
+        `ysyx_24100006_MEMNR) : `ysyx_24100006_MEMNR;
 
     // 内存读模式选择
-    assign Mem_RMask = (state == WB_L || state == WB_R_I) &&
+    assign Mem_RMask = 
         (opcode == `ysyx_24100006_load) ? (
             (funct3 == `ysyx_24100006_lbu) ? `ysyx_24100006_RByteU :
             (funct3 == `ysyx_24100006_lb) ? `ysyx_24100006_RByte : 
@@ -447,12 +448,12 @@ module ysyx_24100006_controller_remake(
         ) : 3'b0;
 
     // 内存写使能
-    assign Mem_Write = (state == WB_L || state == WB_R_I) &&
-        (opcode == `ysyx_24100006_S_type) ? `ysyx_24100006_MEMW : 
-        `ysyx_24100006_MEMNW;
+    assign Mem_Write = (state == MEM) ?
+        ((opcode == `ysyx_24100006_S_type) ? `ysyx_24100006_MEMW : 
+        `ysyx_24100006_MEMNW) : `ysyx_24100006_MEMNW;
 
     // 内存写模式选择
-    assign Mem_WMask = (state == WB_L || state == WB_R_I) &&
+    assign Mem_WMask = 
         (opcode == `ysyx_24100006_S_type) ? (
             (funct3 == `ysyx_24100006_sb) ? `ysyx_24100006_WByte :
             (funct3 == `ysyx_24100006_sh) ? `ysyx_24100006_WHWord : 

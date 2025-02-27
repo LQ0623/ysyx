@@ -40,7 +40,6 @@ module ysyx_24100006_cpu(
 		.clk(clk),
 		.reset(reset),
 		.PCW(PCW),
-		// .IRW(IRW),
 		.opcode(instruction[6:0]),
 		.funct3(instruction[14:12]),
 		.funct7(instruction[31:25]),
@@ -271,7 +270,7 @@ module ysyx_24100006_cpu(
 	);
 
 	always @(posedge PCW) begin
-		if(npc != 32'h80000014)begin
+		if(instruction == 32'h00100073)begin
 			$display(" %x %x %x %x",Jump,npc,instruction_temp,instruction);
 		end
 	end

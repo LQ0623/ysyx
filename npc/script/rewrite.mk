@@ -15,13 +15,13 @@ ifeq ($(ENABLE_WATCHPOINT), 1)
 endif
 
 # 是否开启trace功能
-ENABLE_TRACE ?= 1
+ENABLE_TRACE ?= 0
 ifeq ($(ENABLE_TRACE), 1)
     CPPFLAGS += -DCONFIG_TRACE
 endif
 
 # 是否记录执行的指令到log文件中
-ENABLE_ITRACE ?= 1
+ENABLE_ITRACE ?= 0
 ifeq ($(ENABLE_ITRACE), 1)
     CPPFLAGS += -DCONFIG_ITRACE
 endif
@@ -33,7 +33,7 @@ ifeq ($(ENABLE_FTRACE), 1)
 endif
 
 # 是否开启mtrace
-ENABLE_MTRACE ?= 1
+ENABLE_MTRACE ?= 0
 ifeq ($(ENABLE_MTRACE), 1)
     CPPFLAGS += -DCONFIG_MTRACE
 endif
