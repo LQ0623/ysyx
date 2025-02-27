@@ -213,8 +213,8 @@ module ysyx_24100006_controller_remake(
     parameter MEM       = 4'b0101;
     parameter WB_R_I    = 4'b0110;
     parameter WB_L      = 4'b0111;
-    parameter TEMP      = 4'b1000;
-
+    parameter TEMP_1    = 4'b1000;
+    parameter TEMP_2    = 4'b1001;
 
     reg [3:0] state;
 
@@ -225,9 +225,9 @@ module ysyx_24100006_controller_remake(
         else begin
                 case(state)
                     IF: begin
-                        state <= TEMP;
+                        state <= TEMP_1;
                     end
-                    TEMP: begin
+                    TEMP_1: begin
                         state <= ID;
                     end
                     ID: begin
@@ -243,6 +243,9 @@ module ysyx_24100006_controller_remake(
                     end
                     EXE_R_I:    state <= WB_R_I;
                     EXE_L:      state <= MEM;
+                    EXE_B:begin
+                        state <= TEMP_2;
+                    end
                     MEM: begin
                         if(opcode == `ysyx_24100006_S_type)begin
                             state <= IF;
@@ -251,7 +254,7 @@ module ysyx_24100006_controller_remake(
                             state <= WB_L;
                         end
                     end
-                    EXE_B, WB_R_I, WB_L:begin
+                    TEMP_2, WB_R_I, WB_L:begin
                         state <= IF;
                     end
                     default:begin
@@ -266,7 +269,7 @@ module ysyx_24100006_controller_remake(
     */
     always @(posedge clk) begin
         case(state)
-            EXE_B, WB_R_I, WB_L: begin
+            TEMP_2, WB_R_I, WB_L: begin
                 PCW <= 1; 
             end
             MEM: begin
@@ -370,7 +373,7 @@ module ysyx_24100006_controller_remake(
         3'b0;
 
     // 系统寄存器写使能
-    assign Csr_Write = (state == WB_R_I || state == EXE_R_I) ? 
+    assign Csr_Write = (state == WB_R_I) ? 
         ((opcode == `ysyx_24100006_SYSTEM) ? 
             ((funct3 == `ysyx_24100006_csrrw || funct3 == `ysyx_24100006_csrrs) ? `ysyx_24100006_CSRW : 
             (funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_CSRW : 
@@ -387,7 +390,7 @@ module ysyx_24100006_controller_remake(
         ) : 2'b00;
 
     // 跳转类型
-    assign Jump = (state == WB_R_I) ?
+    assign Jump = (state == TEMP_2 || state == WB_R_I) ?
         ((opcode == `ysyx_24100006_jal) ? `ysyx_24100006_JAL :
         (opcode == `ysyx_24100006_jalr) ? `ysyx_24100006_JALR :
         (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_JUMPECALL :

@@ -3,7 +3,7 @@ include Vysyx_24100006_cpu.mk
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
 # 是否开启波形生成
-ENABLE_WAVE ?= 1
+ENABLE_WAVE ?= 0
 ifeq ($(ENABLE_WAVE), 1)
     CPPFLAGS += -DCONFIG_DUMP_WAVE
 endif
@@ -15,7 +15,7 @@ ifeq ($(ENABLE_WATCHPOINT), 1)
 endif
 
 # 是否开启trace功能
-ENABLE_TRACE ?= 1
+ENABLE_TRACE ?= 0
 ifeq ($(ENABLE_TRACE), 1)
     CPPFLAGS += -DCONFIG_TRACE
 endif
@@ -39,7 +39,7 @@ ifeq ($(ENABLE_MTRACE), 1)
 endif
 
 # 是否开启difftest
-ENABLE_DIFFTEST ?= 1
+ENABLE_DIFFTEST ?= 0
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
 endif
