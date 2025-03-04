@@ -3,13 +3,16 @@
 */
 module ysyx_24100006_im(
     /* verilator lint_off UNUSEDSIGNAL */
+    input valid,
     input [31:0] pc,
     output reg [31:0] instruction
 );
 
     import "DPI-C" function int pmem_read(input int raddr);
-    always@(*)begin
-        instruction = pmem_read(pc);
+    always@(valid)begin
+        if(valid) begin
+            instruction = pmem_read(pc);
+        end
     end
 
     // reg [31:0] instructions[1023:0];

@@ -9,22 +9,22 @@ module ysyx_24100006_ifu(
     // control signal from IDU
     input PCW,
 
-    output [31:0] pc,
+    output [31:0] pc_F,
     output [31:0] instruction   // 读出的指令
 );
 
-	wire PCW;			// 控制是否更新PC
 	ysyx_24100006_pc PC(
 		.clk(clk),
 		.reset(reset),
 		.PCW(PCW),
 		.npc(npc),
-		.pc(pc)
+		.pc(pc_F)
 	);
 
 	wire [31:0] instruction_temp;	// 指令寄存器读出的数据
 	ysyx_24100006_im IM(
-		.pc(pc),
+		.valid(~(reset | clk)),
+		.pc(pc_F),
 		.instruction(instruction_temp)
 	);
 

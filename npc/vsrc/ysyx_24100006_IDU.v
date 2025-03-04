@@ -9,7 +9,7 @@ module ysyx_24100006_idu(
 	input [31:0] instruction,
 	input [31:0] pc_D,
 
-	// from WBU(一些从写回级来的信号，比如写入的地址以及数据是什么)
+	// from WBU(一些从写回级来的信号，比如写入的数据是什么)
 	input Gpr_Write_W,
 	input Csr_Write_W,
 	input [31:0] wdata_gpr_W,

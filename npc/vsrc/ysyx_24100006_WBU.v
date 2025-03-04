@@ -10,13 +10,20 @@ module ysyx_24100006_wbu(
     input [31:0] rs1_data,
 
     // control signal
+    input Gpr_Write,
+	input Csr_Write,
     input [2:0] Gpr_Write_RD,
     input [1:0] Csr_Write_RD,
 
+    output Gpr_Write_WD,
+	output Csr_Write_WD,
     output [31:0] wdata_gpr,
     output [31:0] wdata_csr
 
 );
+    
+    assign Gpr_Write_WD = Gpr_Write;
+    assign Csr_Write_WD = Csr_Write;
 
     // 选择写入通用寄存器的内容
 	ysyx_24100006_MuxKey#(5,3,32) gpr_write_data_mux(wdata_gpr,Gpr_Write_RD,{
