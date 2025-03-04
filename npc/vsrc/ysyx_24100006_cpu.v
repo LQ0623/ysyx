@@ -203,9 +203,7 @@ module ysyx_24100006_cpu(
 	);
 
 	always @(posedge PCW_EM) begin
-		if(instruction == 32'h00100073)begin
-			$display(" %x %x %x",Jump_DE,pc_FD,instruction);
-		end
+		$display(" %x %x %x",Jump_DE,pc_FD,instruction);
 	end
 
 endmodule
