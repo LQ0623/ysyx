@@ -202,7 +202,7 @@ module ysyx_24100006_cpu(
 		.wdata_csr(wdata_csr_WD)
 	);
 
-	always @(posedge PCW_EM) begin
+	always @(PCW_EM) begin
 		$display(" %x %x %x",Jump_DE,pc_FD,instruction);
 	end
 
