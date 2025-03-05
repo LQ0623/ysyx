@@ -17,12 +17,12 @@ const char *regs[] = {
 
 void get_reg(){
     for(int i = 0;i < REGNUM; i++){
-        gpr[i] = cpu->rootp -> ysyx_24100006_cpu__DOT__GPR__DOT__rf[i];
+        gpr[i] = cpu->rootp -> ysyx_24100006_cpu__DOT__ID__DOT__GPR__DOT__rf[i];
     }
-    csr[0] = cpu->rootp -> ysyx_24100006_cpu__DOT__CSR__DOT__rf[0];
-    csr[1] = cpu->rootp -> ysyx_24100006_cpu__DOT__CSR__DOT__rf[1];
-    csr[2] = cpu->rootp -> ysyx_24100006_cpu__DOT__CSR__DOT__rf[3];
-    csr[3] = cpu->rootp -> ysyx_24100006_cpu__DOT__CSR__DOT__rf[2];
+    csr[0] = cpu->rootp -> ysyx_24100006_cpu__DOT__ID__DOT__CSR__DOT__rf[0];
+    csr[1] = cpu->rootp -> ysyx_24100006_cpu__DOT__ID__DOT__CSR__DOT__rf[1];
+    csr[2] = cpu->rootp -> ysyx_24100006_cpu__DOT__ID__DOT__CSR__DOT__rf[3];
+    csr[3] = cpu->rootp -> ysyx_24100006_cpu__DOT__ID__DOT__CSR__DOT__rf[2];
     //0:mstatus 1:mtvec 2:mepc 3:mcause
 }
 
