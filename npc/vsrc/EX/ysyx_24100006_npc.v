@@ -98,11 +98,10 @@ module ysyx_24100006_npc(
     input[31:0]     rs_data,
     input           cmp_result,
     input           zf,         // 判断rs_data是否等于rt_data，相等就会为1
-    output reg [31:0]    npc
+    output [31:0]    npc
 );
 
-    wire [31:0] npc_temp;
-    assign npc_temp  =   (Skip_mode == `ysyx_24100006_NJUMP)?                        (pc + 4):
+    assign npc  =   (Skip_mode == `ysyx_24100006_NJUMP)?                        (pc + 4):
                     (Skip_mode == `ysyx_24100006_JAL)?                          (pc + sext_imm):
                     (Skip_mode == `ysyx_24100006_JALR)?                         ((rs_data+ sext_imm) & (~32'b1)):
                     (Skip_mode == `ysyx_24100006_JBEQ && zf == 1'b1)?           (pc + sext_imm) :  // 这个需要单独的一个信号来控制
@@ -113,9 +112,6 @@ module ysyx_24100006_npc(
                     (Skip_mode == `ysyx_24100006_JBGEU && cmp_result == 1'b0)?  (pc + sext_imm) :
                     (Skip_mode == `ysyx_24100006_JUMPMRET)?                     (mepc)          : 
                     (Skip_mode == `ysyx_24100006_JUMPECALL)?                    (mtvec)         : (pc + 4);
-    always @(posedge clk)begin
-        npc <= npc_temp;
-    end
 
 endmodule
 

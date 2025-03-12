@@ -4,7 +4,6 @@ module ysyx_24100006_cpu(
 );
 
 	// EXEU -> IFU
-	wire PCW_EM;
 	wire [31:0] npc_EF;
 
 	// IFU -> IDU
@@ -16,9 +15,9 @@ module ysyx_24100006_cpu(
 	wire [31:0] rs1_data_DE;
 	wire [31:0] rs2_data_DE;
 	wire [31:0] rdata_csr_DE;
-	wire PCW_DE;
 	wire irq_DF;
 	wire irq_DE;
+	wire [7:0] irq_no_DE;
 	wire [3:0] aluop_DE;
 	wire AluSrcA_DE;
 	wire AluSrcB_DE;
@@ -41,6 +40,7 @@ module ysyx_24100006_cpu(
     wire [31:0] rs2_data_EM;
 	wire [31:0] rdata_csr_EM;
 	wire irq_EM;
+	wire [7:0] irq_no_EM;
 	wire Gpr_Write_EM;
 	wire Csr_Write_EM;
 	wire [2:0] Gpr_Write_RD_EM;
@@ -57,22 +57,36 @@ module ysyx_24100006_cpu(
 	wire [31:0] rdata_csr_MW;
 	wire [31:0] Mem_rdata_extend;
 	wire irq_MW;
-	wire PCW_MW;
+	wire [7:0] irq_no_MW;
 	wire Gpr_Write_MW;
 	wire Csr_Write_MW;
 	wire [2:0] Gpr_Write_RD_MW;
 	wire [1:0] Csr_Write_RD_MW;
 	// WBU -> IDU
+	wire irq_WD;
+	wire [7:0] irq_no_WD;
 	wire Gpr_Write_WD;
 	wire Csr_Write_WD;
 	wire [31:0] wdata_gpr_WD;
 	wire [31:0] wdata_csr_WD;
+
+	// 握手机制
+	wire if_valid;
+	wire id_ready;
+	wire id_valid;
+	wire exe_ready;
+	wire exe_valid;
+	wire mem_ready;
+	wire mem_valid;
+	wire wb_ready;
+
     
 	ysyx_24100006_ifu IF(
 		.clk(clk),
 		.reset(reset),
 		.npc(npc_EF),
-		.PCW(PCW_EM),
+		.id_ready(id_ready),
+		.if_valid(if_valid),
 		.pc_F(pc_FD),
 		.instruction(instruction)
 	);
@@ -82,18 +96,26 @@ module ysyx_24100006_cpu(
 		.reset(reset),
 		.instruction(instruction),
 		.pc_D(pc_FD),
+		.irq_W(irq_WD),
+		.irq_no_W(irq_no_WD),
 		.Gpr_Write_W(Gpr_Write_WD),
 		.Csr_Write_W(Csr_Write_WD),
 		.wdata_gpr_W(wdata_gpr_WD),
 		.wdata_csr_W(wdata_csr_WD),
+		.wb_ready(wb_ready),
+		.mem_valid(mem_valid),
+		.if_valid(if_valid),
+		.exe_ready(exe_ready),
+		.id_valid(id_valid),
+		.id_ready(id_ready),
 		.pc_E(pc_DE),
 		.sext_imm(sext_imm_DE),
 		.rs1_data(rs1_data_DE),
 		.rs2_data(rs2_data_DE),
 		.rdata_csr(rdata_csr_DE),
-		.PCW(PCW_DE),
 		.irq_F(irq_DF),
 		.irq_E(irq_DE),
+		.irq_no(irq_no_DE),
 		.aluop(aluop_DE),
 		.AluSrcA(AluSrcA_DE),
 		.AluSrcB(AluSrcB_DE),
@@ -121,7 +143,7 @@ module ysyx_24100006_cpu(
 		.mtvec(mtvec_DE),
 		.mepc(mepc_DE),
 		.irq_E(irq_DE),
-		.PCW_E(PCW_DE),
+		.irq_no_E(irq_no_DE),
 		.aluop(aluop_DE),
 		.AluSrcA(AluSrcA_DE),
 		.AluSrcB(AluSrcB_DE),
@@ -134,7 +156,11 @@ module ysyx_24100006_cpu(
 		.Mem_Write_E(Mem_Write_DE),
 		.Mem_WMask_E(Mem_WMask_DE),
 		.Mem_RMask_E(Mem_RMask_DE),
-		.npc(npc_EF),
+		.id_valid(id_valid),
+		.mem_ready(mem_ready),
+		.exe_valid(exe_valid),
+		.exe_ready(exe_ready),
+		.npc_E(npc_EF),
 		.pc_M(pc_EM),
 		.alu_result(alu_result_EM),
 		.sext_imm_M(sext_imm_EM),
@@ -142,7 +168,7 @@ module ysyx_24100006_cpu(
 		.rs2_data_M(rs2_data_EM),
 		.rdata_csr_M(rdata_csr_EM),
 		.irq_M(irq_EM),
-		.PCW_M(PCW_EM),
+		.irq_no_M(irq_no_EM),
 		.Gpr_Write_M(Gpr_Write_EM),
 		.Csr_Write_M(Csr_Write_EM),
 		.Gpr_Write_RD_M(Gpr_Write_RD_EM),
@@ -155,6 +181,7 @@ module ysyx_24100006_cpu(
 
 	ysyx_24100006_memu MEM(
 		.clk(clk),
+		.reset(reset),
 		.pc_M(pc_EM),
 		.alu_result_M(alu_result_EM),
 		.sext_imm_M(sext_imm_EM),
@@ -162,7 +189,7 @@ module ysyx_24100006_cpu(
 		.rs2_data_M(rs2_data_EM),
 		.rdata_csr_M(rdata_csr_EM),
 		.irq_M(irq_EM),
-		.PCW_M(PCW_EM),
+		.irq_no_M(irq_no_EM),
 		.Gpr_Write_M(Gpr_Write_EM),
 		.Csr_Write_M(Csr_Write_EM),
 		.Gpr_Write_RD_M(Gpr_Write_RD_EM),
@@ -171,6 +198,10 @@ module ysyx_24100006_cpu(
 		.Mem_Write_M(Mem_Write_EM),
 		.Mem_WMask_M(Mem_WMask_EM),
 		.Mem_RMask_M(Mem_RMask_EM),
+		.exe_valid(exe_valid),
+		.wb_ready(wb_ready),
+		.mem_valid(mem_valid),
+		.mem_ready(mem_ready),
 		.pc_W(pc_MW),
 		.sext_imm_W(sext_imm_MW),
 		.alu_result_W(alu_result_MW),
@@ -178,7 +209,7 @@ module ysyx_24100006_cpu(
 		.rdata_csr_W(rdata_csr_MW),
 		.Mem_rdata_extend(Mem_rdata_extend),
 		.irq_W(irq_MW),
-		.PCW_W(PCW_MW),
+		.irq_no_W(irq_no_MW),
 		.Gpr_Write_W(Gpr_Write_MW),
 		.Csr_Write_W(Csr_Write_MW),
 		.Gpr_Write_RD_W(Gpr_Write_RD_MW),
@@ -186,24 +217,36 @@ module ysyx_24100006_cpu(
 	);
 
 	ysyx_24100006_wbu WB(
+		.clk(clk),
+		.reset(reset),
 		.pc(pc_MW),
 		.sext_imm(sext_imm_MW),
 		.alu_result(alu_result_MW),
 		.Mem_rdata_extend(Mem_rdata_extend),
 		.rdata_csr(rdata_csr_MW),
 		.rs1_data(rs1_data_MW),
+		.irq_W(irq_MW),
+		.irq_no_W(irq_no_MW),
 		.Gpr_Write(Gpr_Write_MW),
 		.Csr_Write(Csr_Write_MW),
 		.Gpr_Write_RD(Gpr_Write_RD_MW),
 		.Csr_Write_RD(Csr_Write_RD_MW),
+		
+		.mem_valid(mem_valid),
+		.wb_ready(wb_ready),
+
+		.irq_WD(irq_WD),
+		.irq_no_WD(irq_no_WD),
 		.Gpr_Write_WD(Gpr_Write_WD),
 		.Csr_Write_WD(Csr_Write_WD),
 		.wdata_gpr(wdata_gpr_WD),
 		.wdata_csr(wdata_csr_WD)
 	);
 
-	// always @(posedge PCW_EM) begin
-	// 	$display(" %x %x %x",Jump_DE,pc_FD,instruction);
-	// end
+	always @(*) begin
+		if(instruction == 32'h00100073)begin
+			$display(" %x %x %x",Jump_DE,pc_FD,instruction);
+		end
+	end
 
 endmodule

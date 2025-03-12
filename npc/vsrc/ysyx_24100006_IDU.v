@@ -10,10 +10,23 @@ module ysyx_24100006_idu(
 	input [31:0] pc_D,
 
 	// from WBU(一些从写回级来的信号，比如写入的数据是什么)
+	input irq_W,
+	input [7:0] irq_no_W,
 	input Gpr_Write_W,
 	input Csr_Write_W,
 	input [31:0] wdata_gpr_W,
 	input [31:0] wdata_csr_W,
+
+	// controller 使用的，用于控制寄存器写入信号的生成
+	input wb_ready,
+	input mem_valid,
+
+	// 握手机制使用
+	input if_valid,
+	// 来自EXE的流控
+    input  exe_ready,
+	output reg id_valid,
+	output reg id_ready,
 
 	// to EXEU
 	output [31:0] pc_E,
@@ -26,10 +39,10 @@ module ysyx_24100006_idu(
 	output [31:0] rdata_csr,
 
 	// control signal
-	output PCW,	// 控制是否取下一条pc的
-
 	output irq_F,	// IF使用的irq信号
 	output irq_E,
+	// 异常号
+	output [7:0] irq_no,
 	output [3:0] aluop,
 	output AluSrcA,
 	output AluSrcB,
@@ -49,9 +62,42 @@ module ysyx_24100006_idu(
 	output [31:0] mepc
 );
 
+	// 握手机制
+	parameter S_IDLE = 0, S_DECODE = 1;
+	reg state;
+
+	always @(posedge clk) begin
+		if(reset)begin
+			state		<= S_IDLE;
+			id_valid	<= 1'b0;
+			id_ready	<= 1'b1;
+		end else begin
+			case (state)
+				S_IDLE: begin
+					// $display("if_valid:%d  id_ready:%d  pc:%x",if_valid,id_ready,pc_D);
+					if(if_valid && id_ready) begin
+						id_valid	<= 1'b1;
+						id_ready	<= 1'b0;
+						state		<= S_DECODE;
+					end
+				end
+				S_DECODE: begin
+					if(id_valid && exe_ready)begin
+						id_valid	<= 1'b0;
+						id_ready	<= 1'b1;
+						state		<= S_IDLE;
+					end
+				end
+				default: begin
+					state	<= S_IDLE;
+				end
+			endcase
+		end
+	end
+
+
 	wire [2:0] Imm_Type;
 	wire irq;
-	wire [7:0] irq_no;
 
 	assign pc_E = pc_D;
 
@@ -59,7 +105,8 @@ module ysyx_24100006_idu(
 	ysyx_24100006_controller_remake controller(
 		.clk(clk),
 		.reset(reset),
-		.PCW(PCW),
+		.wb_ready(wb_ready),
+		.mem_valid(mem_valid),
 		.opcode(instruction[6:0]),
 		.funct3(instruction[14:12]),
 		.funct7(instruction[31:25]),
@@ -123,8 +170,8 @@ module ysyx_24100006_idu(
 	// TODO:需要写CSR寄存器的指令有mret、csrrs、csrrw三条，所以这里的wdata和waddr需要使用MUX进行选值
 	ysyx_24100006_CSR CSR(
 		.clk(clk),
-		.irq(irq),
-		.irq_no(irq_no),
+		.irq(irq_W & if_valid),
+		.irq_no(irq_no_W),
 		.wdata(wdata_csr_W),
 		.waddr(instruction[31:20]),
 		.wen(Csr_Write_W),
