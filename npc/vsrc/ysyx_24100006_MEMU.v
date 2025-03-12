@@ -15,6 +15,7 @@ module ysyx_24100006_memu(
 
 	// control signal
 	input irq_M,
+	input [7:0] irq_no_M,
 	input PCW_M,
 	input Gpr_Write_M,
 	input Csr_Write_M,
@@ -42,6 +43,7 @@ module ysyx_24100006_memu(
 
 	// control signal to WBU
 	output irq_W,
+	output [7:0] irq_no_W,
 	output PCW_W,
 	output Gpr_Write_W,
 	output Csr_Write_W,
@@ -93,6 +95,7 @@ module ysyx_24100006_memu(
 
 	// control signal to WBU
 	assign irq_W			= irq_M;
+	assign irq_no_W			= irq_no_M;
 	assign PCW_W			= PCW_M;
 	assign Gpr_Write_W		= Gpr_Write_M;
 	assign Csr_Write_W		= Csr_Write_M;

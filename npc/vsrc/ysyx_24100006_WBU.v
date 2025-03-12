@@ -12,6 +12,8 @@ module ysyx_24100006_wbu(
     input [31:0] rs1_data,
 
     // control signal
+    input irq_W,
+    input [7:0] irq_no_W,
     input Gpr_Write,
 	input Csr_Write,
     input [2:0] Gpr_Write_RD,
@@ -21,6 +23,8 @@ module ysyx_24100006_wbu(
 	input mem_valid,
 	output reg wb_ready,
 
+    output irq_WD,
+    output [7:0] irq_no_WD,
     output Gpr_Write_WD,
 	output Csr_Write_WD,
     output [31:0] wdata_gpr,
@@ -53,6 +57,8 @@ module ysyx_24100006_wbu(
     end
 
 
+    assign irq_WD       = irq_W;
+    assign irq_no_WD    = irq_no_W;
     assign Gpr_Write_WD = Gpr_Write;
     assign Csr_Write_WD = Csr_Write;
 

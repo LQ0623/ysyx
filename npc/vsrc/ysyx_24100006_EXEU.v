@@ -15,6 +15,7 @@ module ysyx_24100006_exeu(
 
 	// control signal from IDU
 	input irq_E,
+	input [7:0] irq_no_E,
 	input PCW_E,
     input [3:0] aluop,
 	input AluSrcA,
@@ -49,6 +50,7 @@ module ysyx_24100006_exeu(
 
 	// control signal
 	output irq_M,
+	output [7:0] irq_no_M,
 	output PCW_M,
 	output Gpr_Write_M,
 	output Csr_Write_M,
@@ -98,6 +100,7 @@ module ysyx_24100006_exeu(
 
 	// control signal
 	assign irq_M 			= irq_E;
+	assign irq_no_M			= irq_no_E;
 	assign PCW_M			= PCW_E;
 	assign Gpr_Write_M 		= Gpr_Write_E;
 	assign Csr_Write_M		= Csr_Write_E;

@@ -10,6 +10,8 @@ module ysyx_24100006_idu(
 	input [31:0] pc_D,
 
 	// from WBU(一些从写回级来的信号，比如写入的数据是什么)
+	input irq_W,
+	input [7:0] irq_no_W,
 	input Gpr_Write_W,
 	input Csr_Write_W,
 	input [31:0] wdata_gpr_W,
@@ -41,6 +43,7 @@ module ysyx_24100006_idu(
 
 	output irq_F,	// IF使用的irq信号
 	output irq_E,
+	output [7:0] irq_no,
 	output [3:0] aluop,
 	output AluSrcA,
 	output AluSrcB,
@@ -96,7 +99,6 @@ module ysyx_24100006_idu(
 
 	wire [2:0] Imm_Type;
 	wire irq;
-	wire [7:0] irq_no;
 
 	assign pc_E = pc_D;
 
@@ -170,8 +172,8 @@ module ysyx_24100006_idu(
 	// TODO:需要写CSR寄存器的指令有mret、csrrs、csrrw三条，所以这里的wdata和waddr需要使用MUX进行选值
 	ysyx_24100006_CSR CSR(
 		.clk(clk),
-		.irq(irq),
-		.irq_no(irq_no),
+		.irq(irq_W),
+		.irq_no(irq_no_W),
 		.wdata(wdata_csr_W),
 		.waddr(instruction[31:20]),
 		.wen(Csr_Write_W),

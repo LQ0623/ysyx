@@ -18,7 +18,7 @@ Context* __am_irq_handle(Context *c) {
         break;
       default: ev.event = EVENT_ERROR; break;
     }
-printf("\nmepc: %08x\n",c->mepc);
+
     c = user_handler(ev, c);
     assert(c != NULL);
   }
