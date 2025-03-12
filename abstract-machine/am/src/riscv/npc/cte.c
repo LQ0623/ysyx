@@ -7,16 +7,20 @@ static Context* (*user_handler)(Event, Context*) = NULL;
 Context* __am_irq_handle(Context *c) {
   if (user_handler) {
     Event ev = {0};
+    printf("c->mcause is %d\t\t",c->mcause);
     switch (c->mcause) {
       case 11:
-        if(c->GPR1 == -1){
-          ev.event = EVENT_YIELD;
-          c->mepc += 4;  
-        }
-        else{ 
-          ev.event = EVENT_SYSCALL;
-          c->mepc += 4;
-        }
+        printf("c-GPR1 is %d\n",c->GPR1);
+        ev.event = EVENT_YIELD;
+        c->mepc += 4;  
+        // if(c->GPR1 == -1){
+        //   ev.event = EVENT_YIELD;
+        //   c->mepc += 4;  
+        // }
+        // else{ 
+        //   ev.event = EVENT_SYSCALL;
+        //   c->mepc += 4;
+        // }
         break;
       default: ev.event = EVENT_ERROR; break;
     }

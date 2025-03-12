@@ -15,6 +15,17 @@ module ysyx_24100006_idu(
 	input [31:0] wdata_gpr_W,
 	input [31:0] wdata_csr_W,
 
+	// // controller 使用的，用于控制寄存器写入信号的生成
+	input wb_ready,
+	input mem_valid,
+
+	// 握手机制使用
+	input if_valid,
+	// 来自EXE的流控
+    input  exe_ready,
+	output reg id_valid,
+	output reg id_ready,
+
 	// to EXEU
 	output [31:0] pc_E,
 	// 位扩展的立即数
@@ -49,6 +60,40 @@ module ysyx_24100006_idu(
 	output [31:0] mepc
 );
 
+	// 握手机制
+	parameter S_IDLE = 0, S_DECODE = 1;
+	reg state;
+
+	always @(posedge clk) begin
+		if(reset)begin
+			state		<= S_IDLE;
+			id_valid	<= 1'b0;
+			id_ready	<= 1'b1;
+		end else begin
+			case (state)
+				S_IDLE: begin
+					// $display("if_valid:%d  id_ready:%d  pc:%x",if_valid,id_ready,pc_D);
+					if(if_valid && id_ready) begin
+						id_valid	<= 1'b1;
+						id_ready	<= 1'b0;
+						state		<= S_DECODE;
+					end
+				end
+				S_DECODE: begin
+					if(id_valid && exe_ready)begin
+						id_valid	<= 1'b0;
+						id_ready	<= 1'b1;
+						state		<= S_IDLE;
+					end
+				end
+				default: begin
+					state	<= S_IDLE;
+				end
+			endcase
+		end
+	end
+
+
 	wire [2:0] Imm_Type;
 	wire irq;
 	wire [7:0] irq_no;
@@ -59,6 +104,8 @@ module ysyx_24100006_idu(
 	ysyx_24100006_controller_remake controller(
 		.clk(clk),
 		.reset(reset),
+		.wb_ready(wb_ready),
+		.mem_valid(mem_valid),
 		.PCW(PCW),
 		.opcode(instruction[6:0]),
 		.funct3(instruction[14:12]),

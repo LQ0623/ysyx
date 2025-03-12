@@ -67,12 +67,25 @@ module ysyx_24100006_cpu(
 	wire Csr_Write_WD;
 	wire [31:0] wdata_gpr_WD;
 	wire [31:0] wdata_csr_WD;
+
+	// 握手机制
+	wire if_valid;
+	wire id_ready;
+	wire id_valid;
+	wire exe_ready;
+	wire exe_valid;
+	wire mem_ready;
+	wire mem_valid;
+	wire wb_ready;
+
     
 	ysyx_24100006_ifu IF(
 		.clk(clk),
 		.reset(reset),
 		.npc(npc_EF),
 		.PCW(PCW_EM),
+		.id_ready(id_ready),
+		.if_valid(if_valid),
 		.pc_F(pc_FD),
 		.instruction(instruction)
 	);
@@ -86,6 +99,12 @@ module ysyx_24100006_cpu(
 		.Csr_Write_W(Csr_Write_WD),
 		.wdata_gpr_W(wdata_gpr_WD),
 		.wdata_csr_W(wdata_csr_WD),
+		.wb_ready(wb_ready),
+		.mem_valid(mem_valid),
+		.if_valid(if_valid),
+		.exe_ready(exe_ready),
+		.id_valid(id_valid),
+		.id_ready(id_ready),
 		.pc_E(pc_DE),
 		.sext_imm(sext_imm_DE),
 		.rs1_data(rs1_data_DE),
@@ -134,7 +153,11 @@ module ysyx_24100006_cpu(
 		.Mem_Write_E(Mem_Write_DE),
 		.Mem_WMask_E(Mem_WMask_DE),
 		.Mem_RMask_E(Mem_RMask_DE),
-		.npc(npc_EF),
+		.id_valid(id_valid),
+		.mem_ready(mem_ready),
+		.exe_valid(exe_valid),
+		.exe_ready(exe_ready),
+		.npc_E(npc_EF),
 		.pc_M(pc_EM),
 		.alu_result(alu_result_EM),
 		.sext_imm_M(sext_imm_EM),
@@ -155,6 +178,7 @@ module ysyx_24100006_cpu(
 
 	ysyx_24100006_memu MEM(
 		.clk(clk),
+		.reset(reset),
 		.pc_M(pc_EM),
 		.alu_result_M(alu_result_EM),
 		.sext_imm_M(sext_imm_EM),
@@ -171,6 +195,10 @@ module ysyx_24100006_cpu(
 		.Mem_Write_M(Mem_Write_EM),
 		.Mem_WMask_M(Mem_WMask_EM),
 		.Mem_RMask_M(Mem_RMask_EM),
+		.exe_valid(exe_valid),
+		.wb_ready(wb_ready),
+		.mem_valid(mem_valid),
+		.mem_ready(mem_ready),
 		.pc_W(pc_MW),
 		.sext_imm_W(sext_imm_MW),
 		.alu_result_W(alu_result_MW),
@@ -186,6 +214,8 @@ module ysyx_24100006_cpu(
 	);
 
 	ysyx_24100006_wbu WB(
+		.clk(clk),
+		.reset(reset),
 		.pc(pc_MW),
 		.sext_imm(sext_imm_MW),
 		.alu_result(alu_result_MW),
@@ -196,14 +226,19 @@ module ysyx_24100006_cpu(
 		.Csr_Write(Csr_Write_MW),
 		.Gpr_Write_RD(Gpr_Write_RD_MW),
 		.Csr_Write_RD(Csr_Write_RD_MW),
+		.mem_valid(mem_valid),
+		.wb_ready(wb_ready),
 		.Gpr_Write_WD(Gpr_Write_WD),
 		.Csr_Write_WD(Csr_Write_WD),
 		.wdata_gpr(wdata_gpr_WD),
 		.wdata_csr(wdata_csr_WD)
 	);
 
-	// always @(posedge PCW_EM) begin
-	// 	$display(" %x %x %x",Jump_DE,pc_FD,instruction);
-	// end
+	always @(*) begin
+		// if(pc_FD >= 32'h80000000 && pc_FD <= 80000034)begin
+		if(instruction == 32'h00100073)begin
+			$display(" %x %x %x",Jump_DE,pc_FD,instruction);
+		end
+	end
 
 endmodule

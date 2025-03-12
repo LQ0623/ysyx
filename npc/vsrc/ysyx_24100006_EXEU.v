@@ -29,8 +29,15 @@ module ysyx_24100006_exeu(
 	input [7:0] Mem_WMask_E,
 	input [2:0] Mem_RMask_E,
 
+	// 握手机制使用
+	input id_valid,
+	// 来自MEM的流控
+	input mem_ready,
+	output reg exe_valid,
+	output reg exe_ready,
+
 	// to IFU
-	output [31:0] npc,
+	output [31:0] npc_E,
 	
 	// to MEMU
 	output [31:0] pc_M,
@@ -52,6 +59,36 @@ module ysyx_24100006_exeu(
 	output [7:0] Mem_WMask_M,
 	output [2:0] Mem_RMask_M
 );
+
+	// 握手机制
+	parameter S_IDLE = 0, S_EXECUTE = 1;
+	reg state;
+
+	always @(posedge clk) begin
+		if(reset)begin
+			exe_ready <= 1'b1;
+            exe_valid <= 1'b0;
+			state	 	<=	S_IDLE;
+		end else begin
+			case (state)
+				S_IDLE: begin
+					if(id_valid && exe_ready) begin
+						exe_ready	<= 1'b0;
+						exe_valid	<= 1'b1;
+						state		<= S_EXECUTE;
+					end
+				end
+				S_EXECUTE: begin
+					if(exe_valid && mem_ready) begin
+						exe_valid	<= 1'b0;
+						exe_ready	<= 1'b1;
+						state		<= S_IDLE;
+					end
+				end
+			endcase
+		end
+	end
+
 
 	assign pc_M 			= pc_E;
 	assign sext_imm_M 		= sext_imm_E;
@@ -119,7 +156,7 @@ module ysyx_24100006_exeu(
 		.rs_data(rs1_data_E),
 		.cmp_result(alu_result[0]),
 		.zf(zf),
-		.npc(npc)
+		.npc(npc_E)
 	);
 
 endmodule

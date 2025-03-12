@@ -3,8 +3,10 @@
 */
 module ysyx_24100006_memu(
     input clk,
+	input reset,
 	// from EXEU
 	input [31:0] pc_M,
+	// input [31:0] npc_
 	input [31:0] alu_result_M,
 	input [31:0] sext_imm_M,
 	input [31:0] rs1_data_M,
@@ -23,6 +25,13 @@ module ysyx_24100006_memu(
 	input [7:0] Mem_WMask_M,
 	input [2:0] Mem_RMask_M,
 
+	// 握手机制使用
+	input exe_valid,
+	// 来自WB的流控
+	input wb_ready,
+	output reg mem_valid,
+	output reg mem_ready,
+
 	// to WBU
 	output [31:0] pc_W,
 	output [31:0] sext_imm_W,
@@ -39,6 +48,36 @@ module ysyx_24100006_memu(
 	output [2:0] Gpr_Write_RD_W,
 	output [1:0] Csr_Write_RD_W
 );
+
+	// 握手机制
+	parameter S_IDLE = 0, S_ACCESS = 1;
+	reg state;
+
+	always @(posedge clk) begin
+		if(reset) begin
+			mem_valid	<= 1'b0;
+			mem_ready	<= 1'b1;
+			state		<= S_IDLE;
+		end else begin
+			case(state) 
+				S_IDLE: begin
+					if(exe_valid && mem_ready) begin
+						mem_valid	<= 1'b1;
+						mem_ready	<= 1'b0;
+						state		<= S_ACCESS;
+					end
+				end
+				S_ACCESS: begin
+					if(mem_valid && wb_ready) begin
+						mem_valid	<= 1'b0;
+						mem_ready	<= 1'b1;
+						state		<= S_IDLE;
+					end
+				end
+			endcase
+		end
+	end
+
 
 	// new
 	wire [31:0] mem_addr;
