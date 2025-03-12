@@ -6,7 +6,6 @@ module ysyx_24100006_memu(
 	input reset,
 	// from EXEU
 	input [31:0] pc_M,
-	// input [31:0] npc_
 	input [31:0] alu_result_M,
 	input [31:0] sext_imm_M,
 	input [31:0] rs1_data_M,
@@ -16,7 +15,6 @@ module ysyx_24100006_memu(
 	// control signal
 	input irq_M,
 	input [7:0] irq_no_M,
-	input PCW_M,
 	input Gpr_Write_M,
 	input Csr_Write_M,
 	input [2:0] Gpr_Write_RD_M,
@@ -44,7 +42,6 @@ module ysyx_24100006_memu(
 	// control signal to WBU
 	output irq_W,
 	output [7:0] irq_no_W,
-	output PCW_W,
 	output Gpr_Write_W,
 	output Csr_Write_W,
 	output [2:0] Gpr_Write_RD_W,
@@ -96,7 +93,6 @@ module ysyx_24100006_memu(
 	// control signal to WBU
 	assign irq_W			= irq_M;
 	assign irq_no_W			= irq_no_M;
-	assign PCW_W			= PCW_M;
 	assign Gpr_Write_W		= Gpr_Write_M;
 	assign Csr_Write_W		= Csr_Write_M;
 	assign Gpr_Write_RD_W	= Gpr_Write_RD_M;

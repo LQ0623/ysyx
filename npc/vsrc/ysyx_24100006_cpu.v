@@ -4,19 +4,18 @@ module ysyx_24100006_cpu(
 );
 
 	// EXEU -> IFU
-	wire PCW_EM;
 	wire [31:0] npc_EF;
 
 	// IFU -> IDU
 	wire [31:0] pc_FD;
 	wire [31:0] instruction;   // 读出的指令
+	wire PCW;
 	// IDU -> EXEU
 	wire [31:0] pc_DE;
 	wire [31:0] sext_imm_DE;
 	wire [31:0] rs1_data_DE;
 	wire [31:0] rs2_data_DE;
 	wire [31:0] rdata_csr_DE;
-	wire PCW_DE;
 	wire irq_DF;
 	wire irq_DE;
 	wire [7:0] irq_no_DE;
@@ -60,7 +59,6 @@ module ysyx_24100006_cpu(
 	wire [31:0] Mem_rdata_extend;
 	wire irq_MW;
 	wire [7:0] irq_no_MW;
-	wire PCW_MW;
 	wire Gpr_Write_MW;
 	wire Csr_Write_MW;
 	wire [2:0] Gpr_Write_RD_MW;
@@ -88,17 +86,18 @@ module ysyx_24100006_cpu(
 		.clk(clk),
 		.reset(reset),
 		.npc(npc_EF),
-		.PCW(PCW_EM),
 		.id_ready(id_ready),
 		.if_valid(if_valid),
 		.pc_F(pc_FD),
-		.instruction(instruction)
+		.instruction(instruction),
+		.PCW(PCW)
 	);
 	
 	ysyx_24100006_idu ID(
 		.clk(clk),
 		.reset(reset),
 		.instruction(instruction),
+		.PCW(PCW),
 		.pc_D(pc_FD),
 		.irq_W(irq_WD),
 		.irq_no_W(irq_no_WD),
@@ -117,7 +116,6 @@ module ysyx_24100006_cpu(
 		.rs1_data(rs1_data_DE),
 		.rs2_data(rs2_data_DE),
 		.rdata_csr(rdata_csr_DE),
-		.PCW(PCW_DE),
 		.irq_F(irq_DF),
 		.irq_E(irq_DE),
 		.irq_no(irq_no_DE),
@@ -149,7 +147,6 @@ module ysyx_24100006_cpu(
 		.mepc(mepc_DE),
 		.irq_E(irq_DE),
 		.irq_no_E(irq_no_DE),
-		.PCW_E(PCW_DE),
 		.aluop(aluop_DE),
 		.AluSrcA(AluSrcA_DE),
 		.AluSrcB(AluSrcB_DE),
@@ -175,7 +172,6 @@ module ysyx_24100006_cpu(
 		.rdata_csr_M(rdata_csr_EM),
 		.irq_M(irq_EM),
 		.irq_no_M(irq_no_EM),
-		.PCW_M(PCW_EM),
 		.Gpr_Write_M(Gpr_Write_EM),
 		.Csr_Write_M(Csr_Write_EM),
 		.Gpr_Write_RD_M(Gpr_Write_RD_EM),
@@ -197,7 +193,6 @@ module ysyx_24100006_cpu(
 		.rdata_csr_M(rdata_csr_EM),
 		.irq_M(irq_EM),
 		.irq_no_M(irq_no_EM),
-		.PCW_M(PCW_EM),
 		.Gpr_Write_M(Gpr_Write_EM),
 		.Csr_Write_M(Csr_Write_EM),
 		.Gpr_Write_RD_M(Gpr_Write_RD_EM),
@@ -218,7 +213,6 @@ module ysyx_24100006_cpu(
 		.Mem_rdata_extend(Mem_rdata_extend),
 		.irq_W(irq_MW),
 		.irq_no_W(irq_no_MW),
-		.PCW_W(PCW_MW),
 		.Gpr_Write_W(Gpr_Write_MW),
 		.Csr_Write_W(Csr_Write_MW),
 		.Gpr_Write_RD_W(Gpr_Write_RD_MW),
@@ -253,7 +247,6 @@ module ysyx_24100006_cpu(
 	);
 
 	always @(*) begin
-		// if(pc_FD >= 32'h80000000 && pc_FD <= 80000034)begin
 		if(instruction == 32'h00100073)begin
 			$display(" %x %x %x",Jump_DE,pc_FD,instruction);
 		end

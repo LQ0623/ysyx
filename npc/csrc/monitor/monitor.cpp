@@ -24,7 +24,6 @@ static void welcome() {
         "If it is not necessary, you can disable it in menuconfig");
   Log("Build time: %s, %s", __TIME__, __DATE__);
   printf("Welcome to %s-NPC!\n", ANSI_FMT("riscv32e", ANSI_FG_YELLOW ANSI_BG_RED));
-  printf("For help, type \"help\"\n");
 }
 
 static long load_img() {

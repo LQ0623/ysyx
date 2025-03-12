@@ -173,9 +173,6 @@ module ysyx_24100006_controller_remake(
     input wb_ready,    // 代替掉集中式状态机中的state == WB
     input mem_valid,
 
-    output reg PCW, // 是否更新PC
-    // output IRW, // 是否写IR寄存器
-
     /* 是否发生中断 */
     output reg irq,
     output reg [7:0] irq_no,
