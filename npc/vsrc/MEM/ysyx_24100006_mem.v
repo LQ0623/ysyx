@@ -1,5 +1,3 @@
-/* verilator lint_off UNUSEDSIGNAL */
-/* verilator lint_off UNDRIVEN */
 /**
     使用DPI-C进行内存读写
 */
@@ -17,19 +15,29 @@ module ysyx_24100006_mem(
     
     import "DPI-C" function int pmem_read(input int raddr);
     import "DPI-C" function void pmem_write(input int waddr, input int wdata,input byte wmask);
-    /* verilator lint_off LATCH */
-    always@(*)begin
+    
+    // 内存写
+    always@(posedge clk)begin
         if(Mem_Write)begin
             pmem_write(waddr,wdata,Mem_WMask);
-        end
-        else if (Mem_Read)begin
-            rdata = pmem_read(raddr);
-        end
-        else begin
-            rdata = 32'h00000000;
         end
     end
 
 
+    reg [31:0] read_data;  // 用于临时存储数据
+
+    // 内存读
+    always @(posedge clk) begin
+        if (Mem_Read)begin
+            read_data <= pmem_read(raddr);
+        end
+        else begin
+            read_data <= 32'h00000000;
+        end
+    end
+
+    assign rdata = read_data;
+
+
 endmodule
-/* verilator lint_off UNUSEDSIGNAL */
+

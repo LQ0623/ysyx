@@ -20,10 +20,7 @@ module ysyx_24100006_im(
     // end
 
     always@(*)begin
-        // if(valid) begin
-            // 在时钟上升沿读取当前pc对应的指令并缓存
-            read_data = pmem_read(pc);
-        // end
+        read_data = pmem_read(pc);
     end
 
     always @(posedge clk) begin

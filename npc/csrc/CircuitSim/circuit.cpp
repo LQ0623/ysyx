@@ -141,9 +141,10 @@ void cpu_exec(uint32_t n){
 		dnpc = cpu->rootp -> ysyx_24100006_cpu__DOT__npc_EF;
 		PCW = cpu->rootp -> ysyx_24100006_cpu__DOT__PCW;
 		if_valid = cpu -> rootp -> ysyx_24100006_cpu__DOT__if_valid;
-		printf("PCW is %d\t",PCW);
-		printf("if_valid is %d\t",if_valid);
-		printf("cpp pc:%#x\n",pc);
+		// printf("if_valid is %d\t",if_valid);
+		// printf("PCW is %d\t",PCW);
+		// printf("cpp pc is %#x\t",pc);
+		// printf("cpp npc is %#x\t",dnpc);
 		// printf("is_skip:%d\n",is_skip_diff);
 		get_reg();
 		g_nr_guest_inst ++;
