@@ -15,7 +15,7 @@ void difftest_step();
 #define LOG_BUF_SIZE 256
 uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
-word_t pc, snpc, dnpc, inst, prev_pc;
+word_t pc, snpc, dnpc, inst, prev_pc, PCW, if_valid;
 static uint8_t opcode;
 
 static bool is_change = false;	// 监视点是否有改变
@@ -117,7 +117,9 @@ static void trace_and_difftest() {
 	 * 4、是否开启diff test测试
 	 */
 	#ifdef CONFIG_DIFFTEST
-		difftest_step();
+		if(if_valid == 1){
+			difftest_step();
+		}
 	#endif
 }
 
@@ -137,7 +139,12 @@ void cpu_exec(uint32_t n){
 		inst = cpu->rootp -> ysyx_24100006_cpu__DOT__instruction;
 		pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
 		dnpc = cpu->rootp -> ysyx_24100006_cpu__DOT__npc_EF;
-		// printf("cpp pc:%#x\n",pc);
+		PCW = cpu->rootp -> ysyx_24100006_cpu__DOT__PCW;
+		if_valid = cpu -> rootp -> ysyx_24100006_cpu__DOT__if_valid;
+		// printf("if_valid is %d\t",if_valid);
+		// printf("PCW is %d\t",PCW);
+		// printf("cpp pc is %#x\t",pc);
+		// printf("cpp npc is %#x\t",dnpc);
 		// printf("is_skip:%d\n",is_skip_diff);
 		get_reg();
 		g_nr_guest_inst ++;

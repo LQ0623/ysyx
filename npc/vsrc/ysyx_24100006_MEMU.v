@@ -49,8 +49,8 @@ module ysyx_24100006_memu(
 );
 
 	// 握手机制
-	parameter S_IDLE = 0, S_ACCESS = 1;
-	reg state;
+	parameter S_IDLE = 0, S_DELAY = 1, S_ACCESS = 2;
+	reg [1:0] state;
 
 	always @(posedge clk) begin
 		if(reset) begin
@@ -61,10 +61,13 @@ module ysyx_24100006_memu(
 			case(state) 
 				S_IDLE: begin
 					if(exe_valid && mem_ready) begin
-						mem_valid	<= 1'b1;
-						mem_ready	<= 1'b0;
-						state		<= S_ACCESS;
+						state		<= S_DELAY;
 					end
+				end
+				S_DELAY: begin
+					mem_valid	<= 1'b1;
+					mem_ready	<= 1'b0;
+					state		<= S_ACCESS;
 				end
 				S_ACCESS: begin
 					if(mem_valid && wb_ready) begin

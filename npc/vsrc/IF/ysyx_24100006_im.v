@@ -2,25 +2,30 @@
     模拟指令存储，使用DPI-C进行读取指令
 */
 module ysyx_24100006_im(
-    /* verilator lint_off UNUSEDSIGNAL */
+    input clk,  
     input valid,
     input [31:0] pc,
     output reg [31:0] instruction
 );
 
     import "DPI-C" function int pmem_read(input int raddr);
-    always@(valid)begin
-        if(valid) begin
-            instruction = pmem_read(pc);
-        end
-    end
+    
+    reg [31:0] read_data;  // 用于临时存储指令
 
-    // reg [31:0] instructions[1023:0];
-    // // initial 用于初始化
-    // initial begin
-    //     $readmemh("/home/lq/ysyx-workbench/npc/vsrc/inst.txt",instructions);
+    // always@(posedge clk)begin
+    //     // if(valid) begin
+    //         // 在时钟上升沿读取当前pc对应的指令并缓存
+    //         instruction <= pmem_read(pc);
+    //     // end
     // end
 
-    // assign instruction = instructions[pc[11:2]];
+    always@(*)begin
+        read_data = pmem_read(pc);
+    end
+
+    always @(posedge clk) begin
+        // 延迟一个周期输出缓存的指令
+        instruction <= read_data;
+    end
 
 endmodule

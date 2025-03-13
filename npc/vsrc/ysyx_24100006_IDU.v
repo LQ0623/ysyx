@@ -8,6 +8,7 @@ module ysyx_24100006_idu(
 	// from IFU
 	input [31:0] instruction,
 	input [31:0] pc_D,
+	input PCW,
 
 	// from WBU(一些从写回级来的信号，比如写入的数据是什么)
 	input irq_W,
@@ -170,7 +171,7 @@ module ysyx_24100006_idu(
 	// TODO:需要写CSR寄存器的指令有mret、csrrs、csrrw三条，所以这里的wdata和waddr需要使用MUX进行选值
 	ysyx_24100006_CSR CSR(
 		.clk(clk),
-		.irq(irq_W & if_valid),
+		.irq(irq_W & PCW),
 		.irq_no(irq_no_W),
 		.wdata(wdata_csr_W),
 		.waddr(instruction[31:20]),

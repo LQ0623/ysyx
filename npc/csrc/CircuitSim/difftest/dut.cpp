@@ -54,11 +54,12 @@ void init_difftest(char *ref_so_file, long img_size) {
     for(int i = 0;i < REGNUM;i++)
         dut_r.gpr[i] = gpr[i];
     ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
+
+    printf("Difftests Init\n");
 }
 
 bool static checkregs(struct CPU_state *ref_r){
     bool flag = true;
-    // printf("ref_r.pc : %#x,pc : %#x\n",ref_r->pc,pc);
     for(int i = 0;i < REGNUM;i++){
         // nemu的gpr与npc的gpr相比
         if(ref_r -> gpr[i] != gpr[i]){
@@ -78,6 +79,7 @@ void difftest_step() {
 
     CPU_state ref_r;
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    // printf("此时的dut的pc为 %#x\tref执行前的 ref_r.pc: %#x\tis_skip_diff 为 %d\n",pc,ref_r.pc,is_skip_diff);
     // 因为如果设备跳过之后，给定的pc是npc，所以在执行完一拍之后才能对上拍
     if(ref_r.pc == pc){
         return;
@@ -88,11 +90,13 @@ void difftest_step() {
         is_skip_diff = false;
         //get dut reg into CPU_state struct
         CPU_state dut_r;
-        dut_r.pc = dnpc;
+        // 多周期需要给进行diff test的段的pc而不是npc，因为现在的pc就是原本的npc了
+        // 单周期和多周期进入diff的时间不一样，导致pc的更新的时间不一样，之前是结束的进入，npc就是下一条要执行的指令的地址；
+        // 现在是一开始进入的，pc才是下一条要执行的指令的地址
+        dut_r.pc = pc;
         for(int i = 0;i < REGNUM;i++){
             dut_r.gpr[i] = gpr[i];
         }
-        // printf("%#x\n",dut_r.pc);
         //copy reg to ref to skip this inst
         ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
         return;
@@ -100,7 +104,6 @@ void difftest_step() {
     
     ref_difftest_exec(1);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-    // printf("ref_r.pc: %#x\n\n",ref_r.pc);
 
     if(!checkregs(&ref_r)){
         isa_reg_display();

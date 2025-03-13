@@ -15,7 +15,7 @@ ifeq ($(ENABLE_WATCHPOINT), 1)
 endif
 
 # 是否开启trace功能
-ENABLE_TRACE ?= 0
+ENABLE_TRACE ?= 1
 ifeq ($(ENABLE_TRACE), 1)
     CPPFLAGS += -DCONFIG_TRACE
 endif
@@ -39,7 +39,7 @@ ifeq ($(ENABLE_MTRACE), 1)
 endif
 
 # 是否开启difftest
-ENABLE_DIFFTEST ?= 0
+ENABLE_DIFFTEST ?= 1
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
 endif

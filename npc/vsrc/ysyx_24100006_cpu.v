@@ -9,6 +9,7 @@ module ysyx_24100006_cpu(
 	// IFU -> IDU
 	wire [31:0] pc_FD;
 	wire [31:0] instruction;   // 读出的指令
+	wire PCW;
 	// IDU -> EXEU
 	wire [31:0] pc_DE;
 	wire [31:0] sext_imm_DE;
@@ -88,13 +89,15 @@ module ysyx_24100006_cpu(
 		.id_ready(id_ready),
 		.if_valid(if_valid),
 		.pc_F(pc_FD),
-		.instruction(instruction)
+		.instruction(instruction),
+		.PCW(PCW)
 	);
 	
 	ysyx_24100006_idu ID(
 		.clk(clk),
 		.reset(reset),
 		.instruction(instruction),
+		.PCW(PCW),
 		.pc_D(pc_FD),
 		.irq_W(irq_WD),
 		.irq_no_W(irq_no_WD),
