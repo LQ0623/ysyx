@@ -80,6 +80,7 @@ void difftest_step() {
 
     CPU_state ref_r;
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    printf("此时的dut的pc为 %#x\tref执行前的 ref_r.pc: %#x\tis_skip_diff 为 %d\n",pc,ref_r.pc,is_skip_diff);
     // 因为如果设备跳过之后，给定的pc是npc，所以在执行完一拍之后才能对上拍
     if(ref_r.pc == pc){
         return;
@@ -97,14 +98,14 @@ void difftest_step() {
         // printf("%#x\n",dut_r.pc);
         //copy reg to ref to skip this inst
         ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
+        ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+        printf("diff_test_skip ref执行后的 ref_r.pc: %#x\n\n",ref_r.pc);
         return;
     }
     
-    ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-    printf("此时的dut的pc为 %#x\nref执行前的 ref_r.pc: %#x\n\n",pc,ref_r.pc);
     ref_difftest_exec(1);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-    printf("ref执行后的 ref_r.pc: %#x\n\n",ref_r.pc);
+    printf("diff_test_no_skip ref执行后的 ref_r.pc: %#x\n\n",ref_r.pc);
 
     if(!checkregs(&ref_r)){
         isa_reg_display();
