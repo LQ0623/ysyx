@@ -201,7 +201,9 @@ module ysyx_24100006_controller_remake(
     /* 是否写内存 */
     output reg Mem_Write,
     /* 写内存是多少字节 */
-    output reg [7:0] Mem_WMask
+    output reg [7:0] Mem_WMask,
+    /* 控制MEMU的状态机是走读取数据还是写入数据的分支 */
+    output reg sram_read_write
 );
 
 
@@ -388,6 +390,8 @@ module ysyx_24100006_controller_remake(
             (funct3 == `ysyx_24100006_sh) ? `ysyx_24100006_WHWord : 
             (funct3 == `ysyx_24100006_sw) ? `ysyx_24100006_WWord : 8'b0
         ) : 8'b0;
+
+    assign sram_read_write = (opcode == `ysyx_24100006_S_type) ? 1: 0;  //  如果是写入就是1.读取就是0
 
     always @(*) begin
         if(opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) begin
