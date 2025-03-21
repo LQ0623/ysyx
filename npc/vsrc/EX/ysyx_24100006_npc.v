@@ -98,7 +98,7 @@ module ysyx_24100006_npc(
     input[31:0]     rs_data,
     input           cmp_result,
     input           zf,         // 判断rs_data是否等于rt_data，相等就会为1
-    output [31:0]    npc
+    output[31:0]    npc
 );
 
     assign npc  =   (Skip_mode == `ysyx_24100006_NJUMP)?                        (pc + 4):

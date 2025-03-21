@@ -33,7 +33,11 @@ extern "C" void init_disasm() {
 
 extern "C" void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte) {
     cs_insn *insn;
-    size_t count = cs_disasm_dl(handle, code, nbyte, pc, 0, &insn);
+    size_t count = cs_disasm_dl(handle, code, nbyte, pc, 1, &insn);
+    if (count != 1) {
+        fprintf(stderr, "nbyte is %d,  Disasm error: pc=0x%lx code=%02x%02x%02x%02x\n",
+                nbyte, pc, code[0], code[1], code[2], code[3]);
+    }
     assert(count == 1);
     // TODO:调试使用
     // printf("count is %ld,pc is %lx\n",count,pc);

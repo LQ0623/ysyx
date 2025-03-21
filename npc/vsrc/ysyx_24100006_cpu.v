@@ -3,6 +3,7 @@ module ysyx_24100006_cpu(
 	input reset
 );
 
+	// 模块的信号
 	// EXEU -> IFU
 	wire [31:0] npc_EF;
 
@@ -71,6 +72,14 @@ module ysyx_24100006_cpu(
 	wire [31:0] wdata_gpr_WD;
 	wire [31:0] wdata_csr_WD;
 
+	// MEMU -> MEM
+	wire [7:0] RealMemWmask_M;	// 真正的Mem写的掩码
+	wire [31:0] mem_addr_M;		// 对齐到四字节边界的地址
+	wire [31:0] rdraw_M;		// 从mem读取出来的内容
+
+	wire sram_read_write;
+
+
 	// 握手机制
 	wire if_valid;
 	wire id_ready;
@@ -81,15 +90,136 @@ module ysyx_24100006_cpu(
 	wire mem_valid;
 	wire wb_ready;
 
+
+	// AXI-Lite
+	// IFU -> IM
+	// read data addr
+	reg axi_arready_if;
+	reg axi_arvalid_if;
+	// read data
+	reg axi_rvalid_if;
+	reg axi_rready_if;
+	reg axi_rresp_if;
+	// write data addr
+	reg axi_awvalid_if;
+	reg axi_awready_if;
+	// write data
+	reg axi_wvalid_if;
+	reg axi_wready_if;
+	// response
+	reg axi_bvalid_if;
+	reg axi_bready_if;
+
+	// MEMU -> MEM
+	// read data addr
+	reg axi_arready_mem;
+	reg axi_arvalid_mem;
+	// read data
+	reg axi_rvalid_mem;
+	reg axi_rready_mem;
+	reg axi_rresp_mem;
+	// write data addr
+	reg axi_awvalid_mem;
+	reg axi_awready_mem;
+	// write data
+	reg axi_wvalid_mem;
+	reg axi_wready_mem;
+	// response
+	reg axi_bvalid_mem;
+	reg axi_bready_mem;
+	reg [1:0] axi_bresp_mem;
+
+	// SRAM模块
+	// 指令SRAM
+	ysyx_24100006_im IM(
+		.clk(clk),
+		.reset(reset),
+		.axi_araddr(pc_FD),
+		.axi_wdata(32'b0),
+		// axi控制信号
+		// read data addr
+		.axi_arvalid(axi_arvalid_if),
+		.axi_arready(axi_arready_if),
+		// read data
+		.axi_rready(axi_rready_if),
+		.axi_rvalid(axi_rvalid_if),
+		// write data addr
+		.axi_awvalid(axi_awvalid_if),
+		.axi_awready(axi_awready_if),
+		// write data
+		.axi_wvalid(axi_wvalid_if),
+		.axi_wready(axi_wready_if),
+		// response
+		.axi_bready(axi_bready_if),
+		.axi_bvalid(axi_bvalid_if),
+		.axi_rdata(instruction)
+	);
+	
+	// 内存操作
+	// 内存SRAM
+	ysyx_24100006_mem mem(
+		.clk(clk),
+		.reset(reset),
+		.sram_read_write(sram_read_write),
+		// 内存写入和读取是否有效
+		.Mem_Write(Mem_Write_EM),
+		.Mem_Read(Mem_Read_EM),
+		
+		// axi 写入和读取地址
+		.axi_araddr(mem_addr_M),
+		.axi_awaddr(mem_addr_M),
+		// axi 写入数据和写入使用的掩码
+		.axi_wdata(rs2_data_EM),
+		.axi_wstrb(RealMemWmask_M),
+
+		// axi控制信号
+		// read data addr
+		.axi_arvalid(axi_arvalid_mem),
+		.axi_arready(axi_arready_mem),
+		// read data
+		.axi_rready(axi_rready_mem),
+		.axi_rvalid(axi_rvalid_mem),
+		// write data addr
+		.axi_awvalid(axi_awvalid_mem),
+		.axi_awready(axi_awready_mem),
+		// write data
+		.axi_wvalid(axi_wvalid_mem),
+		.axi_wready(axi_wready_mem),
+		// response
+		.axi_bready(axi_bready_mem),
+		.axi_bvalid(axi_bvalid_mem),
+		.axi_bresp(axi_bresp_mem),
+
+		// axi读取的回应
+		.axi_rresp(axi_rresp_mem),
+		// axi读取的数据
+		.axi_rdata(rdraw_M)
+	);
     
 	ysyx_24100006_ifu IF(
 		.clk(clk),
 		.reset(reset),
 		.npc(npc_EF),
+		// AXI 接口信号
+		// read data addr
+		.axi_arready(axi_arready_if),
+		.axi_arvalid(axi_arvalid_if),
+		// read data
+		.axi_rvalid(axi_rvalid_if),
+		.axi_rready(axi_rready_if),
+		// write data addr
+		.axi_awvalid(axi_awvalid_if),
+		.axi_awready(axi_awready_if),
+		// write data
+		.axi_wvalid(axi_wvalid_if),
+		.axi_wready(axi_wready_if),
+		// response
+		.axi_bvalid(axi_bvalid_if),
+		.axi_bready(axi_bready_if),
+		// 模块握手信号
 		.id_ready(id_ready),
 		.if_valid(if_valid),
 		.pc_F(pc_FD),
-		.instruction(instruction),
 		.PCW(PCW)
 	);
 	
@@ -131,6 +261,7 @@ module ysyx_24100006_cpu(
 		.Jump(Jump_DE),
 		.Mem_WMask(Mem_WMask_DE),
 		.Mem_RMask(Mem_RMask_DE),
+		.sram_read_write(sram_read_write),
 		.mtvec(mtvec_DE),
 		.mepc(mepc_DE)
 	);
@@ -185,12 +316,14 @@ module ysyx_24100006_cpu(
 	ysyx_24100006_memu MEM(
 		.clk(clk),
 		.reset(reset),
+		.sram_read_write(sram_read_write),
 		.pc_M(pc_EM),
 		.alu_result_M(alu_result_EM),
 		.sext_imm_M(sext_imm_EM),
 		.rs1_data_M(rs1_data_EM),
 		.rs2_data_M(rs2_data_EM),
 		.rdata_csr_M(rdata_csr_EM),
+		.rdraw(rdraw_M),
 		.irq_M(irq_EM),
 		.irq_no_M(irq_no_EM),
 		.Gpr_Write_M(Gpr_Write_EM),
@@ -201,10 +334,30 @@ module ysyx_24100006_cpu(
 		.Mem_Write_M(Mem_Write_EM),
 		.Mem_WMask_M(Mem_WMask_EM),
 		.Mem_RMask_M(Mem_RMask_EM),
+		// AXI 接口信号
+		// read data addr
+		.axi_arready(axi_arready_mem),
+		.axi_arvalid(axi_arvalid_mem),
+		// read data
+		.axi_rvalid(axi_rvalid_mem),
+		.axi_rready(axi_rready_mem),
+		// write data addr
+		.axi_awvalid(axi_awvalid_mem),
+		.axi_awready(axi_awready_mem),
+		// write data
+		.axi_wvalid(axi_wvalid_mem),
+		.axi_wready(axi_wready_mem),
+		// response
+		.axi_bvalid(axi_bvalid_mem),
+		.axi_bready(axi_bready_mem),
+		// 模块握手信号
 		.exe_valid(exe_valid),
 		.wb_ready(wb_ready),
 		.mem_valid(mem_valid),
 		.mem_ready(mem_ready),
+
+		.mem_addr(mem_addr_M),
+		.RealMemWmask(RealMemWmask_M),
 		.pc_W(pc_MW),
 		.sext_imm_W(sext_imm_MW),
 		.alu_result_W(alu_result_MW),
@@ -246,10 +399,10 @@ module ysyx_24100006_cpu(
 		.wdata_csr(wdata_csr_WD)
 	);
 
-	always @(*) begin
-		if(instruction == 32'h00100073)begin
-			$display(" %x %x %x",Jump_DE,pc_FD,instruction);
-		end
-	end
+	// always @(*) begin
+	// 	if(instruction == 32'h00100073)begin
+	// 		$display(" %x %x %x",Jump_DE,pc_FD,instruction);
+	// 	end
+	// end
 
 endmodule

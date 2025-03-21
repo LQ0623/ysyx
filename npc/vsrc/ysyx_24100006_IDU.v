@@ -57,6 +57,8 @@ module ysyx_24100006_idu(
 	output [7:0] Mem_WMask,
 	output [2:0] Mem_RMask,
 
+	output sram_read_write,
+
 	// TO IFU
 	// CSR寄存器取出的异常PC
 	output [31:0] mtvec,
@@ -126,7 +128,8 @@ module ysyx_24100006_idu(
 		.Mem_Read(Mem_Read),
 		.Mem_RMask(Mem_RMask),
 		.Mem_Write(Mem_Write),
-		.Mem_WMask(Mem_WMask)
+		.Mem_WMask(Mem_WMask),
+		.sram_read_write(sram_read_write)
 	);
 
 	assign irq_F = irq;

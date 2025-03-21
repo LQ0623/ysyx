@@ -193,7 +193,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 111 ????? 01100 11", remu   , Rt, R(rd) = src1 % src2);
   // INSTPAT("0000001 ????? ????? 001 ????? 01100 11", mulh   , Rt, R(rd) = BITS(((int64_t)(int32_t)src1 * (int64_t)(int32_t)src2), 63, 32));
   INSTPAT("0000001 ????? ????? 001 ????? 01100 11", mulh   , Rt, int64_t a = (int32_t)src1; int64_t b = (int32_t)src2;int64_t temp = a * b; R(rd) = BITS(temp, 63, 32));
-  INSTPAT("0000001 ????? ????? 010 ????? 01100 11", mulhsu , Rt, int64_t a = (int32_t)src1; uint64_t b = src2;int64_t temp = a * b; R(rd) = BITS(temp, 63, 32));
+  INSTPAT("0000001 ????? ????? 010 ????? 01100 11", mulhsu , Rt, int64_t a = (int32_t)src1; int64_t b = src2;int64_t temp = a * b; R(rd) = BITS(temp, 63, 32));
   INSTPAT("0000001 ????? ????? 011 ????? 01100 11", mulhu  , Rt, uint64_t a = src1; uint64_t b = src2;uint64_t temp = a * b; R(rd) = BITS(temp, 63, 32));
   INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , Rt, s->dnpc = SR(MEPC));
 

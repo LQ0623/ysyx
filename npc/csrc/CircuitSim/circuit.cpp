@@ -84,12 +84,14 @@ static void trace_and_difftest() {
 	 * 2、是否开启instruction trace
 	 */
 	#ifdef CONFIG_ITRACE
-		char log_buf[LOG_BUF_SIZE] = {0};
-		instruction_disassemble(log_buf, (uint8_t *)&inst);
-		// 输出到屏幕
-		if (g_print_step) { puts(log_buf); }
-		// Write the log buffer to the log file
-    	log_write("%s\n", log_buf);
+		if(if_valid == 1){
+			char log_buf[LOG_BUF_SIZE] = {0};
+			instruction_disassemble(log_buf, (uint8_t *)&inst);
+			// 输出到屏幕
+			if (g_print_step) { puts(log_buf); }
+			// Write the log buffer to the log file
+			log_write("%s\n", log_buf);
+		}
 	#endif
 
 	/**
@@ -136,11 +138,12 @@ void cpu_exec(uint32_t n){
 		prev_pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
 		exec_once();
 		snpc = pc + 4;
-		inst = cpu->rootp -> ysyx_24100006_cpu__DOT__instruction;
+		inst = cpu->rootp -> ysyx_24100006_cpu__DOT__IM__DOT__data_reg;
 		pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
 		dnpc = cpu->rootp -> ysyx_24100006_cpu__DOT__npc_EF;
 		PCW = cpu->rootp -> ysyx_24100006_cpu__DOT__PCW;
 		if_valid = cpu -> rootp -> ysyx_24100006_cpu__DOT__if_valid;
+		// printf("inst is %#x\n",inst);
 		// printf("if_valid is %d\t",if_valid);
 		// printf("PCW is %d\t",PCW);
 		// printf("cpp pc is %#x\t",pc);
