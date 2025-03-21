@@ -78,14 +78,6 @@ module ysyx_24100006_memu(
 	// TODO:也需要使用读写使能来进行状态的转移
 	// TODO:状态转移的选择可以在controller在拉一条线出来，表示读还是写，load和store指令会使用到
 
-	// 延迟控制参数 --------------------------------------------------
-    parameter MAX_AR_DELAY = 15;  // AR通道最大延迟
-    parameter MAX_AW_DELAY = 15;  // AW通道最大延迟
-    parameter MAX_R_DELAY  = 10;  // R通道最大延迟
-    parameter MAX_B_DELAY  = 10;  // B通道最大延迟
-
-	// 延迟计数器 ----------------------------------------------------
-    reg [3:0] ar_delay, aw_delay, r_delay, b_delay;
 	reg [31:0] locked_addr;  // 地址锁存
     reg [31:0] locked_data;  // 数据锁存
 
@@ -98,23 +90,11 @@ module ysyx_24100006_memu(
 				WRITE_DATA 	= 4, 
 				WRITE_RESP 	= 5, 
 				S_DELAY 	= 6, 
-				S_ACCESS 	= 7,
-				S_AR_DELAY	= 8,
-				S_R_DELAY	= 9,
-				S_RR_DELAY	= 13,	// 这个状态是为了加入延时之后强行对拍使用
-				S_AW_DELAY	= 10,
-				S_W_DELAY	= 11,
-				S_B_DELAY	= 12;
-	reg [3:0] state;
+				S_ACCESS 	= 7;
+	reg [2:0] state;
 
 	always @(posedge clk) begin
 		if(reset) begin
-			// 延时参数初始化
-			ar_delay <= 0;
-            aw_delay <= 0;
-            r_delay <= 0;
-            b_delay <= 0;
-
 			// axi 握手信号初始化
 			axi_arvalid <= 0;
             axi_awvalid <= 0;
@@ -140,55 +120,25 @@ module ysyx_24100006_memu(
 
 						// axi 读取
 						if(sram_read_write == 1'b0 && Mem_Read_M == 1'b1) begin
-							ar_delay		<= lfsr_out[3:0];
-							state			<= S_AR_DELAY;
-							// axi_arvalid		<= 1'b1;
-							// state			<= READ_ADDR;
+							axi_arvalid		<= 1'b1;
+							state			<= READ_ADDR;
 						end else if(sram_read_write == 1'b1) begin
-							aw_delay		<= lfsr_out[3:0];
-							state			<= S_AW_DELAY;
 
 							// 地址和数据同时发送，这样效率最高
-							// axi_awvalid		<= 1'b1;
-							// axi_wvalid		<= 1'b1;
-							// state			<= WRITE_ADDR;
+							axi_awvalid		<= 1'b1;
+							axi_wvalid		<= 1'b1;
+							state			<= WRITE_ADDR;
 						end else begin
 							state			<= S_DELAY;
 						end
 					end
 				end
 
-				// axi 读地址有效的延时
-				S_AR_DELAY: begin
-					if(ar_delay > 0)begin
-						ar_delay		<= ar_delay - 1'b1;
-					end else begin
-						axi_arvalid		<= 1'b1;
-						state			<= READ_ADDR;
-					end
-				end
-
 				// axi 读地址有效
 				READ_ADDR: begin
 					if(axi_arready == 1'b1) begin
-						state			<= S_RR_DELAY;
 
 						axi_arvalid		<= 1'b0;
-						// axi_rready			<= 1'b1;
-						// state				<= READ_DATA;
-					end
-				end
-				S_RR_DELAY: begin
-					if(axi_rvalid == 1'b1)begin
-						r_delay			<= lfsr_out[3:0];
-						state			<= S_R_DELAY;
-					end
-				end
-				// axi 读数据有效延时
-				S_R_DELAY: begin
-					if(r_delay > 0) begin
-						r_delay			<= r_delay - 1'b1;
-					end else begin
 						axi_rready		<= 1'b1;
 						state			<= READ_DATA;
 					end
@@ -200,16 +150,6 @@ module ysyx_24100006_memu(
 						state			<= S_DELAY;
 					end
 				end
-				// axi 写地址延时
-				S_AW_DELAY: begin
-					if(aw_delay > 0) begin
-						aw_delay		<= aw_delay - 1'b1;
-					end else begin
-						axi_awvalid		<= 1'b1;
-						axi_wvalid		<= 1'b1;
-						state			<= WRITE_ADDR;
-					end
-				end
 
 				// axi 写使用
 				WRITE_ADDR: begin
@@ -218,23 +158,11 @@ module ysyx_24100006_memu(
 						// 若在SRAM中，不一起将ready信号置为低，则还是需要转移到WRITE_DATA状态
 						axi_awvalid			<= 1'b0;
 						axi_wvalid			<= 1'b0;
-						
-						b_delay				<= lfsr_out[3:0];
-						state				<= S_B_DELAY;
-
-						// axi_bready			<= 1'b1;
-						// state				<= WRITE_RESP;
+						axi_bready			<= 1'b1;
+						state				<= WRITE_RESP;
 						
 						// state				<= WRITE_DATA
 					end
-				end
-				S_B_DELAY: begin
-					if(b_delay > 0) begin
-                        b_delay 	<= b_delay - 1;
-                    end else begin
-                        axi_bready 	<= 1'b1;
-						state		<= WRITE_RESP;
-                    end
 				end
 				WRITE_DATA: begin
 					if(axi_wready == 1'b1) begin

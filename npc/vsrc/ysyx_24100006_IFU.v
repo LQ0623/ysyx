@@ -40,23 +40,6 @@ module ysyx_24100006_ifu(
 	output 	reg 		PCW
 );
 
-	// 因为mem随机延迟的话，这里状态机的状态转移也需要随机起来，后续会使用传入的信号来当作延时
-	// 新增延迟计数器
-    reg [7:0] mem_delay;
-    parameter FIXED_DELAY = 123; // 可配置为5/10/20等
-
-	// LFSR信号
-    wire [15:0] lfsr_delay;
-    reg [7:0] ar_delay,r_delay;
-
-    // 实例化LFSR
-    ysyx_24100006_lfsr lfsr_inst(
-        .clk(clk),
-        .reset(reset),
-        .rnd(lfsr_delay)
-    );
-
-
 	// 握手机制
 	parameter S_IDLE = 0, S_FETCH = 1, S_DELAY_1 = 2, S_DELAY_2 = 3, S_DELAY_3 = 4, S_DELAY_4 = 5, S_DELAY_5 = 6, S_DELAY_6 = 7, S_DELAY_7 = 8, S_DELAY_8 = 9, S_DELAY_9 = 10, S_AR_DELAY = 11, S_R_DELAY = 12, S_DELAY_12 = 13, S_DELAY_13 = 14, S_DELAY_14 = 15, S_DELAY_15 = 16, S_DELAY_16 = 17, S_DELAY_17 = 18, S_DELAY_18 = 19, S_DELAY_19 = 20, S_WAIT = 21;
 	reg [5:0] state;
@@ -70,21 +53,11 @@ module ysyx_24100006_ifu(
 			axi_awvalid		<= 1'b0;
 			axi_wvalid		<= 1'b0;
 			axi_bready		<= 1'b0;
-			mem_delay		<= 8'b0;
-			ar_delay		<= 8'b0;
 		end else begin
 			case (state)
 				S_IDLE: begin
 					if(if_valid == 1'b0) begin
 						// 后续如果修改的建议：判断是否有指令需要发送，然后在跳转到下一个状态
-						ar_delay	<= lfsr_delay[7:0];
-						state		<= S_AR_DELAY;
-					end
-				end
-				S_AR_DELAY: begin
-					if(ar_delay > 0)begin
-						ar_delay	<= ar_delay - 1'b1;
-					end else begin
 						axi_arvalid	<= 1'b1;
 						state		<= S_FETCH;
 					end
@@ -93,14 +66,6 @@ module ysyx_24100006_ifu(
 					// 地址握手成功
 					if(axi_arready == 1'b1)begin
 						axi_arvalid	<= 1'b0;
-						r_delay		<= lfsr_delay[7:0];
-						state		<= S_R_DELAY;
-					end
-				end
-				S_R_DELAY: begin
-					if(r_delay > 0)begin
-						r_delay		<= r_delay - 1'b1;
-					end else begin
 						axi_rready	<= 1'b1;
 						state		<= S_DELAY_1;
 					end
@@ -117,116 +82,24 @@ module ysyx_24100006_ifu(
 				end
 				S_DELAY_3: begin
 					if(if_valid && id_ready) begin
-						mem_delay		<= 1;
 						if_valid		<= 1'b0;
-						state			<= S_DELAY_12;
-					end
-				end
-
-				// 这是为了测试MEMU的随机延时
-				S_DELAY_12: begin
-					if(Mem_Read_M == 1'b1) begin
-						if(mem_delay > 0)begin
-							mem_delay	<= mem_delay - 1'b1;
-						end else begin
-							mem_delay	<= {4'b0,lfsr_out[3:0]};	// TODO:lfsr_out是因为访问mem的SRAM的延迟引入的
-							state		<= S_DELAY_13;
-						end
-					end else if(sram_read_write == 1'b1) begin
-						if(mem_delay > 0)begin
-							mem_delay	<= mem_delay - 1'b1;
-						end else begin
-							mem_delay	<= {4'b0,lfsr_out[3:0]};	// TODO:lfsr_out是因为访问mem的SRAM的延迟引入的
-							state		<= S_DELAY_16;
-						end
-					end else begin
-						mem_delay		<= 3;
 						state			<= S_DELAY_4;
 					end
 				end
 
-				// 下面三个状态是为了测试MEMU的读功能的延迟
-				// 这是为了测试MEMU的随机延时
-				S_DELAY_13: begin
-					if(mem_delay > 0)begin
-						mem_delay	<= mem_delay - 1'b1;
-					end else begin
-						mem_delay	<= 1;	// TODO:lfsr_out是因为访问mem的SRAM的延迟引入的
-						state		<= S_DELAY_14;
-					end
-				end
-				// 这是为了测试MEMU的随机延时
-				S_DELAY_14: begin
-					if(mem_delay > 0)begin
-						mem_delay	<= mem_delay - 1'b1;
-					end else begin
-						mem_delay	<= lfsr_out[7:0];	// TODO:lfsr_out是因为访问mem的SRAM的延迟引入的
-						state		<= S_DELAY_15;
-					end
-				end
-				// 这是为了测试MEMU的随机延时
-				S_DELAY_15: begin
-					if(mem_delay > 0)begin
-						mem_delay	<= mem_delay - 1'b1;
-					end else begin
-						mem_delay	<= 1;	// TODO:lfsr_out是因为访问mem的SRAM的延迟引入的
-						state		<= S_DELAY_9;
-					end
-				end
-				
-				// 下面三个状态是为了测试MEMU的写功能的延迟
-				// 这是为了测试MEMU的随机延时
-				S_DELAY_16: begin
-					if(mem_delay > 0)begin
-						mem_delay	<= mem_delay - 1'b1;
-					end else begin
-						mem_delay	<= 1;	// TODO:lfsr_out是因为访问mem的SRAM的延迟引入的
-						state		<= S_DELAY_17;
-					end
-				end
-				// 这是为了测试MEMU的随机延时
-				S_DELAY_17: begin
-					if(mem_delay > 0)begin
-						mem_delay	<= mem_delay - 1'b1;
-					end else begin
-						mem_delay	<= lfsr_out[7:0];	// TODO:lfsr_out是因为访问mem的SRAM的延迟引入的
-						state		<= S_DELAY_18;
-					end
-				end
-				// 这是为了测试MEMU的随机延时
-				S_DELAY_18: begin
-					if(mem_delay > 0)begin
-						mem_delay	<= mem_delay - 1'b1;
-					end else begin
-						mem_delay	<= 1;	// TODO:lfsr_out是因为访问mem的SRAM的延迟引入的
-						state		<= S_DELAY_9;
-					end
-				end
-				
-
-
-				// TODO：S_DELAY_9 是为了测试总线而添加的部分，这个后续可能需要删除，与mem_delay有关的都是因为测试总线来的
-				S_DELAY_9: begin
-					if(mem_delay > 0)begin
-						mem_delay	<= mem_delay - 1'b1;
-					end else begin
-						mem_delay	<= lfsr_out[7:0];	// TODO:lfsr_out是因为访问mem的SRAM的延迟引入的
-						state		<= S_DELAY_4;
-					end
-				end
 				S_DELAY_4: begin
-					if(mem_delay > 0)begin
-						mem_delay	<= mem_delay - 1'b1;
-					end else begin
-						state		<= S_DELAY_7;
-					end
+					// if(mem_delay > 0)begin
+					// 	mem_delay	<= mem_delay - 1'b1;
+					// end else begin
+						state		<= S_DELAY_5;
+					// end
 				end
-				// S_DELAY_5: begin
-				// 	state		<= S_DELAY_6;
-				// end
-				// S_DELAY_6: begin
-				// 	state		<= S_DELAY_7;
-				// end
+				S_DELAY_5: begin
+					state		<= S_DELAY_6;
+				end
+				S_DELAY_6: begin
+					state		<= S_DELAY_7;
+				end
 				S_DELAY_7:begin
 					PCW			<= 1'b1;
 					state		<= S_DELAY_8;
