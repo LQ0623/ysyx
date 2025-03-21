@@ -6,12 +6,6 @@ module ysyx_24100006_ifu(
     input reset,
 
     input [31:0] 		npc,
-	input sram_read_write,
-	input Mem_Read_M,
-	
-	// mem的lfsr延迟
-    input [15:0]      	lfsr_out,
-
 	// AXI-Lite接口
     // read_addr
 	input 	reg 		axi_arready,
@@ -40,6 +34,8 @@ module ysyx_24100006_ifu(
 	output 	reg 		PCW
 );
 
+	reg [3:0] delay_counter;	// 因为现在的取指还是需要受到下面的模块执行情况的控制，所以需要将if_valid置为1之前需要延迟几个时钟周期，等到后面的模块执行完毕
+
 	// 握手机制
 	parameter S_IDLE = 0, S_FETCH = 1, S_DELAY_1 = 2, S_DELAY_2 = 3, S_DELAY_3 = 4, S_DELAY_4 = 5, S_DELAY_5 = 6, S_DELAY_6 = 7, S_DELAY_7 = 8, S_DELAY_8 = 9, S_DELAY_9 = 10, S_AR_DELAY = 11, S_R_DELAY = 12, S_DELAY_12 = 13, S_DELAY_13 = 14, S_DELAY_14 = 15, S_DELAY_15 = 16, S_DELAY_16 = 17, S_DELAY_17 = 18, S_DELAY_18 = 19, S_DELAY_19 = 20, S_WAIT = 21;
 	reg [5:0] state;
@@ -53,6 +49,8 @@ module ysyx_24100006_ifu(
 			axi_awvalid		<= 1'b0;
 			axi_wvalid		<= 1'b0;
 			axi_bready		<= 1'b0;
+
+			delay_counter	<= 3;
 		end else begin
 			case (state)
 				S_IDLE: begin
@@ -83,28 +81,23 @@ module ysyx_24100006_ifu(
 				S_DELAY_3: begin
 					if(if_valid && id_ready) begin
 						if_valid		<= 1'b0;
+						delay_counter	<= 3;
 						state			<= S_DELAY_4;
 					end
 				end
 
 				S_DELAY_4: begin
-					// if(mem_delay > 0)begin
-					// 	mem_delay	<= mem_delay - 1'b1;
-					// end else begin
+					if(delay_counter > 0)begin
+						delay_counter	<= delay_counter - 1'b1;
+					end else begin
 						state		<= S_DELAY_5;
-					// end
+					end
 				end
-				S_DELAY_5: begin
+				S_DELAY_5:begin
+					PCW			<= 1'b1;
 					state		<= S_DELAY_6;
 				end
 				S_DELAY_6: begin
-					state		<= S_DELAY_7;
-				end
-				S_DELAY_7:begin
-					PCW			<= 1'b1;
-					state		<= S_DELAY_8;
-				end
-				S_DELAY_8: begin
 					PCW			<= 1'b0;
 					state		<= S_WAIT;
 				end

@@ -3,7 +3,7 @@ include Vysyx_24100006_cpu.mk
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
 # 是否开启波形生成
-ENABLE_WAVE ?= 1
+ENABLE_WAVE ?= 0
 ifeq ($(ENABLE_WAVE), 1)
     CPPFLAGS += -DCONFIG_DUMP_WAVE
 endif

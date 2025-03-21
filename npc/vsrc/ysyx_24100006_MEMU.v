@@ -2,10 +2,9 @@
     访问内存模块
 */
 module ysyx_24100006_memu(
-    input clk,
-	input reset,
-	input sram_read_write,
-	input [15:0] lfsr_out,
+    input 				clk,
+	input 				reset,
+	input 				sram_read_write,
 	// from EXEU
 	input [31:0] 		pc_M,
 	input [31:0] 		alu_result_M,
@@ -110,20 +109,16 @@ module ysyx_24100006_memu(
 			case(state) 
 				S_IDLE: begin
 					if(exe_valid && mem_ready) begin
-						
 						// 表示现在mem模块正在处理数据，不能接受新的数据
 						mem_ready	<= 1'b0;
-
 						// 锁存地址和数据
                         locked_addr <= alu_result_M;
                         locked_data <= rs2_data_M;
-
 						// axi 读取
 						if(sram_read_write == 1'b0 && Mem_Read_M == 1'b1) begin
 							axi_arvalid		<= 1'b1;
 							state			<= READ_ADDR;
 						end else if(sram_read_write == 1'b1) begin
-
 							// 地址和数据同时发送，这样效率最高
 							axi_awvalid		<= 1'b1;
 							axi_wvalid		<= 1'b1;
@@ -137,7 +132,6 @@ module ysyx_24100006_memu(
 				// axi 读地址有效
 				READ_ADDR: begin
 					if(axi_arready == 1'b1) begin
-
 						axi_arvalid		<= 1'b0;
 						axi_rready		<= 1'b1;
 						state			<= READ_DATA;

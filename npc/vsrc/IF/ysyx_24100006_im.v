@@ -5,7 +5,7 @@ module ysyx_24100006_im(
     input clk,
     input reset,
 
-    
+    // axi使用的地址和数据
     input [31:0]    axi_araddr,
     input [31:0]    axi_wdata,
     // axi控制信号

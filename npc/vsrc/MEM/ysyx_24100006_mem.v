@@ -4,9 +4,8 @@
 module ysyx_24100006_mem(
     input               clk,
     input               reset,
+    // 判断是读操作还是写操作
     input               sram_read_write,
-    // mem使用的lfsr延迟
-    input [15:0]         lfsr_out,
     // 内存写入和读取是否有效
     // 读写使能控制状态机的状态机（进入读还是写）
     input               Mem_Write,
@@ -41,11 +40,6 @@ module ysyx_24100006_mem(
     output  reg         axi_rresp,
     output  reg [31:0]  axi_rdata
     
-    // input [7:0]         Mem_WMask,
-    // input [31:0]        waddr,
-    // input [31:0]        wdata,
-    // input [31:0]        raddr,
-    // output  reg [31:0]  rdata
 );
 
     
