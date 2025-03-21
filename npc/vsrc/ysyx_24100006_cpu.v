@@ -79,6 +79,7 @@ module ysyx_24100006_cpu(
 
 	wire sram_read_write;
 
+
 	// 握手机制
 	wire if_valid;
 	wire id_ready;
@@ -129,6 +130,18 @@ module ysyx_24100006_cpu(
 	reg [1:0] axi_bresp_mem;
 
 
+	// LFSR模块
+	// 用于测试SRAM进行随机延迟
+	wire [15:0] lfsr_out;
+
+    // 实例化LFSR
+    ysyx_24100006_lfsr lfsr_inst(
+        .clk(clk),
+        .reset(reset),
+        .rnd(lfsr_out)
+    );
+
+
 	// SRAM模块
 	// 指令SRAM
 	ysyx_24100006_im IM(
@@ -161,6 +174,7 @@ module ysyx_24100006_cpu(
 		.clk(clk),
 		.reset(reset),
 		.sram_read_write(sram_read_write),
+		.lfsr_out(lfsr_out),
 		// 内存写入和读取是否有效
 		.Mem_Write(Mem_Write_EM),
 		.Mem_Read(Mem_Read_EM),
@@ -206,6 +220,9 @@ module ysyx_24100006_cpu(
 		.clk(clk),
 		.reset(reset),
 		.npc(npc_EF),
+		.sram_read_write(sram_read_write),
+		.Mem_Read_M(Mem_Read_EM),
+		.lfsr_out(lfsr_out),
 		// AXI 接口信号
 		// read data addr
 		.axi_arready(axi_arready_if),
@@ -322,6 +339,8 @@ module ysyx_24100006_cpu(
 	ysyx_24100006_memu MEM(
 		.clk(clk),
 		.reset(reset),
+		.sram_read_write(sram_read_write),
+		.lfsr_out(lfsr_out),
 		.pc_M(pc_EM),
 		.alu_result_M(alu_result_EM),
 		.sext_imm_M(sext_imm_EM),
@@ -339,7 +358,6 @@ module ysyx_24100006_cpu(
 		.Mem_Write_M(Mem_Write_EM),
 		.Mem_WMask_M(Mem_WMask_EM),
 		.Mem_RMask_M(Mem_RMask_EM),
-		.sram_read_write(sram_read_write),
 		// AXI 接口信号
 		// read data addr
 		.axi_arready(axi_arready_mem),

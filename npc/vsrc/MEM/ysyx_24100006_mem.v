@@ -5,6 +5,8 @@ module ysyx_24100006_mem(
     input               clk,
     input               reset,
     input               sram_read_write,
+    // mem使用的lfsr延迟
+    input [15:0]         lfsr_out,
     // 内存写入和读取是否有效
     // 读写使能控制状态机的状态机（进入读还是写）
     input               Mem_Write,
@@ -50,7 +52,18 @@ module ysyx_24100006_mem(
     import "DPI-C" function int pmem_read(input int raddr);
     import "DPI-C" function void pmem_write(input int waddr, input int wdata,input byte wmask);
     
-    parameter S_IDLE = 0, S_READ_ADDR  = 1, S_READ_DATA  = 2, S_WRITE_ADDR = 3, S_WRITE_DATA= 4, S_WRITE_RESP= 5;
+    parameter   S_IDLE          = 0,
+                S_READ_ADDR     = 1, 
+                S_READ_DATA     = 2, 
+                S_WRITE_ADDR    = 3, 
+                S_WRITE_DATA    = 4, 
+                S_WRITE_RESP    = 5,
+                S_READ_DELAY    = 6, // 新增读延迟状态
+                S_WRITE_DELAY   = 7; // 新增写延迟状态
+
+    // 新增延迟计数器
+    reg [7:0] delay_counter;
+    parameter FIXED_DELAY = 123; // 可配置为5/10/20等
 
     reg [3:0] state;
     
@@ -63,6 +76,7 @@ module ysyx_24100006_mem(
             axi_rvalid      <= 1'b0;
             axi_bvalid      <= 1'b0;
             axi_rdata       <= 32'h00000000;
+            delay_counter   <= 8'h0;
         end else begin
             case(state)
                 S_IDLE: begin
@@ -78,9 +92,21 @@ module ysyx_24100006_mem(
                 S_READ_ADDR: begin
                     axi_arready         <= 1'b0;
                     if(axi_arvalid == 1'b1 && axi_arready == 1'b1) begin
+                        // axi_rvalid      <= 1'b1;
+                        // axi_rdata       <= pmem_read(axi_araddr);
+                        // axi_rresp       <= 1;
+                        // state           <= S_READ_DATA;
+                        delay_counter   <= lfsr_out[7:0];
+                        state           <= S_READ_DELAY;
+                    end
+                end
+                S_READ_DELAY: begin
+                    if(delay_counter > 0)begin
+                        delay_counter   <= delay_counter - 1'b1;
+                    end else begin
                         axi_rvalid      <= 1'b1;
                         axi_rdata       <= pmem_read(axi_araddr);
-                        axi_rresp       <= 1;
+                        axi_rresp       <= 1'b1;
                         state           <= S_READ_DATA;
                     end
                 end
@@ -96,6 +122,17 @@ module ysyx_24100006_mem(
                     axi_wready          <= 1'b0;
                     if(axi_awvalid == 1'b1 && axi_awready == 1'b1 && axi_wvalid == 1'b1 && axi_wready == 1'b1) begin
                         // 写入数据
+                        // pmem_write(axi_awaddr,axi_wdata,axi_wstrb);
+                        // axi_bvalid      <= 1'b1;
+                        // state           <= S_WRITE_RESP;
+                        delay_counter   <= lfsr_out[7:0];
+                        state           <= S_WRITE_DELAY;
+                    end
+                end
+                S_WRITE_DELAY:begin
+                    if(delay_counter > 0)begin
+                        delay_counter   <= delay_counter - 1'b1;
+                    end else begin
                         pmem_write(axi_awaddr,axi_wdata,axi_wstrb);
                         axi_bvalid      <= 1'b1;
                         state           <= S_WRITE_RESP;
