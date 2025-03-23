@@ -81,7 +81,7 @@ module ysyx_24100006_ifu(
 				S_DELAY_3: begin
 					if(if_valid && id_ready) begin
 						if_valid		<= 1'b0;
-						delay_counter	<= 3;
+						delay_counter	<= 4;
 						state			<= S_DELAY_4;
 					end
 				end
@@ -115,32 +115,5 @@ module ysyx_24100006_ifu(
 		.npc(npc),
 		.pc(pc_F)
 	);
-
-	// wire [31:0] instruction_temp;	// 指令寄存器读出的数据
-	// ysyx_24100006_im IM(
-	// 	.clk(clk),
-	// 	.reset(reset),
-	// 	.axi_araddr(pc_F),
-	// 	.axi_arvalid(axi_arvalid),
-	// 	.axi_rready(axi_rready),
-	// 	.axi_arready(axi_arready),
-	// 	.axi_rvalid(axi_rvalid),
-	// 	.axi_rdata(instruction_temp)
-	// );
-
-    // /**
-	// 	IR寄存器：保存取出的指令
-	// */
-	// ysyx_24100006_Reg #(32,32'h00000000) IR(
-	// 	.clk(clk),
-	// 	.rst(reset),
-	// 	.din(instruction_temp),
-	// 	.dout(instruction),
-	// 	.wen(1'b1)
-	// );
-
-	// always @(posedge clk) begin
-	// 	$display("pc is %x",pc_F);
-	// end
 
 endmodule

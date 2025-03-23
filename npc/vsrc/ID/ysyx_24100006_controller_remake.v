@@ -174,36 +174,36 @@ module ysyx_24100006_controller_remake(
     input mem_valid,
 
     /* 是否发生中断 */
-    output reg irq,
-    output reg [7:0] irq_no,
+    output  irq,
+    output  [7:0] irq_no,
     /* 操作类型 */
-    output reg [3:0]aluop,
+    output  [3:0]aluop,
     /* 写通用寄存器 */
-    output reg Gpr_Write,
+    output  Gpr_Write,
     /* 写回通用寄存器的内容 */
-    output reg [2:0] Gpr_Write_RD,
+    output  [2:0] Gpr_Write_RD,
     /* 写系统寄存器 */
-    output reg Csr_Write,
+    output  Csr_Write,
     /* 写系统寄存器的内容 */
-    output reg [1:0] Csr_Write_RD,
+    output  [1:0] Csr_Write_RD,
 
     /* pc的跳转类型 */
-    output reg [3:0] Jump,
+    output  [3:0] Jump,
     /* 立即数的种类 */
-    output reg [2:0] Imm_Type,
+    output  [2:0] Imm_Type,
     /* 源操作数的种类 */
-    output reg AluSrcA,
-    output reg AluSrcB,
+    output  AluSrcA,
+    output  AluSrcB,
     /* 是否读内存 */
-    output reg Mem_Read,
+    output  Mem_Read,
     /* 读内存是读多少字节，以及如何扩展 */
-    output reg [2:0] Mem_RMask,
+    output  [2:0] Mem_RMask,
     /* 是否写内存 */
-    output reg Mem_Write,
+    output  Mem_Write,
     /* 写内存是多少字节 */
-    output reg [7:0] Mem_WMask,
+    output  [7:0] Mem_WMask,
     /* 控制MEMU的状态机是走读取数据还是写入数据的分支 */
-    output reg sram_read_write
+    output  sram_read_write
 );
 
 

@@ -4,12 +4,6 @@
 module ysyx_24100006_mem(
     input               clk,
     input               reset,
-    // 判断是读操作还是写操作
-    input               sram_read_write,
-    // 内存写入和读取是否有效
-    // 读写使能控制状态机的状态机（进入读还是写）
-    input               Mem_Write,
-    input               Mem_Read,
 
     // axi 写入和读取地址
     input [31:0]        axi_araddr,
@@ -68,10 +62,10 @@ module ysyx_24100006_mem(
         end else begin
             case(state)
                 S_IDLE: begin
-                    if(sram_read_write == 1'b0 && Mem_Read == 1'b1 && axi_arvalid == 1'b1) begin
+                    if(axi_arvalid == 1'b1) begin
                         axi_arready     <= 1'b1;
                         state           <= S_READ_ADDR;
-                    end else if(sram_read_write == 1'b1 && axi_awvalid == 1'b1 && axi_wvalid == 1'b1) begin
+                    end else if(axi_awvalid == 1'b1 && axi_wvalid == 1'b1) begin
                         axi_awready     <= 1'b1;
                         axi_wready      <= 1'b1;
                         state           <= S_WRITE_ADDR;

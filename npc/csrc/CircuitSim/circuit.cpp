@@ -138,7 +138,7 @@ void cpu_exec(uint32_t n){
 		prev_pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
 		exec_once();
 		snpc = pc + 4;
-		inst = cpu->rootp -> ysyx_24100006_cpu__DOT__IM__DOT__data_reg;
+		inst = cpu->rootp -> ysyx_24100006_cpu__DOT__sram_axi_rdata;
 		pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
 		dnpc = cpu->rootp -> ysyx_24100006_cpu__DOT__npc_EF;
 		PCW = cpu->rootp -> ysyx_24100006_cpu__DOT__PCW;

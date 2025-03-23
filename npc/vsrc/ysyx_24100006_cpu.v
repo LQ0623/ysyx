@@ -1,6 +1,30 @@
 module ysyx_24100006_cpu(
-	input clk,
-	input reset
+	input               	clk,
+    input               	reset
+
+	// 下面是综合需要使用的，目前的SRAM还是在CPU内部实例化，如果需要综合，则需要将访问MEM的部分注释掉，然后将下面的取消注释才能跑
+	// // 读地址通道
+	// output 	wire       		sram_axi_arvalid,
+    // input  	wire       		sram_axi_arready,
+    // output	wire [31:0]  	sram_axi_araddr,
+    // // 读数据通道
+    // input	wire         	sram_axi_rvalid,
+    // output	wire        	sram_axi_rready,
+    // input	wire        	sram_axi_rresp,
+    // input	wire [31:0]   	sram_axi_rdata,
+    // // 写地址通道
+    // output	wire         	sram_axi_awvalid,
+    // input	wire          	sram_axi_awready,
+    // output	wire [31:0]  	sram_axi_awaddr,
+    // // 写数据通道
+    // output	wire          	sram_axi_wvalid,
+    // input	wire        	sram_axi_wready,
+    // output	wire [31:0] 	sram_axi_wdata,
+    // output	wire [7:0]   	sram_axi_wstrb,
+    // // 写响应通道
+    // input	wire         	sram_axi_bvalid,
+    // output	wire        	sram_axi_bready,
+    // input	wire [1:0]  	sram_axi_bresp
 );
 
 	// 模块的信号
@@ -77,6 +101,7 @@ module ysyx_24100006_cpu(
 	wire [31:0] mem_addr_M;		// 对齐到四字节边界的地址
 	wire [31:0] rdraw_M;		// 从mem读取出来的内容
 
+	// 这个是在MEMU中判断是LOAD操作还是STORE操作使用，其他模块不使用
 	wire sram_read_write;
 
 
@@ -128,74 +153,131 @@ module ysyx_24100006_cpu(
 	reg axi_bvalid_mem;
 	reg axi_bready_mem;
 	reg [1:0] axi_bresp_mem;
-
-	// SRAM模块
-	// 指令SRAM
-	ysyx_24100006_im IM(
-		.clk(clk),
-		.reset(reset),
-		.axi_araddr(pc_FD),
-		.axi_wdata(32'b0),
-		// axi控制信号
-		// read data addr
-		.axi_arvalid(axi_arvalid_if),
-		.axi_arready(axi_arready_if),
-		// read data
-		.axi_rready(axi_rready_if),
-		.axi_rvalid(axi_rvalid_if),
-		// write data addr
-		.axi_awvalid(axi_awvalid_if),
-		.axi_awready(axi_awready_if),
-		// write data
-		.axi_wvalid(axi_wvalid_if),
-		.axi_wready(axi_wready_if),
-		// response
-		.axi_bready(axi_bready_if),
-		.axi_bvalid(axi_bvalid_if),
-		.axi_rdata(instruction)
-	);
+    
+	// 两个SRAM和为一个SRAM之后新实例化一个mem
+	// 读地址通道
+	wire       		sram_axi_arvalid;
+    wire       		sram_axi_arready;
+    wire [31:0]  	sram_axi_araddr;
+    // 读数据通道
+    wire         	sram_axi_rvalid;
+    wire        	sram_axi_rready;
+    wire        	sram_axi_rresp;
+    wire [31:0]   	sram_axi_rdata;
+    // 写地址通道
+    wire         	sram_axi_awvalid;
+    wire          	sram_axi_awready;
+    wire [31:0]  	sram_axi_awaddr;
+    // 写数据通道
+    wire          	sram_axi_wvalid;
+    wire        	sram_axi_wready;
+    wire [31:0] 	sram_axi_wdata;
+    wire [7:0]   	sram_axi_wstrb;
+    // 写响应通道
+    wire         	sram_axi_bvalid;
+    wire        	sram_axi_bready;
+    wire [1:0]  	sram_axi_bresp;
 	
-	// 内存操作
-	// 内存SRAM
 	ysyx_24100006_mem mem(
 		.clk(clk),
 		.reset(reset),
-		.sram_read_write(sram_read_write),
-		// 内存写入和读取是否有效
-		.Mem_Write(Mem_Write_EM),
-		.Mem_Read(Mem_Read_EM),
 		
 		// axi 写入和读取地址
-		.axi_araddr(mem_addr_M),
-		.axi_awaddr(mem_addr_M),
+		.axi_araddr(sram_axi_araddr),
+		.axi_awaddr(sram_axi_awaddr),
 		// axi 写入数据和写入使用的掩码
-		.axi_wdata(rs2_data_EM),
-		.axi_wstrb(RealMemWmask_M),
+		.axi_wdata(sram_axi_wdata),
+		.axi_wstrb(sram_axi_wstrb),
 
 		// axi控制信号
 		// read data addr
-		.axi_arvalid(axi_arvalid_mem),
-		.axi_arready(axi_arready_mem),
+		.axi_arvalid(sram_axi_arvalid),
+		.axi_arready(sram_axi_arready),
 		// read data
-		.axi_rready(axi_rready_mem),
-		.axi_rvalid(axi_rvalid_mem),
+		.axi_rready(sram_axi_rready),
+		.axi_rvalid(sram_axi_rvalid),
 		// write data addr
-		.axi_awvalid(axi_awvalid_mem),
-		.axi_awready(axi_awready_mem),
+		.axi_awvalid(sram_axi_awvalid),
+		.axi_awready(sram_axi_awready),
 		// write data
-		.axi_wvalid(axi_wvalid_mem),
-		.axi_wready(axi_wready_mem),
+		.axi_wvalid(sram_axi_wvalid),
+		.axi_wready(sram_axi_wready),
 		// response
-		.axi_bready(axi_bready_mem),
-		.axi_bvalid(axi_bvalid_mem),
-		.axi_bresp(axi_bresp_mem),
+		.axi_bready(sram_axi_bready),
+		.axi_bvalid(sram_axi_bvalid),
+		.axi_bresp(sram_axi_bresp),
 
 		// axi读取的回应
-		.axi_rresp(axi_rresp_mem),
+		.axi_rresp(sram_axi_rresp),
 		// axi读取的数据
-		.axi_rdata(rdraw_M)
+		.axi_rdata(sram_axi_rdata)
 	);
-    
+
+	ysyx_24100006_axi_arbiter arbiter(
+		.clk(clk),
+		.reset(reset),
+
+		// ================== IFU接口 ==================
+		// 读地址通道
+		.ifu_axi_arvalid(axi_arvalid_if),
+		.ifu_axi_arready(axi_arready_if),
+		.ifu_axi_araddr(pc_FD),
+		// 读数据通道
+		.ifu_axi_rvalid(axi_rvalid_if),
+		.ifu_axi_rready(axi_rready_if),
+		.ifu_axi_rresp(axi_rresp_if),
+		.ifu_axi_rdata(instruction),
+
+		// ================== MEMU接口 ==================
+		// 读地址通道
+		.mem_axi_arvalid(axi_arvalid_mem),
+		.mem_axi_arready(axi_arready_mem),
+		.mem_axi_araddr(mem_addr_M),
+		// 读数据通道
+		.mem_axi_rvalid(axi_rvalid_mem),
+		.mem_axi_rready(axi_rready_mem),
+		.mem_axi_rresp(axi_rresp_mem),
+		.mem_axi_rdata(rdraw_M),
+		// 写地址通道
+		.mem_axi_awvalid(axi_awvalid_mem),
+		.mem_axi_awready(axi_awready_mem),
+		.mem_axi_awaddr(mem_addr_M),
+		// 写数据通道
+		.mem_axi_wvalid(axi_wvalid_mem),
+		.mem_axi_wready(axi_wready_mem),
+		.mem_axi_wdata(rs2_data_EM),
+		.mem_axi_wstrb(RealMemWmask_M),
+		// 写响应通道
+		.mem_axi_bvalid(axi_bvalid_mem),
+		.mem_axi_bready(axi_bready_mem),
+		.mem_axi_bresp(axi_bresp_mem),
+
+		// ================== SRAM接口 ==================
+		// 读地址通道
+		.sram_axi_arvalid(sram_axi_arvalid),
+		.sram_axi_arready(sram_axi_arready),
+		.sram_axi_araddr(sram_axi_araddr),
+		// 读数据通道
+		.sram_axi_rvalid(sram_axi_rvalid),
+		.sram_axi_rready(sram_axi_rready),
+		.sram_axi_rresp(sram_axi_rresp),
+		.sram_axi_rdata(sram_axi_rdata),
+		// 写地址通道
+		.sram_axi_awvalid(sram_axi_awvalid),
+		.sram_axi_awready(sram_axi_awready),
+		.sram_axi_awaddr(sram_axi_awaddr),
+		// 写数据通道
+		.sram_axi_wvalid(sram_axi_wvalid),
+		.sram_axi_wready(sram_axi_wready),
+		.sram_axi_wdata(sram_axi_wdata),
+		.sram_axi_wstrb(sram_axi_wstrb),
+		// 写响应通道
+		.sram_axi_bvalid(sram_axi_bvalid),
+		.sram_axi_bready(sram_axi_bready),
+		.sram_axi_bresp(sram_axi_bresp)
+
+	);
+
 	ysyx_24100006_ifu IF(
 		.clk(clk),
 		.reset(reset),
