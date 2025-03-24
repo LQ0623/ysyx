@@ -1,11 +1,17 @@
-PROJ_PATH = $(shell pwd)
+# 进入ysyx-workbench/npc/script进行综合
+# 进行综合的指令：make -f yosys-sta.mk sta
+
+PROJ_PATH = $(CURDIR)/..
 
 IEDA = $(PROJ_PATH)/yosys-sta/bin/iEDA
-DESIGN ?= ysyx_24100006_alu
-SDC_FILE ?= $(PROJ_PATH)/vsrc/EX/alu.sdc
-# RTL_FILES ?= $(shell find $(PROJ_PATH)/example -name "*.v")
-RTL_FILES ?= $(PROJ_PATH)/vsrc/EX/ysyx_24100006_alu.v $(PROJ_PATH)/vsrc/template/ysyx_24100006_MuxKey.v
-export CLK_FREQ_MHZ ?= 500
+DESIGN ?= ysyx_24100006_cpu
+SDC_FILE ?= $(PROJ_PATH)/vsrc/cpu.sdc
+# RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v")
+RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v" \
+				-not -path "$(PROJ_PATH)/vsrc/MEM/*"	\
+				-not -path "$(PROJ_PATH)/vsrc/IF/ysyx_24100006_im.v")
+# RTL_FILES ?= $(PROJ_PATH)/vsrc/EX/ysyx_24100006_alu.v $(PROJ_PATH)/vsrc/template/ysyx_24100006_MuxKey.v
+export CLK_FREQ_MHZ ?= 450
 
 RESULT_DIR = $(PROJ_PATH)/result/$(DESIGN)-$(CLK_FREQ_MHZ)MHz
 SCRIPT_DIR = $(PROJ_PATH)/yosys-sta/scripts

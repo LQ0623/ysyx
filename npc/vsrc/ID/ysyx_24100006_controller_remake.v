@@ -87,6 +87,11 @@
 `define ysyx_24100006_CW                    1   // csrrw指令使用
 `define ysyx_24100006_CS                    2   // csrrs指令使用，将通用寄存器取出来的值与CSR寄存器的值进行或操作
 
+// 是内存写入还是读取
+`define ysyx_24100006_mem_idle              2'b00
+`define ysyx_24100006_mem_load              2'b01
+`define ysyx_24100006_mem_store             2'b10
+
 // RISCV32E 指令宏定义
 //opcode
 `define ysyx_24100006_SYSTEM              7'b1110011
@@ -174,40 +179,40 @@ module ysyx_24100006_controller_remake(
     input mem_valid,
 
     /* 是否发生中断 */
-    output reg irq,
-    output reg [7:0] irq_no,
+    output  irq,
+    output  [7:0] irq_no,
     /* 操作类型 */
-    output reg [3:0]aluop,
+    output  [3:0]aluop,
     /* 写通用寄存器 */
-    output reg Gpr_Write,
+    output  Gpr_Write,
     /* 写回通用寄存器的内容 */
-    output reg [2:0] Gpr_Write_RD,
+    output  [2:0] Gpr_Write_RD,
     /* 写系统寄存器 */
-    output reg Csr_Write,
+    output  Csr_Write,
     /* 写系统寄存器的内容 */
-    output reg [1:0] Csr_Write_RD,
+    output  [1:0] Csr_Write_RD,
 
     /* pc的跳转类型 */
-    output reg [3:0] Jump,
+    output  [3:0] Jump,
     /* 立即数的种类 */
-    output reg [2:0] Imm_Type,
+    output  [2:0] Imm_Type,
     /* 源操作数的种类 */
-    output reg AluSrcA,
-    output reg AluSrcB,
+    output  AluSrcA,
+    output  AluSrcB,
     /* 是否读内存 */
-    output reg Mem_Read,
+    output  Mem_Read,
     /* 读内存是读多少字节，以及如何扩展 */
-    output reg [2:0] Mem_RMask,
+    output  [2:0] Mem_RMask,
     /* 是否写内存 */
-    output reg Mem_Write,
+    output  Mem_Write,
     /* 写内存是多少字节 */
-    output reg [7:0] Mem_WMask,
+    output  [7:0] Mem_WMask,
     /* 控制MEMU的状态机是走读取数据还是写入数据的分支 */
-    output reg sram_read_write
+    output [1:0] sram_read_write
 );
 
 
-    //TODO 这样写有一个问题，ebreak如何跳转到结束，加了，但是不确定正确
+    //TAG 这样写有一个问题，ebreak如何跳转到结束，加了，但是不确定正确
 
     assign irq = (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_IRQ : `ysyx_24100006_NIRQ;
     assign irq_no = (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_MECALL : 0;    //  只有ecall语句会使用这个信号
@@ -391,7 +396,8 @@ module ysyx_24100006_controller_remake(
             (funct3 == `ysyx_24100006_sw) ? `ysyx_24100006_WWord : 8'b0
         ) : 8'b0;
 
-    assign sram_read_write = (opcode == `ysyx_24100006_S_type) ? 1: 0;  //  如果是写入就是1.读取就是0
+    assign sram_read_write =    (opcode == `ysyx_24100006_S_type)   ? `ysyx_24100006_mem_store  : 
+                                (opcode == `ysyx_24100006_load)     ? `ysyx_24100006_mem_load   : `ysyx_24100006_mem_idle;
 
     always @(*) begin
         if(opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) begin

@@ -137,7 +137,7 @@
 // 	});
 
 // 	// 系统寄存器
-// 	// TODO:需要写CSR寄存器的指令有mret、csrrs、csrrw三条，所以这里的wdata和waddr需要使用MUX进行选值
+// 	// TAG:需要写CSR寄存器的指令有mret、csrrs、csrrw三条，所以这里的wdata和waddr需要使用MUX进行选值
 // 	ysyx_24100006_CSR CSR(
 // 		.clk(clk),
 // 		.irq(irq),
