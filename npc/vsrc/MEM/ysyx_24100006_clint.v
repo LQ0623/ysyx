@@ -1,9 +1,8 @@
 /**
-    AXI-Lite接口的UART功能：本质上就是使用MEM那一套，只是不能读，只能使用$write进行写操作
+    AXI-Lite接口的CLINT功能：本质上就是使用MEM那一套，只是不能读，只能使用$write进行写操作
 */
-// TAG:如果rresp返回的是01,则表示读了不可读的部分
-module ysyx_24100006_uart #(
-    parameter BASE_ADDR = 32'ha0000000     // UART基地址
+module ysyx_24100006_clint #(
+    parameter BASE_ADDR = 32'h1000_0000     // UART基地址
 )(
     input               clk,
     input               reset,
