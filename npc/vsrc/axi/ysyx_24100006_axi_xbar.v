@@ -82,10 +82,11 @@ module ysyx_24100006_axi_xbar #(
     wire sel_sram = (m_axi_awaddr >= SRAM_ADDR && m_axi_awaddr < (SRAM_ADDR + 32'h0100_0000)) ||
                     (m_axi_araddr >= SRAM_ADDR && m_axi_araddr < (SRAM_ADDR + 32'h0100_0000));       // 假设每个从设备16MB空间
 
-    wire sel_uart = (mem_ready == 0) && ((m_axi_awaddr >= UART_ADDR && m_axi_awaddr < (UART_ADDR + 32'h0000_1000)) ||
+    wire sel_uart = (mem_ready == 1'b0) && ((m_axi_awaddr >= UART_ADDR && m_axi_awaddr < (UART_ADDR + 32'h0000_1000)) ||
                     (m_axi_araddr >= UART_ADDR && m_axi_araddr < (UART_ADDR + 32'h0000_1000)));      // UART 4KB空间
 
-    // wire sel_sram = ~sel_uart;
+    // wire sel_sram = 1;
+    // wire sel_uart = 0;
 
     // 写通道路由
     assign sram_axi_awvalid = sel_sram ? m_axi_awvalid : 0;

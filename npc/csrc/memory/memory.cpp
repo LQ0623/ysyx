@@ -103,3 +103,9 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 		}
 	}
 }
+
+
+extern "C" void skip(){
+	is_skip_diff = true;
+	return;
+}

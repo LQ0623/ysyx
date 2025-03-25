@@ -53,7 +53,7 @@ module ysyx_24100006_axi_arbiter (
     // 写地址通道
     output              sram_axi_awvalid,
     input               sram_axi_awready,
-    output  [31:0]      sram_axi_awaddr,
+    output  reg[31:0]      sram_axi_awaddr,
     // 写数据通道
     output              sram_axi_wvalid,
     input               sram_axi_wready,
