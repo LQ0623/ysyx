@@ -180,7 +180,7 @@ module ysyx_24100006_memu(
 					end
 				end
 				S_DELAY: begin	// 修改mem_valid信号，用于mem与下一级和上一级模块进行握手
-					locked_addr	<= 32'h0;
+					// locked_addr	<= 32'h0;
 					mem_valid	<= 1'b1;
 					// mem_ready	<= 1'b0;
 					state		<= S_ACCESS;

@@ -89,28 +89,28 @@ module ysyx_24100006_axi_xbar #(
     // wire sel_uart = 0;
 
     // 写通道路由
-    assign sram_axi_awvalid = sel_sram ? m_axi_awvalid : 0;
-    assign sram_axi_awaddr  = m_axi_awaddr;
-    assign sram_axi_wvalid  = sel_sram ? m_axi_wvalid : 0;
-    assign sram_axi_wdata   = m_axi_wdata;
-    assign sram_axi_wstrb   = m_axi_wstrb;
-    assign sram_axi_bready  = sel_sram ? m_axi_bready : 0;
+    assign sram_axi_awvalid = sel_sram ? m_axi_awvalid  : 0;
+    assign sram_axi_awaddr  = sel_sram ? m_axi_awaddr   : 32'h0;
+    assign sram_axi_wvalid  = sel_sram ? m_axi_wvalid   : 0;
+    assign sram_axi_wdata   = sel_sram ? m_axi_wdata    : 32'h0;
+    assign sram_axi_wstrb   = sel_sram ? m_axi_wstrb    : 8'h0;
+    assign sram_axi_bready  = sel_sram ? m_axi_bready   : 0;
 
-    assign uart_axi_awvalid = sel_uart ? m_axi_awvalid : 0;
-    assign uart_axi_awaddr  = m_axi_awaddr;
-    assign uart_axi_wvalid  = sel_uart ? m_axi_wvalid : 0;
-    assign uart_axi_wdata   = m_axi_wdata;
-    assign uart_axi_wstrb   = m_axi_wstrb;
-    assign uart_axi_bready  = sel_uart ? m_axi_bready : 0;
+    assign uart_axi_awvalid = sel_uart ? m_axi_awvalid  : 0;
+    assign uart_axi_awaddr  = sel_uart ? m_axi_awaddr   : 32'h0;
+    assign uart_axi_wvalid  = sel_uart ? m_axi_wvalid   : 0;
+    assign uart_axi_wdata   = sel_uart ? m_axi_wdata    : 32'h0;
+    assign uart_axi_wstrb   = sel_uart ? m_axi_wstrb    : 8'h0;
+    assign uart_axi_bready  = sel_uart ? m_axi_bready   : 0;
 
     // 读通道路由
-    assign sram_axi_arvalid = sel_sram ? m_axi_arvalid : 0;
-    assign sram_axi_araddr  = m_axi_araddr;
-    assign sram_axi_rready  = sel_sram ? m_axi_rready : 0;
+    assign sram_axi_arvalid = sel_sram ? m_axi_arvalid  : 0;
+    assign sram_axi_araddr  = sel_sram ? m_axi_araddr   : 32'h0;
+    assign sram_axi_rready  = sel_sram ? m_axi_rready   : 0;
 
-    assign uart_axi_arvalid = sel_uart ? m_axi_arvalid : 0;
-    assign uart_axi_araddr  = m_axi_araddr;
-    assign uart_axi_rready  = sel_uart ? m_axi_rready : 0;
+    assign uart_axi_arvalid = sel_uart ? m_axi_arvalid  : 0;
+    assign uart_axi_araddr  = sel_uart ? m_axi_araddr   : 32'h0;
+    assign uart_axi_rready  = sel_uart ? m_axi_rready   : 0;
 
     // 响应合并
     assign m_axi_awready    = sel_sram ? sram_axi_awready :
