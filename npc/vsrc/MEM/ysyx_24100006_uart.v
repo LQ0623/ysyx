@@ -3,7 +3,7 @@
 */
 // TAG:如果rresp返回的是01,则表示读了不可读的部分
 module ysyx_24100006_uart #(
-    parameter BASE_ADDR = 32'ha0000000     // UART基地址
+    parameter BASE_ADDR = 32'ha00003f8     // UART基地址,然后可以向后写8个字节
 )(
     input               clk,
     input               reset,
