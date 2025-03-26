@@ -87,9 +87,11 @@ module ysyx_24100006_clint #(
                         // axi_rdata       <= 32'h0;
                         // axi_rresp       <= 2'b00;  
                         if(axi_araddr == BASE_ADDR) begin
+                            skip();
                             axi_rdata   <= mtime[31:0];
                             axi_rresp   <= 2'b00;
                         end else if(axi_araddr == BASE_ADDR + 4) begin
+                            skip();
                             axi_rdata   <= mtime[63:32];
                             axi_rresp   <= 2'b00;
                         end else begin
@@ -111,7 +113,7 @@ module ysyx_24100006_clint #(
                     axi_wready          <= 1'b0;
                     if(axi_awvalid == 1'b1 && axi_awready == 1'b1 && axi_wvalid == 1'b1 && axi_wready == 1'b1) begin
                         // 写入数据
-                        $$display("Error: You cannot write to CLINT");
+                        $display("Error: You cannot write to CLINT");
                         axi_bresp       <= 2'b00;
                         axi_bvalid      <= 1'b1;
                         state           <= S_WRITE_RESP;

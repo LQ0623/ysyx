@@ -16,6 +16,7 @@ void difftest_step();
 uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 word_t pc, snpc, dnpc, inst, prev_pc, PCW, if_valid;
+uint64_t timer_start, timer_end,g_timer;	// 测试运行的时间的
 static uint8_t opcode;
 
 static bool is_change = false;	// 监视点是否有改变
@@ -165,10 +166,16 @@ void cpu_exec(uint32_t n){
 
 
 static void statistic() {
-  Log("total guest instructions = %lu\n", g_nr_guest_inst);
+	Log("total guest instructions = %lu\n", g_nr_guest_inst);
 }
 
-extern "C" void npc_trap(){
+// TAG:测试开始的时间
+extern "C" void time_start(){
+	timer_start	= get_time();
+}
+
+extern "C" void npc_trap(int timer_counter){
+	timer_end	= get_time();
 	#ifdef CONFIG_DUMP_WAVE
 		dump_wave_inc();
 		close_wave();
@@ -180,7 +187,10 @@ extern "C" void npc_trap(){
 		Log("\033[1;32mHIT GOOD TRAP\033[0m");
 	else
 		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %d",code);
-	Log("trap in %#x\n",pc);
+	Log("trap in %#x",pc);
+	g_timer = timer_end - timer_start;
+	Log("host time spent = %lu us",g_timer);
+	Log("total cycle spent = %d",timer_counter);
 	statistic();
 	exit(0);
 }

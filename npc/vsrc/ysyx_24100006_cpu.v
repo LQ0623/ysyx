@@ -271,6 +271,65 @@ module ysyx_24100006_cpu(
 		.axi_rdata(uart_axi_rdata)
 	);
 
+	// TAG: 时钟相关的部分
+	// CLINT实例化
+	// 读地址通道
+	wire       		clint_axi_arvalid;
+    wire       		clint_axi_arready;
+    wire [31:0]  	clint_axi_araddr;
+    // 读数据通道
+    wire         	clint_axi_rvalid;
+    wire        	clint_axi_rready;
+    wire [1:0]		clint_axi_rresp;
+    wire [31:0]   	clint_axi_rdata;
+    // 写地址通道
+    wire         	clint_axi_awvalid;
+    wire          	clint_axi_awready;
+    wire [31:0]  	clint_axi_awaddr;
+    // 写数据通道
+    wire          	clint_axi_wvalid;
+    wire        	clint_axi_wready;
+    wire [31:0] 	clint_axi_wdata;
+    wire [7:0]   	clint_axi_wstrb;
+    // 写响应通道
+    wire         	clint_axi_bvalid;
+    wire        	clint_axi_bready;
+    wire [1:0]  	clint_axi_bresp;
+
+	ysyx_24100006_clint clint(
+		.clk(clk),
+		.reset(reset),
+		
+		// axi 写入和读取地址
+		.axi_araddr(clint_axi_araddr),
+		.axi_awaddr(clint_axi_awaddr),
+		// axi 写入数据和写入使用的掩码
+		.axi_wdata(clint_axi_wdata),
+		.axi_wstrb(clint_axi_wstrb),
+		// axi控制信号
+		// read data addr
+		.axi_arvalid(clint_axi_arvalid),
+		.axi_arready(clint_axi_arready),
+		// read data
+		.axi_rready(clint_axi_rready),
+		.axi_rvalid(clint_axi_rvalid),
+		// write data addr
+		.axi_awvalid(clint_axi_awvalid),
+		.axi_awready(clint_axi_awready),
+		// write data
+		.axi_wvalid(clint_axi_wvalid),
+		.axi_wready(clint_axi_wready),
+		// response
+		.axi_bready(clint_axi_bready),
+		.axi_bvalid(clint_axi_bvalid),
+		.axi_bresp(clint_axi_bresp),
+
+		// axi读取的回应
+		.axi_rresp(clint_axi_rresp),
+		// axi读取的数据
+		.axi_rdata(clint_axi_rdata)
+	);
+
 	// TAG：下面就是加入UART之后需要的，如果接入了其他的UART之后，就可以删除了。就是arbiter暴露给xbar的握手接口
 	wire         m_axi_awvalid;
 	wire         m_axi_awready;
@@ -295,7 +354,7 @@ module ysyx_24100006_cpu(
 	wire [31:0]  m_axi_rdata;
 	wire [1:0]   m_axi_rresp;
 
-
+	// 仲裁器
 	ysyx_24100006_axi_arbiter arbiter(
 		.clk(clk),
 		.reset(reset),
@@ -460,7 +519,31 @@ module ysyx_24100006_cpu(
 		.uart_axi_rvalid(uart_axi_rvalid),
 		.uart_axi_rready(uart_axi_rready),
 		.uart_axi_rdata(uart_axi_rdata),
-		.uart_axi_rresp(uart_axi_rresp)
+		.uart_axi_rresp(uart_axi_rresp),
+
+		// CLINT 从设备接口 (写通道)
+		.clint_axi_awvalid(clint_axi_awvalid),
+		.clint_axi_awready(clint_axi_awready),
+		.clint_axi_awaddr(clint_axi_awaddr),
+		
+		.clint_axi_wvalid(clint_axi_wvalid),
+		.clint_axi_wready(clint_axi_wready),
+		.clint_axi_wdata(clint_axi_wdata),
+		.clint_axi_wstrb(clint_axi_wstrb),
+		
+		.clint_axi_bvalid(clint_axi_bvalid),
+		.clint_axi_bready(clint_axi_bready),
+		.clint_axi_bresp(clint_axi_bresp),
+
+		// CLINT 从设备接口 (读通道)
+		.clint_axi_arvalid(clint_axi_arvalid),
+		.clint_axi_arready(clint_axi_arready),
+		.clint_axi_araddr(clint_axi_araddr),
+		
+		.clint_axi_rvalid(clint_axi_rvalid),
+		.clint_axi_rready(clint_axi_rready),
+		.clint_axi_rdata(clint_axi_rdata),
+		.clint_axi_rresp(clint_axi_rresp)
 	);
 
 	ysyx_24100006_ifu IF(
