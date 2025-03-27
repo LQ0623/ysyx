@@ -3,28 +3,29 @@ module ysyx_24100006_cpu(
     input               	reset
 
 	// 下面是综合需要使用的，目前的SRAM还是在CPU内部实例化，如果需要综合，则需要将访问MEM的部分注释掉，然后将下面的取消注释才能跑
+	// 下面的就相当于是将CPU暴露出来的接SRAM和UART的接口
 	// // 读地址通道
-	// output 	wire       		sram_axi_arvalid,
-    // input  	wire       		sram_axi_arready,
-    // output	wire [31:0]  	sram_axi_araddr,
+	// output 	wire       		m_axi_arvalid,
+    // input  	wire       		m_axi_arready,
+    // output	wire [31:0]  	m_axi_araddr,
     // // 读数据通道
-    // input	wire         	sram_axi_rvalid,
-    // output	wire        	sram_axi_rready,
-    // input	wire [1:0]    	sram_axi_rresp,
-    // input	wire [31:0]   	sram_axi_rdata,
+    // input	wire         	m_axi_rvalid,
+    // output	wire        	m_axi_rready,
+    // input	wire [1:0]    	m_axi_rresp,
+    // input	wire [31:0]   	m_axi_rdata,
     // // 写地址通道
-    // output	wire         	sram_axi_awvalid,
-    // input	wire          	sram_axi_awready,
-    // output	wire [31:0]  	sram_axi_awaddr,
+    // output	wire         	m_axi_awvalid,
+    // input	wire          	m_axi_awready,
+    // output	wire [31:0]  	m_axi_awaddr,
     // // 写数据通道
-    // output	wire          	sram_axi_wvalid,
-    // input	wire        	sram_axi_wready,
-    // output	wire [31:0] 	sram_axi_wdata,
-    // output	wire [7:0]   	sram_axi_wstrb,
+    // output	wire          	m_axi_wvalid,
+    // input	wire        	m_axi_wready,
+    // output	wire [31:0] 	m_axi_wdata,
+    // output	wire [7:0]   	m_axi_wstrb,
     // // 写响应通道
-    // input	wire         	sram_axi_bvalid,
-    // output	wire        	sram_axi_bready,
-    // input	wire [1:0]  	sram_axi_bresp
+    // input	wire         	m_axi_bvalid,
+    // output	wire        	m_axi_bready,
+    // input	wire [1:0]  	m_axi_bresp
 );
 
 	// 模块的信号
@@ -418,29 +419,6 @@ module ysyx_24100006_cpu(
 		.sram_axi_bvalid(m_axi_bvalid),
 		.sram_axi_bready(m_axi_bready),
 		.sram_axi_bresp(m_axi_bresp)
-
-		// .sram_axi_arvalid(sram_axi_arvalid),
-		// .sram_axi_arready(sram_axi_arready),
-		// .sram_axi_araddr(sram_axi_araddr),
-		// // 读数据通道
-		// .sram_axi_rvalid(sram_axi_rvalid),
-		// .sram_axi_rready(sram_axi_rready),
-		// .sram_axi_rresp(sram_axi_rresp),
-		// .sram_axi_rdata(sram_axi_rdata),
-		// // 写地址通道
-		// .sram_axi_awvalid(sram_axi_awvalid),
-		// .sram_axi_awready(sram_axi_awready),
-		// .sram_axi_awaddr(sram_axi_awaddr),
-		// // 写数据通道
-		// .sram_axi_wvalid(sram_axi_wvalid),
-		// .sram_axi_wready(sram_axi_wready),
-		// .sram_axi_wdata(sram_axi_wdata),
-		// .sram_axi_wstrb(sram_axi_wstrb),
-		// // 写响应通道
-		// .sram_axi_bvalid(sram_axi_bvalid),
-		// .sram_axi_bready(sram_axi_bready),
-		// .sram_axi_bresp(sram_axi_bresp)
-
 	);
 
 	ysyx_24100006_axi_xbar xbar (

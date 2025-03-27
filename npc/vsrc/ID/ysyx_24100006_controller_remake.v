@@ -163,6 +163,7 @@
 import "DPI-C" function void npc_trap (input int timer_counter);
 // TAG:这里可以删除,只是测个时间
 import "DPI-C" function void time_start();
+import "DPI-C" function void time_end();
 
 /**
     主要是重构一下controller模块
@@ -418,6 +419,7 @@ module ysyx_24100006_controller_remake(
     always @(*) begin
         if(opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) begin
             $display("asdasdasdasd");
+            time_end();
             npc_trap(timer_counter);
         end
     end
