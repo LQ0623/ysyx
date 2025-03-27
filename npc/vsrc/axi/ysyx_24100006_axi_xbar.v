@@ -103,18 +103,17 @@ module ysyx_24100006_axi_xbar #(
 );
 
     // 地址解码
-    // wire sel_sram   = (m_axi_awaddr >= SRAM_ADDR && m_axi_awaddr < (SRAM_ADDR + 32'h0800_0000)) ||
-    //                 (m_axi_araddr >= SRAM_ADDR && m_axi_araddr < (SRAM_ADDR + 32'h0800_0000));       // SRAM的空间大小到在am中有
+    wire sel_sram   = (m_axi_awaddr >= SRAM_ADDR && m_axi_awaddr < (SRAM_ADDR + 32'h0800_0000)) ||
+                    (m_axi_araddr >= SRAM_ADDR && m_axi_araddr < (SRAM_ADDR + 32'h0800_0000));       // SRAM的空间大小到在am中有
 
-    // wire sel_uart   = ((m_axi_awaddr >= UART_ADDR && m_axi_awaddr < (UART_ADDR + 32'h0000_0008)) ||
-    //                 (m_axi_araddr >= (UART_ADDR + 32'h0000_03f8) && m_axi_araddr < (UART_ADDR + 32'h0000_0008)));      // UART
+    wire sel_uart   = ((m_axi_awaddr >= UART_ADDR && m_axi_awaddr < (UART_ADDR + 32'h0000_0008)) ||
+                    (m_axi_araddr >= (UART_ADDR + 32'h0000_03f8) && m_axi_araddr < (UART_ADDR + 32'h0000_0008)));      // UART
 
-    // wire sel_clint  = (m_axi_awaddr >= CLINT_ADDR && m_axi_awaddr < (CLINT_ADDR + 32'h0000_0008)) ||
-    //                 (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
+    wire sel_clint  = (m_axi_awaddr >= CLINT_ADDR && m_axi_awaddr < (CLINT_ADDR + 32'h0000_0008)) ||
+                    (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
 
-    wire sel_sram = 1;
-    wire sel_uart = 0;
-    wire sel_clint = 0;
+    // wire sel_sram = 1;
+    // wire sel_uart = 0;
 
     // 写通道路由
     // SRAM
