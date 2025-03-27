@@ -16,6 +16,8 @@ void difftest_step();
 uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 word_t pc, snpc, dnpc, inst, prev_pc, PCW, if_valid;
+uint64_t timer_start, timer_end,g_timer;	// 测试运行的时间的
+uint64_t timer,count = 0;
 static uint8_t opcode;
 
 static bool is_change = false;	// 监视点是否有改变
@@ -135,6 +137,11 @@ void cpu_exec(uint32_t n){
 	//max inst to print to stdout
 	g_print_step = (n < MAX_INST_TO_PRINT);
 	while(n > 0){
+		// timer = get_time() - timer_start;
+		// if(timer / 1000000 == count){
+		// 	printf("this is %d s\n\n",count++);
+		// }
+
 		prev_pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
 		exec_once();
 		snpc = pc + 4;
@@ -165,22 +172,35 @@ void cpu_exec(uint32_t n){
 
 
 static void statistic() {
-  Log("total guest instructions = %lu\n", g_nr_guest_inst);
+	Log("total guest instructions = %lu\n", g_nr_guest_inst);
 }
 
-extern "C" void npc_trap(){
+// TAG:测试开始的时间
+extern "C" void time_start(){
+	timer_start	= get_time();
+}
+
+// TAG:测试结束的时间
+extern "C" void time_end(){
+	timer_end	= get_time();
+}
+
+// timer_counter 是表示用了多少个时钟周期
+extern "C" void npc_trap(int timer_counter){
 	#ifdef CONFIG_DUMP_WAVE
 		dump_wave_inc();
 		close_wave();
 	#endif
 	bool success;
 	word_t code = isa_reg_str2val("a0",&success);
-	// word_t code = cpu->rootp -> ysyx_24100006_cpu__DOT__registerfile__DOT__rf[10];
 	if(code == 0)
 		Log("\033[1;32mHIT GOOD TRAP\033[0m");
 	else
 		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %d",code);
-	Log("trap in %#x\n",pc);
+	Log("trap in %#x",pc);
+	g_timer = timer_end - timer_start;
+	Log("host time spent = %lu us",g_timer);
+	Log("total cycle spent = %d",timer_counter);
 	statistic();
 	exit(0);
 }

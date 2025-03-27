@@ -87,6 +87,11 @@
 `define ysyx_24100006_CW                    1   // csrrw指令使用
 `define ysyx_24100006_CS                    2   // csrrs指令使用，将通用寄存器取出来的值与CSR寄存器的值进行或操作
 
+// 是内存写入还是读取
+`define ysyx_24100006_mem_idle              2'b00
+`define ysyx_24100006_mem_load              2'b01
+`define ysyx_24100006_mem_store             2'b10
+
 // RISCV32E 指令宏定义
 //opcode
 `define ysyx_24100006_SYSTEM              7'b1110011
@@ -155,7 +160,10 @@
 `define ysyx_24100006_lhu                 3'b101
 
 
-import "DPI-C" function void npc_trap ();
+import "DPI-C" function void npc_trap (input int timer_counter);
+// TAG:这里可以删除,只是测个时间
+import "DPI-C" function void time_start();
+import "DPI-C" function void time_end();
 
 /**
     主要是重构一下controller模块
@@ -203,11 +211,11 @@ module ysyx_24100006_controller_remake(
     /* 写内存是多少字节 */
     output  [7:0] Mem_WMask,
     /* 控制MEMU的状态机是走读取数据还是写入数据的分支 */
-    output  sram_read_write
+    output [1:0] sram_read_write
 );
 
 
-    //TODO 这样写有一个问题，ebreak如何跳转到结束，加了，但是不确定正确
+    //TAG 这样写有一个问题，ebreak如何跳转到结束，加了，但是不确定正确
 
     assign irq = (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_IRQ : `ysyx_24100006_NIRQ;
     assign irq_no = (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_MECALL : 0;    //  只有ecall语句会使用这个信号
@@ -391,12 +399,28 @@ module ysyx_24100006_controller_remake(
             (funct3 == `ysyx_24100006_sw) ? `ysyx_24100006_WWord : 8'b0
         ) : 8'b0;
 
-    assign sram_read_write = (opcode == `ysyx_24100006_S_type) ? 1: 0;  //  如果是写入就是1.读取就是0
+    assign sram_read_write =    (opcode == `ysyx_24100006_S_type)   ? `ysyx_24100006_mem_store  : 
+                                (opcode == `ysyx_24100006_load)     ? `ysyx_24100006_mem_load   : `ysyx_24100006_mem_idle;
+
+
+    reg [31:0] timer_counter;
+    // 测试一个时钟周期大概是多少的us
+    always @(posedge clk) begin
+        if(reset) begin
+            timer_counter   <= 0;
+        end else begin
+            if(timer_counter == 0) begin
+                time_start();
+            end
+            timer_counter   <= timer_counter + 1'b1;
+        end
+    end
 
     always @(*) begin
         if(opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) begin
             $display("asdasdasdasd");
-            npc_trap();
+            time_end();
+            npc_trap(timer_counter);
         end
     end
 

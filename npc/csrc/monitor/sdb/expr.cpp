@@ -318,7 +318,6 @@ word_t expr(char *e, bool *success) {
     return 0;
   }
   /* TODO: Insert codes to evaluate the expression. */
-  // TODO();
   // 识别指针解引用
   // 如果是指针解引用，前面不能是右括号、读寄存器、16进制和10进制的数
   for (int i = 0; i < nr_token; i ++) {

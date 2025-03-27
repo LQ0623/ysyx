@@ -81,7 +81,7 @@ module ysyx_24100006_ifu(
 				S_DELAY_3: begin
 					if(if_valid && id_ready) begin
 						if_valid		<= 1'b0;
-						delay_counter	<= 4;
+						delay_counter	<= 2;
 						state			<= S_DELAY_4;
 					end
 				end

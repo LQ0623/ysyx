@@ -4,7 +4,7 @@
 module ysyx_24100006_memu(
     input 				clk,
 	input 				reset,
-	input 				sram_read_write,
+	input [1:0]			sram_read_write,
 	// from EXEU
 	input [31:0] 		pc_M,
 	input [31:0] 		alu_result_M,
@@ -74,8 +74,8 @@ module ysyx_24100006_memu(
 	output [1:0] 		Csr_Write_RD_W
 );
 
-	// TODO:也需要使用读写使能来进行状态的转移
-	// TODO:状态转移的选择可以在controller在拉一条线出来，表示读还是写，load和store指令会使用到
+	// TAG:也需要使用读写使能来进行状态的转移
+	// TAG:读操作、写操作或者不操作内存这三种状态之间的转移的选择是在controller单独拉一条线出来，表示是读操作、写操作还是不操作内存
 
 	reg [31:0] locked_addr;  // 地址锁存
     reg [31:0] locked_data;  // 数据锁存
@@ -111,19 +111,27 @@ module ysyx_24100006_memu(
 					if(exe_valid && mem_ready) begin
 						// 表示现在mem模块正在处理数据，不能接受新的数据
 						mem_ready	<= 1'b0;
-						// 锁存地址和数据
-                        locked_addr <= alu_result_M;
-                        locked_data <= rs2_data_M;
 						// axi 读取
-						if(sram_read_write == 1'b0 && Mem_Read_M == 1'b1) begin
+						if(sram_read_write == 2'b01) begin
+							// 锁存地址和数据
+							locked_addr 	<= alu_result_M;
+							locked_data 	<= rs2_data_M;
+
+							// axi握手
 							axi_arvalid		<= 1'b1;
 							state			<= READ_ADDR;
-						end else if(sram_read_write == 1'b1) begin
+						end else if(sram_read_write == 2'b10) begin
+							// 锁存地址和数据
+							locked_addr 	<= alu_result_M;
+							locked_data 	<= rs2_data_M;
+
 							// 地址和数据同时发送，这样效率最高
 							axi_awvalid		<= 1'b1;
 							axi_wvalid		<= 1'b1;
 							state			<= WRITE_ADDR;
 						end else begin
+							locked_addr 	<= 32'h0;
+							locked_data 	<= 32'h0;
 							state			<= S_DELAY;
 						end
 					end
@@ -212,7 +220,7 @@ module ysyx_24100006_memu(
 	assign RealMemWmask = Mem_WMask_M << place;	// 真实的写内存的掩码
 	
 
-     /**
+    /**
 		写入内存的内容，半字或者一个字
 	*/
 	wire [31:0] Mem_rdata;

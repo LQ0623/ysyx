@@ -1,7 +1,7 @@
 /**
     译码模块
 */
-// TODO: 这里不知道是否需要把irq和irq_no传出去，然后在WB级在写回
+// TAG: 这里不知道是否需要把irq和irq_no传出去，然后在WB级在写回
 module ysyx_24100006_idu(
 	input clk,
 	input reset,
@@ -57,7 +57,7 @@ module ysyx_24100006_idu(
 	output [7:0] Mem_WMask,
 	output [2:0] Mem_RMask,
 
-	output sram_read_write,
+	output [1:0] sram_read_write,
 
 	// TO IFU
 	// CSR寄存器取出的异常PC
@@ -171,7 +171,7 @@ module ysyx_24100006_idu(
 	);
 
 	// 系统寄存器
-	// TODO:需要写CSR寄存器的指令有mret、csrrs、csrrw三条，所以这里的wdata和waddr需要使用MUX进行选值
+	// TAG:需要写CSR寄存器的指令有mret、csrrs、csrrw三条，所以这里的wdata和waddr需要使用MUX进行选值
 	ysyx_24100006_CSR CSR(
 		.clk(clk),
 		.irq(irq_W & PCW),

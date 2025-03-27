@@ -12,7 +12,7 @@ module ysyx_24100006_axi_arbiter (
     // 读数据通道
     output              ifu_axi_rvalid,
     input               ifu_axi_rready,
-    output              ifu_axi_rresp,
+    output  [1:0]       ifu_axi_rresp,
     output  [31:0]      ifu_axi_rdata,
 
     // ================== MEMU接口 ==================
@@ -23,7 +23,7 @@ module ysyx_24100006_axi_arbiter (
     // 读数据通道
     output              mem_axi_rvalid,
     input               mem_axi_rready,
-    output              mem_axi_rresp,
+    output  [1:0]       mem_axi_rresp,
     output  [31:0]      mem_axi_rdata,
     // 写地址通道
     input               mem_axi_awvalid,
@@ -48,12 +48,12 @@ module ysyx_24100006_axi_arbiter (
     // 读数据通道
     input               sram_axi_rvalid,
     output              sram_axi_rready,
-    input               sram_axi_rresp,
+    input   [1:0]       sram_axi_rresp,
     input   [31:0]      sram_axi_rdata,
     // 写地址通道
     output              sram_axi_awvalid,
     input               sram_axi_awready,
-    output  [31:0]      sram_axi_awaddr,
+    output  reg[31:0]      sram_axi_awaddr,
     // 写数据通道
     output              sram_axi_wvalid,
     input               sram_axi_wready,
@@ -67,14 +67,16 @@ module ysyx_24100006_axi_arbiter (
 
     parameter   ARB_IDLE        = 3'b000,   // 空闲状态
                 ARB_IFU_READ    = 3'b001,   // IF进行读操作
-                ARB_MEMU_READ   = 3'b010;   // MEMU进行读操作
+                ARB_MEMU_READ   = 3'b010,   // MEMU进行读操作
+                ARB_MEMU_WRITE  = 3'b100;   // MEMU进行写操作
 
-    // ================== 仲裁状态机 ==================
+    // ================== 读仲裁状态机 ==================
     parameter   IDLE = 0, BUSY = 1;
 
     reg [1:0] axi_state;                // AXI目前的状态
     reg [2:0] read_targeted_module;     // 当前是哪一个模块进行读操作
 
+    // ================== 读操作 ==================
     always @(posedge clk) begin
         if(reset) begin
             axi_state               <= IDLE;
@@ -108,13 +110,13 @@ module ysyx_24100006_axi_arbiter (
     // IFU 读通道
     assign ifu_axi_arready  =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_arready : 1'b0;
     assign ifu_axi_rvalid   =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_rvalid  : 1'b0;
-    assign ifu_axi_rresp    =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_rresp   : 1'b0;
+    assign ifu_axi_rresp    =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_rresp   : 2'b0;
     // assign ifu_axi_rdata    =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_rdata   : 32'b0;
 
     // MEMU 读通道
     assign mem_axi_arready  =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_arready : 1'b0;
     assign mem_axi_rvalid   =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_rvalid  : 1'b0;
-    assign mem_axi_rresp    =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_rresp   : 1'b0;
+    assign mem_axi_rresp    =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_rresp   : 2'b0;
     // assign mem_axi_rdata    =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_rdata   : 32'b0; 
 
     // MEMU 写通道
@@ -164,11 +166,44 @@ module ysyx_24100006_axi_arbiter (
     assign mem_axi_rdata = mem_rdata_reg;
 
 
+    // ================== SRAM写仲裁状态机 ==================
+    parameter   W_IDLE = 0, W_BUSY = 1;
+
+    reg [1:0] axi_state_w;                // AXI目前的状态
+    reg [2:0] write_targeted_module;     // 当前是哪一个模块进行读操作
+    // ================== 写操作 ==================
+    always @(posedge clk) begin
+        if(reset) begin
+            axi_state_w             <= IDLE;
+            write_targeted_module   <= ARB_IDLE;
+        end else begin
+            case(axi_state_w)
+                W_IDLE: begin     // 空闲状态
+                    // 固定优先级
+                    // MEMU优先策略
+                    if(mem_axi_awvalid == 1'b1) begin
+                        axi_state_w             <= W_BUSY;
+                        write_targeted_module   <= ARB_MEMU_WRITE;
+                    end
+                end
+
+                W_BUSY: begin     // 总线不是空闲状态
+                    // 现在只是针对单次传输，没有突发传输，表示一次读传输完成
+                    if(sram_axi_bready == 1'b1 && sram_axi_bvalid == 1'b1) begin
+                        axi_state_w             <= W_IDLE;
+                        write_targeted_module   <= ARB_IDLE;
+                    end
+                end
+            endcase
+        end
+    end
+
     // SRAM 写通道
     assign sram_axi_awvalid =   mem_axi_awvalid;
     assign sram_axi_wvalid  =   mem_axi_wvalid;
     assign sram_axi_bready  =   mem_axi_bready;
-    assign sram_axi_awaddr  =   mem_axi_awaddr;
+    // assign sram_axi_awaddr  =   mem_axi_awaddr;
+    assign sram_axi_awaddr  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;
     assign sram_axi_wdata   =   mem_axi_wdata;
     assign sram_axi_wstrb   =   mem_axi_wstrb;
 
