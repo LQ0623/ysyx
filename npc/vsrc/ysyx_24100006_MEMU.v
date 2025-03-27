@@ -75,7 +75,7 @@ module ysyx_24100006_memu(
 );
 
 	// TAG:也需要使用读写使能来进行状态的转移
-	// TODO:状态转移的选择可以在controller在拉一条线出来，表示读还是写，load和store指令会使用到
+	// TAG:读操作、写操作或者不操作内存这三种状态之间的转移的选择是在controller单独拉一条线出来，表示是读操作、写操作还是不操作内存
 
 	reg [31:0] locked_addr;  // 地址锁存
     reg [31:0] locked_data;  // 数据锁存
