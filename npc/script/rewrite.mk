@@ -1,4 +1,4 @@
-include Vysyx_24100006_cpu.mk
+include Vysyx_24100006.mk
 
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
@@ -21,7 +21,7 @@ ifeq ($(ENABLE_TRACE), 1)
 endif
 
 # 是否记录执行的指令到log文件中
-ENABLE_ITRACE ?= 1
+ENABLE_ITRACE ?= 0
 ifeq ($(ENABLE_ITRACE), 1)
     CPPFLAGS += -DCONFIG_ITRACE
 endif

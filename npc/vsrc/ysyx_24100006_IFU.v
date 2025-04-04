@@ -23,6 +23,10 @@ module ysyx_24100006_ifu(
 	input 	reg 		axi_bvalid,
 	output 	reg 		axi_bready,
 
+	// 新增AXI信号
+	output 	reg	[7:0]	axi_arlen,
+	output 	reg	[2:0]	axi_arsize,
+	input 	reg			axi_rlast,
 
 	// 握手信号
 	input 				id_ready,
@@ -49,6 +53,9 @@ module ysyx_24100006_ifu(
 			axi_awvalid		<= 1'b0;
 			axi_wvalid		<= 1'b0;
 			axi_bready		<= 1'b0;
+
+			axi_arlen		<= 8'b0;
+			axi_arsize		<= 3'b010;	// 一次传输四个字节
 
 			delay_counter	<= 3;
 		end else begin

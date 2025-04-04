@@ -5,7 +5,7 @@
 #include <device.h>
 #include <../monitor/sdb/sdb.h>
 
-Vysyx_24100006_cpu *cpu;
+Vysyx_24100006 *cpu;
 
 extern "C" void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 static void statistic();
@@ -142,14 +142,14 @@ void cpu_exec(uint32_t n){
 		// 	printf("this is %d s\n\n",count++);
 		// }
 
-		prev_pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
+		prev_pc = cpu->rootp -> ysyx_24100006__DOT__pc_FD;
 		exec_once();
 		snpc = pc + 4;
-		inst = cpu->rootp -> ysyx_24100006_cpu__DOT__sram_axi_rdata;
-		pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
-		dnpc = cpu->rootp -> ysyx_24100006_cpu__DOT__npc_EF;
-		PCW = cpu->rootp -> ysyx_24100006_cpu__DOT__PCW;
-		if_valid = cpu -> rootp -> ysyx_24100006_cpu__DOT__if_valid;
+		// inst = cpu->rootp -> ysyx_24100006__DOT__sram_axi_rdata;
+		pc = cpu->rootp -> ysyx_24100006__DOT__pc_FD;
+		dnpc = cpu->rootp -> ysyx_24100006__DOT__npc_EF;
+		PCW = cpu->rootp -> ysyx_24100006__DOT__PCW;
+		if_valid = cpu -> rootp -> ysyx_24100006__DOT__if_valid;
 		// printf("inst is %#x\n",inst);
 		// printf("if_valid is %d\t",if_valid);
 		// printf("PCW is %d\t",PCW);

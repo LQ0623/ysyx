@@ -12,7 +12,7 @@ module ysyx_24100006_clint #(
     input [31:0]        axi_awaddr,
     // axi 写入数据和写入使用的掩码
     input [31:0]        axi_wdata,
-    input [7:0]         axi_wstrb,
+    input [7:0]         axi_bytes,
 
     // axi控制信号
     // read data addr

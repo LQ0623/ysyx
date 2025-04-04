@@ -16,7 +16,7 @@ module ysyx_24100006_axi_xbar #(
     input         m_axi_wvalid,
     output        m_axi_wready,
     input  [31:0] m_axi_wdata,
-    input  [7:0]  m_axi_wstrb,
+    input  [7:0]  m_axi_bytes,
     
     output        m_axi_bvalid,
     input         m_axi_bready,
@@ -32,6 +32,17 @@ module ysyx_24100006_axi_xbar #(
     output [31:0] m_axi_rdata,
     output [1:0]  m_axi_rresp,
 
+    // AXI新增信号
+    // 读通道
+	input [7:0]  m_axi_arlen,
+	input [2:0]  m_axi_arsize,
+	output       m_axi_rlast,
+	// 写通道
+	input [7:0]	 m_axi_awlen,
+	input [2:0]	 m_axi_awsize,
+	input [3:0]	 m_axi_wstrb,
+	input        m_axi_wlast,
+
     // SRAM从设备
     output        sram_axi_awvalid,
     input         sram_axi_awready,
@@ -40,7 +51,7 @@ module ysyx_24100006_axi_xbar #(
     output        sram_axi_wvalid,
     input         sram_axi_wready,
     output [31:0] sram_axi_wdata,
-    output [7:0]  sram_axi_wstrb,
+    output [7:0]  sram_axi_bytes,
     
     input         sram_axi_bvalid,
     output        sram_axi_bready,
@@ -54,6 +65,16 @@ module ysyx_24100006_axi_xbar #(
     output        sram_axi_rready,
     input  [31:0] sram_axi_rdata,
     input  [1:0]  sram_axi_rresp,
+    // 新增AXI信号
+	// 读通道
+	output 	[7:0]	sram_axi_arlen,
+	output 	[2:0]	sram_axi_arsize,
+	input 			sram_axi_rlast,
+	// 写通道
+	output 	[7:0]	sram_axi_awlen,
+	output 	[2:0]	sram_axi_awsize,
+	output 	[3:0]	sram_axi_wstrb,
+	output 			sram_axi_wlast,
 
     // UART从设备
     output        uart_axi_awvalid,
@@ -63,7 +84,7 @@ module ysyx_24100006_axi_xbar #(
     output        uart_axi_wvalid,
     input         uart_axi_wready,
     output [31:0] uart_axi_wdata,
-    output [7:0]  uart_axi_wstrb,
+    output [7:0]  uart_axi_bytes,
     
     input         uart_axi_bvalid,
     output        uart_axi_bready,
@@ -86,7 +107,7 @@ module ysyx_24100006_axi_xbar #(
     output        clint_axi_wvalid,
     input         clint_axi_wready,
     output [31:0] clint_axi_wdata,
-    output [7:0]  clint_axi_wstrb,
+    output [7:0]  clint_axi_bytes,
     
     input         clint_axi_bvalid,
     output        clint_axi_bready,
@@ -121,7 +142,7 @@ module ysyx_24100006_axi_xbar #(
     assign sram_axi_awaddr      = sel_sram ? m_axi_awaddr   : 32'h0;
     assign sram_axi_wvalid      = sel_sram ? m_axi_wvalid   : 0;
     assign sram_axi_wdata       = sel_sram ? m_axi_wdata    : 32'h0;
-    assign sram_axi_wstrb       = sel_sram ? m_axi_wstrb    : 8'h0;
+    assign sram_axi_bytes       = sel_sram ? m_axi_bytes    : 8'h0;
     assign sram_axi_bready      = sel_sram ? m_axi_bready   : 0;
 
     // UART
@@ -129,7 +150,7 @@ module ysyx_24100006_axi_xbar #(
     assign uart_axi_awaddr      = sel_uart ? m_axi_awaddr   : 32'h0;
     assign uart_axi_wvalid      = sel_uart ? m_axi_wvalid   : 0;
     assign uart_axi_wdata       = sel_uart ? m_axi_wdata    : 32'h0;
-    assign uart_axi_wstrb       = sel_uart ? m_axi_wstrb    : 8'h0;
+    assign uart_axi_bytes       = sel_uart ? m_axi_bytes    : 8'h0;
     assign uart_axi_bready      = sel_uart ? m_axi_bready   : 0;
 
     // CLINT
@@ -137,7 +158,7 @@ module ysyx_24100006_axi_xbar #(
     assign clint_axi_awaddr     = sel_clint ? m_axi_awaddr   : 32'h0;
     assign clint_axi_wvalid     = sel_clint ? m_axi_wvalid   : 0;
     assign clint_axi_wdata      = sel_clint ? m_axi_wdata    : 32'h0;
-    assign clint_axi_wstrb      = sel_clint ? m_axi_wstrb    : 8'h0;
+    assign clint_axi_bytes      = sel_clint ? m_axi_bytes    : 8'h0;
     assign clint_axi_bready     = sel_clint ? m_axi_bready   : 0;
 
     // 读通道路由
@@ -189,6 +210,15 @@ module ysyx_24100006_axi_xbar #(
     assign m_axi_rresp      = sel_sram ? sram_axi_rresp :
                                 sel_uart ? uart_axi_rresp : 
                                 sel_clint ? clint_axi_rresp : 2'b00;
+
+    // 新增AXI信号
+    assign m_axi_rlast      = sram_axi_rlast;
+    assign sram_axi_arlen   = m_axi_arlen;
+    assign sram_axi_arsize  = m_axi_arsize;
+    assign sram_axi_awlen   = m_axi_awlen;
+    assign sram_axi_awsize  = m_axi_awsize;
+    assign sram_axi_wstrb   = m_axi_wstrb;
+    assign sram_axi_wlast   = m_axi_wlast;
 
 endmodule
 

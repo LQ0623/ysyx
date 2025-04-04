@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <Vysyx_24100006_cpu.h>
+#include <Vysyx_24100006.h>
 #define RESET_VECTOR 0x80000000
 #define REGNUM 32
-extern Vysyx_24100006_cpu *cpu;
+extern Vysyx_24100006 *cpu;
 extern uint32_t gpr[REGNUM];
 extern uint32_t csr[4];
 extern const char *regs[];

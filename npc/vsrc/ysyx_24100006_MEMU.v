@@ -45,6 +45,17 @@ module ysyx_24100006_memu(
 	input 	reg 		axi_bvalid,
 	output 	reg 		axi_bready,
 
+	// 新增AXI信号
+	// 读通道
+	output 	reg	[7:0]	axi_arlen,
+	output 	reg	[2:0]	axi_arsize,
+	input 	reg			axi_rlast,
+	// 写通道
+	output 	reg	[7:0]	axi_awlen,
+	output 	reg	[2:0]	axi_awsize,
+	output 	reg [3:0]	axi_wstrb,
+	output	reg			axi_wlast,
+
 
 	// 握手机制使用
 	input 				exe_valid,
@@ -97,9 +108,15 @@ module ysyx_24100006_memu(
 			// axi 握手信号初始化
 			axi_arvalid <= 0;
             axi_awvalid <= 0;
-            axi_wvalid <= 0;
-            axi_rready <= 0;
-            axi_bready <= 0;
+            axi_wvalid 	<= 0;
+            axi_rready 	<= 0;
+            axi_bready 	<= 0;
+
+			axi_arlen	<= 8'b0;
+			axi_arsize	<= 3'b0;
+			axi_awlen	<= 8'b0;
+			axi_awsize	<= 3'b0;
+			axi_wstrb	<= 4'b0;
 
 			// 模块握手使用
 			mem_valid	<= 1'b0;
@@ -117,6 +134,11 @@ module ysyx_24100006_memu(
 							locked_addr 	<= alu_result_M;
 							locked_data 	<= rs2_data_M;
 
+							// 传输需要读多少个字节
+							axi_arsize		<= 	(Mem_RMask_M == 0 || Mem_RMask_M == 1) ? 3'b000 :
+												(Mem_RMask_M == 2 || Mem_RMask_M == 3) ? 3'b001 :
+												(Mem_RMask_M == 4) ? 3'b010 : 3'b0;
+
 							// axi握手
 							axi_arvalid		<= 1'b1;
 							state			<= READ_ADDR;
@@ -124,6 +146,11 @@ module ysyx_24100006_memu(
 							// 锁存地址和数据
 							locked_addr 	<= alu_result_M;
 							locked_data 	<= rs2_data_M;
+
+							// 传输需要写多少个字节
+							axi_awsize		<= 	(Mem_WMask_M == 1) ? 3'b000 :
+												(Mem_WMask_M == 3) ? 3'b001 :
+												(Mem_WMask_M == 15)? 3'b010 : 3'b0;
 
 							// 地址和数据同时发送，这样效率最高
 							axi_awvalid		<= 1'b1;
@@ -183,6 +210,10 @@ module ysyx_24100006_memu(
 					mem_valid	<= 1'b1;
 					// mem_ready	<= 1'b0;
 					state		<= S_ACCESS;
+
+					// 将读取字节和写入字节复位
+					axi_arsize	<= 3'b0;
+					axi_awsize	<= 3'b0;
 				end
 				S_ACCESS: begin
 					if(mem_valid && wb_ready) begin
