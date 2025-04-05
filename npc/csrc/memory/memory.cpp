@@ -37,6 +37,11 @@ void init_mem(size_t size){
 
 uint8_t *guest_to_host(uint32_t paddr){return pmem + (paddr - RESET_VECTOR);}
 
+
+extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
+extern "C" void mrom_read(int32_t addr, int32_t *data) { assert(0); }
+
+
 extern "C" uint32_t pmem_read(uint32_t paddr){
 	if(!((paddr >= 0x80000000 && paddr <= 0x87ffffff) || (paddr == RTC_ADDR) || (paddr == RTC_ADDR + 4) || (paddr == KBD_ADDR))) 
 		return 0;

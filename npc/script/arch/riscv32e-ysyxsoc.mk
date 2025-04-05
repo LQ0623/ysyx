@@ -1,3 +1,4 @@
+#top name
 TOPNAME = ysyxSoCFull
 
 #ysyxSoC

@@ -1,89 +1,51 @@
-// TAG:这份能跑
 module ysyx_24100006(
-	input               	clk,
-    input               	reset
+	input			clock,
+    input			reset,
+
+	input 			io_interrupt,
 
 	//-----------------------------
     // AXI4 主设备接口 (物理总线侧)
     //-----------------------------
     // 写地址通道
-	// input			io_master_awready,
-	// output			io_master_awvalid,
-	// output  [31:0]  io_master_awaddr,
-	// output  [3:0]  	io_master_awid,
-	// output  [7:0]  	io_master_awlen,
-	// output  [2:0]  	io_master_awsize,
-	// output  [1:0]  	io_master_awburst,
+	input			io_master_awready,
+	output			io_master_awvalid,
+	output  [31:0]  io_master_awaddr,
+	output  [3:0]  	io_master_awid,
+	output  [7:0]  	io_master_awlen,
+	output  [2:0]  	io_master_awsize,
+	output  [1:0]  	io_master_awburst,
 
-	// // 写数据通道
-	// input			io_master_wready,
-	// output          io_master_wvalid,
-	// output  [31:0]  io_master_wdata,
-	// output  [3:0]  	io_master_wstrb,
-	// output  		io_master_wlast,
+	// 写数据通道
+	input			io_master_wready,
+	output          io_master_wvalid,
+	output  [31:0]  io_master_wdata,
+	output  [3:0]  	io_master_wstrb,
+	output  		io_master_wlast,
 
-	// // 写响应通道
-	// output			io_master_bready,
-	// input			io_master_bvalid,
-	// input   [1:0]  	io_master_bresp,
-	// input   [3:0]  	io_master_bid,
+	// 写响应通道
+	output			io_master_bready,
+	input			io_master_bvalid,
+	input   [1:0]  	io_master_bresp,
+	input   [3:0]  	io_master_bid,
 
-	// // 读地址通道
-	// input           io_master_arready,
-	// output          io_master_arvalid,
-	// output  [31:0]  io_master_araddr,
-	// output  [3:0]  	io_master_arid,
-	// output  [7:0]  	io_master_arlen,
-	// output  [2:0]  	io_master_arsize,
-	// output  [1:0]  	io_master_arburst,
+	// 读地址通道
+	input           io_master_arready,
+	output          io_master_arvalid,
+	output  [31:0]  io_master_araddr,
+	output  [3:0]  	io_master_arid,
+	output  [7:0]  	io_master_arlen,
+	output  [2:0]  	io_master_arsize,
+	output  [1:0]  	io_master_arburst,
 
-	// // 读数据通道
-	// output  		io_master_rready,
-	// input           io_master_rvalid,
-	// input   [1:0]  	io_master_rresp,
-	// input   [31:0]  io_master_rdata,
-	// input           io_master_rlast,
-	// input   [3:0]  	io_master_rid
+	// 读数据通道
+	output  		io_master_rready,
+	input           io_master_rvalid,
+	input   [1:0]  	io_master_rresp,
+	input   [31:0]  io_master_rdata,
+	input           io_master_rlast,
+	input   [3:0]  	io_master_rid
 );
-
-// 写地址通道
-wire            io_master_awready;  // 原 input
-wire            io_master_awvalid; // 原 output
-wire [31:0]     io_master_awaddr;  // 原 output
-wire [3:0]      io_master_awid;    // 原 output
-wire [7:0]      io_master_awlen;   // 原 output
-wire [2:0]      io_master_awsize;  // 原 output
-wire [1:0]      io_master_awburst; // 原 output
-
-// 写数据通道
-wire            io_master_wready;  // 原 input
-wire            io_master_wvalid;  // 原 output
-wire [31:0]     io_master_wdata;   // 原 output
-wire [3:0]      io_master_wstrb;   // 原 output
-wire            io_master_wlast;   // 原 output
-
-// 写响应通道
-wire            io_master_bready;  // 原 output
-wire            io_master_bvalid;  // 原 input
-wire [1:0]      io_master_bresp;   // 原 input
-wire [3:0]      io_master_bid;     // 原 input
-
-// 读地址通道
-wire            io_master_arready; // 原 input
-wire            io_master_arvalid; // 原 output
-wire [31:0]     io_master_araddr;  // 原 output
-wire [3:0]      io_master_arid;    // 原 output
-wire [7:0]      io_master_arlen;   // 原 output
-wire [2:0]      io_master_arsize;  // 原 output
-wire [1:0]      io_master_arburst; // 原 output
-
-// 读数据通道
-wire            io_master_rready;  // 原 output
-wire            io_master_rvalid;  // 原 input
-wire [1:0]      io_master_rresp;   // 原 input
-wire [31:0]     io_master_rdata;   // 原 input
-wire            io_master_rlast;   // 原 input
-wire [3:0]      io_master_rid;     // 原 input
 
 	// 模块的信号
 	// EXEU -> IFU
@@ -224,7 +186,7 @@ wire [3:0]      io_master_rid;     // 原 input
 	reg	[3:0]	axi_wstrb_mem;
 	reg			axi_wlast_mem;
     
-	// 两个SRAM和为一个SRAM之后新实例化一个mem
+	// 下面的SRAM_axi_信号是指从xbar输出的信号，连接到axi模块的，本来是连接到存储SRAM（即mem）
 	// 读地址通道
 	wire       		sram_axi_arvalid;
     wire       		sram_axi_arready;
@@ -256,99 +218,6 @@ wire [3:0]      io_master_rid;     // 原 input
 	wire [2:0]		sram_axi_awsize;
 	wire [3:0]		sram_axi_wstrb;
 	wire			sram_axi_wlast;
-	
-	ysyx_24100006_mem mem(
-		.clk(clk),
-		.reset(reset),
-		
-		// axi 写入和读取地址
-		.axi_araddr(io_master_araddr),
-		.axi_awaddr(io_master_awaddr),
-		// axi 写入数据和写入使用的掩码
-		.axi_wdata(io_master_wdata),
-		.axi_bytes(sram_axi_bytes),
-
-		// axi控制信号
-		// read data addr
-		.axi_arvalid(io_master_arvalid),
-		.axi_arready(io_master_arready),
-		// read data
-		.axi_rready(io_master_rready),
-		.axi_rvalid(io_master_rvalid),
-		// write data addr
-		.axi_awvalid(io_master_awvalid),
-		.axi_awready(io_master_awready),
-		// write data
-		.axi_wvalid(io_master_wvalid),
-		.axi_wready(io_master_wready),
-		// response
-		.axi_bready(io_master_bready),
-		.axi_bvalid(io_master_bvalid),
-		.axi_bresp(io_master_bresp),
-
-		// axi读取的回应
-		.axi_rresp(io_master_rresp),
-		// axi读取的数据
-		.axi_rdata(io_master_rdata)
-	);
-
-	// TAG:UART实例化
-	// 读地址通道
-	wire       		uart_axi_arvalid;
-    wire       		uart_axi_arready;
-    wire [31:0]  	uart_axi_araddr;
-    // 读数据通道
-    wire         	uart_axi_rvalid;
-    wire        	uart_axi_rready;
-    wire [1:0]		uart_axi_rresp;
-    wire [31:0]   	uart_axi_rdata;
-    // 写地址通道
-    wire         	uart_axi_awvalid;
-    wire          	uart_axi_awready;
-    wire [31:0]  	uart_axi_awaddr;
-    // 写数据通道
-    wire          	uart_axi_wvalid;
-    wire        	uart_axi_wready;
-    wire [31:0] 	uart_axi_wdata;
-    wire [7:0]   	uart_axi_bytes;
-    // 写响应通道
-    wire         	uart_axi_bvalid;
-    wire        	uart_axi_bready;
-    wire [1:0]  	uart_axi_bresp;
-
-	ysyx_24100006_uart uart(
-		.clk(clk),
-		.reset(reset),
-		
-		// axi 写入和读取地址
-		.axi_araddr(uart_axi_araddr),
-		.axi_awaddr(uart_axi_awaddr),
-		// axi 写入数据和写入使用的掩码
-		.axi_wdata(uart_axi_wdata),
-		.axi_bytes(uart_axi_bytes),
-		// axi控制信号
-		// read data addr
-		.axi_arvalid(uart_axi_arvalid),
-		.axi_arready(uart_axi_arready),
-		// read data
-		.axi_rready(uart_axi_rready),
-		.axi_rvalid(uart_axi_rvalid),
-		// write data addr
-		.axi_awvalid(uart_axi_awvalid),
-		.axi_awready(uart_axi_awready),
-		// write data
-		.axi_wvalid(uart_axi_wvalid),
-		.axi_wready(uart_axi_wready),
-		// response
-		.axi_bready(uart_axi_bready),
-		.axi_bvalid(uart_axi_bvalid),
-		.axi_bresp(uart_axi_bresp),
-
-		// axi读取的回应
-		.axi_rresp(uart_axi_rresp),
-		// axi读取的数据
-		.axi_rdata(uart_axi_rdata)
-	);
 
 	// TAG: 时钟相关的部分
 	// CLINT实例化
@@ -376,7 +245,7 @@ wire [3:0]      io_master_rid;     // 原 input
     wire [1:0]  	clint_axi_bresp;
 
 	ysyx_24100006_clint clint(
-		.clk(clk),
+		.clk(clock),
 		.reset(reset),
 		
 		// axi 写入和读取地址
@@ -444,7 +313,7 @@ wire [3:0]      io_master_rid;     // 原 input
 
 	// 仲裁器
 	ysyx_24100006_axi_arbiter arbiter(
-		.clk(clk),
+		.clk(clock),
 		.reset(reset),
 
 		// ================== IFU接口 ==================
@@ -540,7 +409,7 @@ wire [3:0]      io_master_rid;     // 原 input
 		.AXI_BURST_WIDTH   (2)
 	) u_axi4_inst (
 		// 全局信号
-		.clk                      (clk),
+		.clk                      (clock),
 		.reset                    (reset),
 		
 		//-----------------------------
@@ -626,7 +495,7 @@ wire [3:0]      io_master_rid;     // 原 input
 
 	ysyx_24100006_axi_xbar xbar (
 		// 时钟和复位
-		.clk(clk),
+		.clk(clock),
 		.reset(reset),
 		.mem_ready(mem_ready),
 		
@@ -697,30 +566,6 @@ wire [3:0]      io_master_rid;     // 原 input
 		.sram_axi_wstrb(sram_axi_wstrb),
 		.sram_axi_wlast(sram_axi_wlast),
 
-		// UART 从设备接口 (写通道)
-		.uart_axi_awvalid(uart_axi_awvalid),
-		.uart_axi_awready(uart_axi_awready),
-		.uart_axi_awaddr(uart_axi_awaddr),
-		
-		.uart_axi_wvalid(uart_axi_wvalid),
-		.uart_axi_wready(uart_axi_wready),
-		.uart_axi_wdata(uart_axi_wdata),
-		.uart_axi_bytes(uart_axi_bytes),
-		
-		.uart_axi_bvalid(uart_axi_bvalid),
-		.uart_axi_bready(uart_axi_bready),
-		.uart_axi_bresp(uart_axi_bresp),
-
-		// UART 从设备接口 (读通道)
-		.uart_axi_arvalid(uart_axi_arvalid),
-		.uart_axi_arready(uart_axi_arready),
-		.uart_axi_araddr(uart_axi_araddr),
-		
-		.uart_axi_rvalid(uart_axi_rvalid),
-		.uart_axi_rready(uart_axi_rready),
-		.uart_axi_rdata(uart_axi_rdata),
-		.uart_axi_rresp(uart_axi_rresp),
-
 		// CLINT 从设备接口 (写通道)
 		.clint_axi_awvalid(clint_axi_awvalid),
 		.clint_axi_awready(clint_axi_awready),
@@ -747,7 +592,7 @@ wire [3:0]      io_master_rid;     // 原 input
 	);
 
 	ysyx_24100006_ifu IF(
-		.clk(clk),
+		.clk(clock),
 		.reset(reset),
 		.npc(npc_EF),
 		// AXI 接口信号
@@ -778,7 +623,7 @@ wire [3:0]      io_master_rid;     // 原 input
 	);
 	
 	ysyx_24100006_idu ID(
-		.clk(clk),
+		.clk(clock),
 		.reset(reset),
 		.instruction(instruction),
 		.PCW(PCW),
@@ -821,7 +666,7 @@ wire [3:0]      io_master_rid;     // 原 input
 	);
 
 	ysyx_24100006_exeu EXE(
-		.clk(clk),
+		.clk(clock),
 		.reset(reset),
 		.pc_E(pc_DE),
 		.sext_imm_E(sext_imm_DE),
@@ -868,7 +713,7 @@ wire [3:0]      io_master_rid;     // 原 input
 	);
 
 	ysyx_24100006_memu MEM(
-		.clk(clk),
+		.clk(clock),
 		.reset(reset),
 		.sram_read_write(sram_read_write),
 		.pc_M(pc_EM),
@@ -935,7 +780,7 @@ wire [3:0]      io_master_rid;     // 原 input
 	);
 
 	ysyx_24100006_wbu WB(
-		.clk(clk),
+		.clk(clock),
 		.reset(reset),
 		.pc(pc_MW),
 		.sext_imm(sext_imm_MW),
