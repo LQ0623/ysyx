@@ -1,13 +1,27 @@
 #ifndef __CIRCUIT_H__
 #define __CIRCUIT_H__
-#include <Vysyx_24100006.h>
+
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 #include <svdpi.h>
+#ifdef CONFIG_SOC
+#include <VysyxSoCFull.h>
+#include <VysyxSoCFull__Dpi.h>
+#include <VysyxSoCFull___024root.h>
+#else
+#include <Vysyx_24100006.h>
 #include <Vysyx_24100006__Dpi.h>
 #include <Vysyx_24100006___024root.h>
+#endif
+
 #include <common.h>
-extern Vysyx_24100006 *cpu;
+#ifdef CONFIG_SOC
+#define CPU VysyxSoCFull
+extern CPU *cpu;
+#else
+#define CPU Vysyx_24100006
+extern CPU *cpu;
+#endif
 extern word_t inst,pc,dnpc;
 //circuit
 void single_cycle();

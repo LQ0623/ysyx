@@ -1,9 +1,12 @@
-include Vysyx_24100006.mk
+# MAKE_FILE = V$(TOPNAME).mk
+# $(info TOPNAME in rewrite.mk: $(TOPNAME))
+# include $(MAKE_FILE)
+include VysyxSoCFull.mk
 
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
 # 是否开启波形生成
-ENABLE_WAVE ?= 0
+ENABLE_WAVE ?= 1
 ifeq ($(ENABLE_WAVE), 1)
     CPPFLAGS += -DCONFIG_DUMP_WAVE
 endif
@@ -42,6 +45,12 @@ endif
 ENABLE_DIFFTEST ?= 1
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
+endif
+
+# 是否是接入ysyxsoc
+ENABLE_SOC  ?= 1
+ifeq ($(ENABLE_SOC), 1)
+    CPPFLAGS += -DCONFIG_SOC
 endif
 
 ENABLE_DEVICE ?= 1

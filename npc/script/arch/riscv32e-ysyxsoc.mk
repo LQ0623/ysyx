@@ -16,4 +16,5 @@ VERILATOR_CFLAGS += $(VERILATOR_INC)
 VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
 # 将ysySoc/perip目录下面的所有的.v文件加入verilator的Verilog文件列表
 VSRCS += $(shell find $(abspath $(YSYXSoC)/perip) -name "*.v")
+VSRCS += $(shell find $(abspath $(YSYXSoC)/build) -name "*.v")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")

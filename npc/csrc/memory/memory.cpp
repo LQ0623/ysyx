@@ -39,7 +39,18 @@ uint8_t *guest_to_host(uint32_t paddr){return pmem + (paddr - RESET_VECTOR);}
 
 
 extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
-extern "C" void mrom_read(int32_t addr, int32_t *data) { assert(0); }
+extern "C" void mrom_read(int32_t addr, int32_t *data) {
+    // MROM 地址范围为 0x20000000 ~ 0x20000FFF（4KB）
+    constexpr int32_t MROM_BASE = 0x20000000;
+    constexpr int32_t MROM_SIZE = 0x1000;
+
+    if (addr >= MROM_BASE && addr < MROM_BASE + MROM_SIZE) {
+        *data = 0x00100073; // ebreak 指令
+    } else {
+        *data = 0; // 非法地址返回 0 或触发错误
+        // assert(0 && "Invalid MROM address");
+    }
+}
 
 
 extern "C" uint32_t pmem_read(uint32_t paddr){

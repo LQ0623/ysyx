@@ -12,12 +12,19 @@ module ysyx_24100006_pc(
 	// 	$display("npc is %h\n",npc);
     // end
 
-    ysyx_24100006_Reg #(32,32'h80000000) pc1(
+    // ysyx_24100006_Reg #(32,32'h80000000) pc1(
+	// 	.clk(clk),
+	// 	.rst(reset),
+	// 	.din(npc),
+	// 	.dout(pc),
+	// 	.wen(PCW)
+	// );	
+
+	ysyx_24100006_Reg #(32,32'h20000000) pc1(
 		.clk(clk),
 		.rst(reset),
 		.din(npc),
 		.dout(pc),
 		.wen(PCW)
 	);	
-
 endmodule

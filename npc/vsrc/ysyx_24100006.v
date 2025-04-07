@@ -44,8 +44,71 @@ module ysyx_24100006(
 	input   [1:0]  	io_master_rresp,
 	input   [31:0]  io_master_rdata,
 	input           io_master_rlast,
-	input   [3:0]  	io_master_rid
+	input   [3:0]  	io_master_rid,
+
+	//-----------------------------
+    // 写地址通道 (Slave 接收 Master 的请求)
+    //-----------------------------
+    output wire        io_slave_awready,  // Slave 准备好接收地址
+    input  wire        io_slave_awvalid,  // Master 地址有效
+    input  wire [31:0] io_slave_awaddr,   // 地址
+    input  wire [3:0]  io_slave_awid,     // 事务 ID
+    input  wire [7:0]  io_slave_awlen,    // 突发长度
+    input  wire [2:0]  io_slave_awsize,   // 突发大小
+    input  wire [1:0]  io_slave_awburst,  // 突发类型
+
+    //-----------------------------
+    // 写数据通道 (Slave 接收数据)
+    //-----------------------------
+    output wire        io_slave_wready,   // Slave 准备好接收数据
+    input  wire        io_slave_wvalid,   // Master 数据有效
+    input  wire [31:0] io_slave_wdata,    // 数据
+    input  wire [3:0]  io_slave_wstrb,    // 字节选通
+    input  wire        io_slave_wlast,    // 最后一个数据包
+
+    //-----------------------------
+    // 写响应通道 (Slave 返回响应)
+    //-----------------------------
+    input  wire        io_slave_bready,   // Master 准备好接收响应
+    output wire        io_slave_bvalid,   // Slave 响应有效
+    output wire [1:0]  io_slave_bresp,    // 响应状态
+    output wire [3:0]  io_slave_bid,      // 事务 ID
+
+    //-----------------------------
+    // 读地址通道 (Slave 接收读请求)
+    //-----------------------------
+    output wire        io_slave_arready,  // Slave 准备好接收地址
+    input  wire        io_slave_arvalid,  // Master 地址有效
+    input  wire [31:0] io_slave_araddr,   // 地址
+    input  wire [3:0]  io_slave_arid,     // 事务 ID
+    input  wire [7:0]  io_slave_arlen,    // 突发长度
+    input  wire [2:0]  io_slave_arsize,   // 突发大小
+    input  wire [1:0]  io_slave_arburst,  // 突发类型
+
+    //-----------------------------
+    // 读数据通道 (Slave 返回数据)
+    //-----------------------------
+    input  wire        io_slave_rready,   // Master 准备好接收数据
+    output wire        io_slave_rvalid,   // Slave 数据有效
+    output wire [1:0]  io_slave_rresp,    // 响应状态
+    output wire [31:0] io_slave_rdata,    // 数据
+    output wire        io_slave_rlast,    // 最后一个数据包
+    output wire [3:0]  io_slave_rid       // 事务 ID
 );
+	//-----------------------------
+	// 所有 output 信号强制置零
+	//-----------------------------
+	assign io_slave_awready  = 1'b0;   // 1-bit
+	assign io_slave_wready    = 1'b0;   // 1-bit
+	assign io_slave_bvalid    = 1'b0;   // 1-bit
+	assign io_slave_bresp     = 2'h0;   // 2-bit
+	assign io_slave_bid       = 4'h0;   // 4-bit
+	assign io_slave_arready   = 1'b0;   // 1-bit
+	assign io_slave_rvalid    = 1'b0;   // 1-bit
+	assign io_slave_rresp     = 2'h0;   // 2-bit
+	assign io_slave_rdata     = 32'h0;  // 32-bit
+	assign io_slave_rlast     = 1'b0;   // 1-bit
+	assign io_slave_rid       = 4'h0;   // 4-bit
 
 	// 模块的信号
 	// EXEU -> IFU
