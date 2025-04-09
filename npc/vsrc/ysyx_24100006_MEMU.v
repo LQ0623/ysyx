@@ -44,6 +44,18 @@ module ysyx_24100006_memu(
 	// response
 	input 	reg 		axi_bvalid,
 	output 	reg 		axi_bready,
+	input   [1:0]		axi_bresp,
+
+	// 新增AXI信号
+	// 读通道
+	output 	reg	[7:0]	axi_arlen,
+	output 	reg	[2:0]	axi_arsize,
+	input 	reg			axi_rlast,
+	// 写通道
+	output 	reg	[7:0]	axi_awlen,
+	output 	reg	[2:0]	axi_awsize,
+	output 	reg [3:0]	axi_wstrb,
+	output	reg			axi_wlast,
 
 
 	// 握手机制使用
@@ -89,17 +101,25 @@ module ysyx_24100006_memu(
 				WRITE_DATA 	= 4, 
 				WRITE_RESP 	= 5, 
 				S_DELAY 	= 6, 
-				S_ACCESS 	= 7;
-	reg [2:0] state;
+				S_ACCESS 	= 7,
+				S_LOCK		= 8;
+	reg [3:0] state;
 
 	always @(posedge clk) begin
 		if(reset) begin
 			// axi 握手信号初始化
 			axi_arvalid <= 0;
             axi_awvalid <= 0;
-            axi_wvalid <= 0;
-            axi_rready <= 0;
-            axi_bready <= 0;
+            axi_wvalid 	<= 0;
+            axi_rready 	<= 0;
+            axi_bready 	<= 0;
+
+			axi_arlen	<= 8'b0;
+			axi_arsize	<= 3'b010;
+			axi_awlen	<= 8'b0;
+			axi_awsize	<= 3'b010;
+			axi_wstrb	<= 4'b0;
+			axi_wlast	<= 1'b0;
 
 			// 模块握手使用
 			mem_valid	<= 1'b0;
@@ -107,33 +127,48 @@ module ysyx_24100006_memu(
 			state		<= S_IDLE;
 		end else begin
 			case(state) 
-				S_IDLE: begin
+				S_IDLE: begin	// S_IDLE阶段用于锁存数据
 					if(exe_valid && mem_ready) begin
 						// 表示现在mem模块正在处理数据，不能接受新的数据
 						mem_ready	<= 1'b0;
-						// axi 读取
-						if(sram_read_write == 2'b01) begin
+						if(sram_read_write == 2'b00) begin
 							// 锁存地址和数据
-							locked_addr 	<= alu_result_M;
-							locked_data 	<= rs2_data_M;
-
-							// axi握手
-							axi_arvalid		<= 1'b1;
-							state			<= READ_ADDR;
-						end else if(sram_read_write == 2'b10) begin
-							// 锁存地址和数据
-							locked_addr 	<= alu_result_M;
-							locked_data 	<= rs2_data_M;
-
-							// 地址和数据同时发送，这样效率最高
-							axi_awvalid		<= 1'b1;
-							axi_wvalid		<= 1'b1;
-							state			<= WRITE_ADDR;
-						end else begin
 							locked_addr 	<= 32'h0;
 							locked_data 	<= 32'h0;
-							state			<= S_DELAY;
+						end else begin
+							// 锁存地址和数据
+							locked_addr 	<= alu_result_M;
+							locked_data 	<= rs2_data_M;
 						end
+						state		<= S_LOCK;
+					end
+				end
+				S_LOCK: begin
+					// axi 读取
+					if(sram_read_write == 2'b01) begin
+						// 传输需要读多少个字节
+						axi_arsize		<= 	(Mem_RMask_M == 0 || Mem_RMask_M == 1) ? 3'b000 :
+											(Mem_RMask_M == 2 || Mem_RMask_M == 3) ? 3'b001 :
+											(Mem_RMask_M == 4) ? 3'b010 : 3'b010;
+
+						// axi握手
+						axi_arvalid		<= 1'b1;
+						state			<= READ_ADDR;
+					end else if(sram_read_write == 2'b10) begin
+
+						// 传输需要写多少个字节
+						axi_awsize		<= 	(Mem_WMask_M == 8'b00000001) ? 3'b000 :
+											(Mem_WMask_M == 8'b00000011) ? 3'b001 :
+											(Mem_WMask_M == 8'b00001111) ? 3'b010 : 3'b010;
+
+						// 地址和数据同时发送，这样效率最高
+						axi_awvalid		<= 1'b1;
+						axi_wvalid		<= 1'b1;
+						axi_wlast		<= 1'b1;	// 说明是最后一组数据
+						axi_wstrb		<= 4'b1;
+						state			<= WRITE_ADDR;
+					end else begin
+						state			<= S_DELAY;
 					end
 				end
 
@@ -161,9 +196,11 @@ module ysyx_24100006_memu(
 						axi_awvalid			<= 1'b0;
 						axi_wvalid			<= 1'b0;
 						axi_bready			<= 1'b1;
+						axi_wlast			<= 1'b0;
+						axi_wstrb			<= 4'b0;
 						state				<= WRITE_RESP;
 						
-						// state				<= WRITE_DATA
+						// state				<= WRITE_DATA;
 					end
 				end
 				WRITE_DATA: begin
@@ -183,6 +220,10 @@ module ysyx_24100006_memu(
 					mem_valid	<= 1'b1;
 					// mem_ready	<= 1'b0;
 					state		<= S_ACCESS;
+
+					// 将读取字节和写入字节复位
+					axi_arsize	<= 3'b0;
+					axi_awsize	<= 3'b010;
 				end
 				S_ACCESS: begin
 					if(mem_valid && wb_ready) begin

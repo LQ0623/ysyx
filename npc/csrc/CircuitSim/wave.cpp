@@ -6,7 +6,7 @@ void init_wave(){
     
 	contextp = new VerilatedContext;
 	m_trace = new VerilatedVcdC;
-	cpu = new Vysyx_24100006_cpu;
+	cpu = new CPU;
 	contextp->traceEverOn(true);
 	cpu->trace(m_trace, 5);
 	#ifdef CONFIG_DUMP_WAVE

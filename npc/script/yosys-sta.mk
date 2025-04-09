@@ -4,7 +4,7 @@
 PROJ_PATH = $(CURDIR)/..
 
 IEDA = $(PROJ_PATH)/yosys-sta/bin/iEDA
-DESIGN ?= ysyx_24100006_cpu
+DESIGN ?= ysyx_24100006
 SDC_FILE ?= $(PROJ_PATH)/vsrc/cpu.sdc
 # RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v")
 RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v" \

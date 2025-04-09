@@ -1,5 +1,4 @@
-#top name
-TOPNAME = ysyx_24100006_cpu
+TOPNAME ?= ysyxSoCFull
 
 #设置构建文件夹信息
 BUILD_DIR = ./build
@@ -16,13 +15,11 @@ export VERILATOR_ROOT
 VERILATOR = $(VERILATOR_ROOT)/bin/verilator
 endif
 
-#verilator flag
-VERILATOR_CFLAGS += -MMD -cc -O3 --x-assign fast --x-initial fast --noassert
-VERILATOR_CFLAGS += --trace
-
-#source code
-VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
-CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+# ARCH logic
+# ARCH ?= riscv32e-npc
+ARCH ?= riscv32e-ysyxsoc
+# Print build info message
+-include $(NPC_HOME)/script/arch/$(ARCH).mk
 
 #sim
 include $(NPC_HOME)/script/sim.mk

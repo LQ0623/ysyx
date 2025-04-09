@@ -5,7 +5,7 @@
 #include <device.h>
 #include <../monitor/sdb/sdb.h>
 
-Vysyx_24100006_cpu *cpu;
+CPU *cpu;
 
 extern "C" void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 static void statistic();
@@ -23,12 +23,12 @@ static uint8_t opcode;
 static bool is_change = false;	// 监视点是否有改变
 
 void single_cycle(){  //  0 --> 0 > 1 --> 1 > 0 this is a cycle in cpu  _|-|_|-
-	cpu->clk=0;   //negedge 1->0 no
+	cpu->clock=0;   //negedge 1->0 no
     cpu->eval();  //process 0->0 refresh combination logic and make them stable
 	#ifdef CONFIG_DUMP_WAVE
 		dump_wave_inc();
 	#endif
-	cpu->clk=1;   //posedge 0->1 refresh sequential logic
+	cpu->clock=1;   //posedge 0->1 refresh sequential logic
     cpu->eval();  //process 1->1 refresh sequential logic(sim)
 	#ifdef CONFIG_DUMP_WAVE
 		dump_wave_inc();
@@ -142,14 +142,14 @@ void cpu_exec(uint32_t n){
 		// 	printf("this is %d s\n\n",count++);
 		// }
 
-		prev_pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
+		prev_pc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__pc_FD;
 		exec_once();
 		snpc = pc + 4;
-		inst = cpu->rootp -> ysyx_24100006_cpu__DOT__sram_axi_rdata;
-		pc = cpu->rootp -> ysyx_24100006_cpu__DOT__pc_FD;
-		dnpc = cpu->rootp -> ysyx_24100006_cpu__DOT__npc_EF;
-		PCW = cpu->rootp -> ysyx_24100006_cpu__DOT__PCW;
-		if_valid = cpu -> rootp -> ysyx_24100006_cpu__DOT__if_valid;
+		inst = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__sram_axi_rdata;
+		pc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__pc_FD;
+		dnpc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__npc_EF;
+		// PCW = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__PCW;
+		if_valid = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__axi_rready_if;	// if_valid为高表示已经取到了指令
 		// printf("inst is %#x\n",inst);
 		// printf("if_valid is %d\t",if_valid);
 		// printf("PCW is %d\t",PCW);

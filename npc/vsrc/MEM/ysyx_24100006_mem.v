@@ -10,7 +10,7 @@ module ysyx_24100006_mem(
     input [31:0]        axi_awaddr,
     // axi 写入数据和写入使用的掩码
     input [31:0]        axi_wdata,
-    input [7:0]         axi_wstrb,
+    input [7:0]         axi_bytes,
 
     // axi控制信号
     // read data addr
@@ -92,7 +92,7 @@ module ysyx_24100006_mem(
                     axi_wready          <= 1'b0;
                     if(axi_awvalid == 1'b1 && axi_awready == 1'b1 && axi_wvalid == 1'b1 && axi_wready == 1'b1) begin
                         // 写入数据
-                        pmem_write(axi_awaddr,axi_wdata,axi_wstrb);
+                        pmem_write(axi_awaddr,axi_wdata,axi_bytes);
                         axi_bvalid      <= 1'b1;
                         axi_bresp       <= 2'b00;
                         state           <= S_WRITE_RESP;

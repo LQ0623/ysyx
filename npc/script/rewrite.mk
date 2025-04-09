@@ -1,9 +1,12 @@
-include Vysyx_24100006_cpu.mk
+# MAKE_FILE = V$(TOPNAME).mk
+# $(info TOPNAME in rewrite.mk: $(TOPNAME))
+# include $(MAKE_FILE)
+include VysyxSoCFull.mk
 
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
 # 是否开启波形生成
-ENABLE_WAVE ?= 0
+ENABLE_WAVE ?= 1
 ifeq ($(ENABLE_WAVE), 1)
     CPPFLAGS += -DCONFIG_DUMP_WAVE
 endif
@@ -21,7 +24,8 @@ ifeq ($(ENABLE_TRACE), 1)
 endif
 
 # 是否记录执行的指令到log文件中
-ENABLE_ITRACE ?= 1
+# 记录执行过的指令的功能不要开(因为这里没有给char-test建文件夹,导致执行过的指令无法写入到npc-log.txt中就会直接输出到终端)
+ENABLE_ITRACE ?= 0
 ifeq ($(ENABLE_ITRACE), 1)
     CPPFLAGS += -DCONFIG_ITRACE
 endif
@@ -39,9 +43,15 @@ ifeq ($(ENABLE_MTRACE), 1)
 endif
 
 # 是否开启difftest
-ENABLE_DIFFTEST ?= 1
+ENABLE_DIFFTEST ?= 0
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
+endif
+
+# 是否是接入ysyxsoc
+ENABLE_SOC  ?= 1
+ifeq ($(ENABLE_SOC), 1)
+    CPPFLAGS += -DCONFIG_SOC
 endif
 
 ENABLE_DEVICE ?= 1

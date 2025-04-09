@@ -13,6 +13,7 @@ int main(int args,char *argv[]) {
     get_time();
     init_wave();
     init_monitor(args, argv);
+    Verilated::commandArgs(args, argv);
     reset_cpu(10);
     
     sdb_mainloop();
