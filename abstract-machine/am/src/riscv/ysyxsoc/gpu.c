@@ -1,7 +1,7 @@
 #include <am.h>
 #include <klib-macros.h>
 #include <klib.h>
-#include "npc.h"
+#include "ysyxsoc.h"
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
 #define N 32

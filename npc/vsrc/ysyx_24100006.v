@@ -812,6 +812,7 @@ module ysyx_24100006(
 		// response
 		.axi_bvalid(axi_bvalid_mem),
 		.axi_bready(axi_bready_mem),
+		.axi_bresp(axi_bresp_mem),
 		// 新增AXI信号
 		.axi_arlen(axi_arlen_mem),
 		.axi_arsize(axi_arsize_mem),

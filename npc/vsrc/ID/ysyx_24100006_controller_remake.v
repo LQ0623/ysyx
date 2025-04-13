@@ -269,7 +269,8 @@ module ysyx_24100006_controller_remake(
         ) : 4'b0;
 
     // 通用寄存器写使能
-    assign Gpr_Write = (wb_ready == 1'b0) ? 
+    // 之前使用的wb_ready==1'b0，这个会导致写入的数据错误，所以使用mem_valid==1'b1进行写入
+    assign Gpr_Write = (mem_valid == 1'b1) ? 
         /* SYSTEM指令 */
         ((opcode == `ysyx_24100006_SYSTEM) ? (
             (funct3 == `ysyx_24100006_csrrw || funct3 == `ysyx_24100006_csrrs) ? `ysyx_24100006_GPRW : 
@@ -309,7 +310,7 @@ module ysyx_24100006_controller_remake(
         3'b0;
 
     // 系统寄存器写使能
-    assign Csr_Write = (wb_ready == 1'b0) ?
+    assign Csr_Write = (mem_valid == 1'b1) ?
         ((opcode == `ysyx_24100006_SYSTEM) ? 
             ((funct3 == `ysyx_24100006_csrrw || funct3 == `ysyx_24100006_csrrs) ? `ysyx_24100006_CSRW : 
             (funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_CSRW : 

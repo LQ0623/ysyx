@@ -149,7 +149,7 @@ void cpu_exec(uint32_t n){
 		pc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__pc_FD;
 		dnpc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__npc_EF;
 		// PCW = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__PCW;
-		if_valid = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__if_valid;
+		if_valid = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__axi_rready_if;	// if_valid为高表示已经取到了指令
 		// printf("inst is %#x\n",inst);
 		// printf("if_valid is %d\t",if_valid);
 		// printf("PCW is %d\t",PCW);

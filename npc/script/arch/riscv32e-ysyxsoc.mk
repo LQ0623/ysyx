@@ -7,7 +7,8 @@ YSYXSoC = ../ysyxSoC
 #verilator flag
 # 将ysyxSoC/perip/uart16550/rtl和ysyxSoC/perip/spi/rtl两个目录加入verilator的include搜索路径中
 VERILATOR_INC += -I$(YSYXSoC)/perip/uart16550/rtl -I$(YSYXSoC)/perip/spi/rtl
-VERILATOR_CFLAGS += -MMD -cc -O3 --x-assign fast --x-initial fast --noassert
+# 加入autoflush参数是为了 ​​禁用标准输出（stdout）的缓冲机制,使得每次调用 printf 或 cout 时立即刷新输出内容，而无需等待换行符（\n）或手动调用 fflush(stdout)。
+VERILATOR_CFLAGS += -MMD -cc -O3 --x-assign fast --x-initial fast --noassert -autoflush
 VERILATOR_CFLAGS += --trace
 VERILATOR_CFLAGS += --timescale "1ns/1ns" --no-timing
 VERILATOR_CFLAGS += $(VERILATOR_INC)

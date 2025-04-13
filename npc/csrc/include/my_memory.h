@@ -6,11 +6,13 @@
 #include <string.h>
 #include <assert.h>
 #include <circuit.h>
-#ifdef ysyxSoCFull
-#define RESET_VECTOR 0x30000000
+#ifdef CONFIG_SOC
+#define RESET_VECTOR 0x20000000
 #else
 #define RESET_VECTOR 0x80000000
 #endif
+// #define RESET_MROM 0x20000000
+// #define RESET_VECTOR 0x80000000
 #define REGNUM 32
 
 extern uint32_t gpr[REGNUM];

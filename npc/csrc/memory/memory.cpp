@@ -27,6 +27,7 @@ static const uint32_t img[] = {
 };
 
 static uint8_t *pmem = NULL;
+static int cnt = 0;
 
 void init_mem(size_t size){ 
 	pmem = (uint8_t *)malloc(size * sizeof(uint8_t));
@@ -43,13 +44,15 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
     // MROM 地址范围为 0x20000000 ~ 0x20000FFF（4KB）
     constexpr int32_t MROM_BASE = 0x20000000;
     constexpr int32_t MROM_SIZE = 0x1000;
+	int align_addr = addr & (~3);
+	*data = *(int32_t *)guest_to_host(align_addr);
 
-    if (addr >= MROM_BASE && addr < MROM_BASE + MROM_SIZE) {
-        *data = 0x00100073; // ebreak 指令
-    } else {
-        *data = 0; // 非法地址返回 0 或触发错误
-        // assert(0 && "Invalid MROM address");
-    }
+    // if (addr >= MROM_BASE && addr < MROM_BASE + MROM_SIZE) {
+    //     *data = 0x00100073; // ebreak 指令
+    // } else {
+    //     *data = 0; // 非法地址返回 0 或触发错误
+    //     // assert(0 && "Invalid MROM address");
+    // }
 }
 
 

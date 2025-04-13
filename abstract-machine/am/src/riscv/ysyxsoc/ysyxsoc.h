@@ -1,5 +1,12 @@
 #include <riscv/riscv.h>
 
+//uart
+#define UART_REG_RB  0x10000000
+#define UART_REG_LC  0x10000003
+#define UART_REG_DL1 0x10000000
+#define UART_REG_DL2 0x10000001
+#define UART_REG_LS  0x10000005
+
 #define DEVICE_BASE 	0xa0000000
 #define MMIO_BASE 	    0xa0000000
 
