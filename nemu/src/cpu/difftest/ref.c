@@ -43,7 +43,7 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
   // assert(0);
   int i = 0;
   struct diff_context_t *dut_state = (struct diff_context_t *)dut;
-  printf("213123\n");
+  // printf("213123\n");
   if(direction == DIFFTEST_TO_REF){
     for(i = 0;i < NR_GPR ; i++){
       cpu.gpr[i] = dut_state->gpr[i];
