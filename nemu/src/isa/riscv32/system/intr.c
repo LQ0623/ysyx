@@ -23,6 +23,7 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
 
   csr(MEPC) = epc;
   csr(MCAUSE) = NO;
+  csr(MSTATUS) = 0x1800;
   assert(csr(MTVEC) != 0);
   return csr(MTVEC);// 返回异常处理代码的起始地址
 }
