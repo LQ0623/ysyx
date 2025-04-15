@@ -59,11 +59,13 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
       dut_state->gpr[i] = cpu.gpr[i];
     }
     dut_state->pc = cpu.pc;
-    printf("213123\n");
     dut_state->csr[0] = cpu.csr[0x300]; //mstatus
     dut_state->csr[1] = cpu.csr[0x305]; //mtvec
     dut_state->csr[2] = cpu.csr[0x341]; //mepc
     dut_state->csr[3] = cpu.csr[0x342]; //mcause
+    for(int i = 0;i < 4;i++){
+        printf("ref_r.csr[%d] is %x\n",i,cpu.csr[i]);
+    }
   }
 }
 
