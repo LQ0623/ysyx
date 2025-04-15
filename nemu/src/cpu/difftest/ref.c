@@ -48,6 +48,10 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
       cpu.gpr[i] = dut_state->gpr[i];
     }
     cpu.pc = dut_state->pc;
+    cpu.csr[0x300] = dut_state->csr[0];
+    cpu.csr[0x305] = dut_state->csr[1];
+    cpu.csr[0x341] = dut_state->csr[2];
+    cpu.csr[0x342] = dut_state->csr[3];
   }
   else{
     for(i = 0;i < NR_GPR ; i++){
