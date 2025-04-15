@@ -21,6 +21,10 @@ void init_difftest(char *ref_so_file, long img_size) {
 
     void *handle;
     handle = dlopen(ref_so_file, RTLD_LAZY);
+    if (!handle) {
+        fprintf(stderr, "dlopen failed: %s\n", dlerror());
+        assert(0);
+    }
     assert(handle);
 
     ref_difftest_memcpy = (void(*)(paddr_t,void *,size_t,bool))dlsym(handle, "difftest_memcpy");
