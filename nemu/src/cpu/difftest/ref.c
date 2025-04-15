@@ -20,7 +20,7 @@
 #define NR_GPR 32
 struct diff_context_t {
   word_t gpr[32];
-  word_t csr[4];
+  // word_t csr[4];
   word_t pc;
 };
 
@@ -54,10 +54,10 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
       dut_state->gpr[i] = cpu.gpr[i];
     }
     dut_state->pc = cpu.pc;
-    dut_state->csr[0] = cpu.csr[0x300]; //mstatus
-    dut_state->csr[1] = cpu.csr[0x305]; //mtvec
-    dut_state->csr[2] = cpu.csr[0x341]; //mepc
-    dut_state->csr[3] = cpu.csr[0x342]; //mcause
+    // dut_state->csr[0] = cpu.csr[0x300]; //mstatus
+    // dut_state->csr[1] = cpu.csr[0x305]; //mtvec
+    // dut_state->csr[2] = cpu.csr[0x341]; //mepc
+    // dut_state->csr[3] = cpu.csr[0x342]; //mcause
   }
 }
 
