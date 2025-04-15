@@ -1,49 +1,52 @@
 ENTRY(_start)
 
 PHDRS {
-  text PT_LOAD;
-  data PT_LOAD;
+    text PT_LOAD;    /* 代码段加载到 MROM */
+    data PT_LOAD;    /* 数据段加载到 MROM，但运行时在 SRAM */
+}
+
+MEMORY {
+    MROM (rx) : ORIGIN = 0x20000000, LENGTH = 4K   /* 4KB MROM */
+    SRAM (rwx): ORIGIN = 0x0F000000, LENGTH = 8K   /* 8KB SRAM */
 }
 
 SECTIONS {
-  /* 将代码段放入MROM区域，确保入口点是0x20000000 */
-  . = _pmem_start + _entry_offset;  /* 代码段起始地址 */
-  .text : {
-    *(entry)       /* 启动代码 */
-    *(.text*)       /* 所有代码段 */
-  } :text
-  _etext = .;       /* 代码段结束地址 */
-  
-  /* 只读数据段（如常量） */
-  .rodata : {
-    *(.rodata*)
-  }
+    /* 代码段固定在 MROM */
+    . = ORIGIN(MROM);    /* 起始地址 0x20000000 */
+    .text : {
+        *(entry)        /* 启动代码 */
+        *(.text*)       /* 所有代码段 */
+    } :text
 
-  /* 切换到SRAM区域 */
-  . = 0x0f000000;   /* 数据段起始地址，SRAM区 */
-  _data_start = .;
-  .data : {
-    *(.data*)       /* 初始化数据段 */
-  } :data
-  _edata = .;       /* 数据段结束地址 */
+    /* 只读数据段（仍放在 MROM） */
+    .rodata : {
+        *(.rodata*)
+    } :text
 
-  /* BSS段（未初始化数据） */
-  .bss : {
-    _bss_start = .;
-    *(.bss*)
-    *(.sbss*)
-    *(.scommon)
-    _bss_end = .;
-  }
+    /* 初始化数据段（.data）：
+       - LMA 在 MROM（紧随 .rodata 之后）
+       - VMA 在 SRAM（运行时地址）
+    */
+    .data : ALIGN(4) {
+        _data_lma = LOADADDR(.data);    /* LMA = MROM 中的地址 */
+        _data_vma = .;                  /* VMA = SRAM 中的地址 */
+        *(.data*)
+    } > SRAM AT> MROM :data
 
-  /* 堆区和栈区的内存设置 */
-  _stack_top = ALIGN(0x400);
-  . = _stack_top + 0x1000;   /* 4KB栈空间 */
-  _stack_pointer = .;
-  _heap_start = ALIGN(0x400);
-  _heap_end = 0x0f000fff;    /* SRAM末尾 */
+    /* BSS 段（仅 VMA 在 SRAM，不占用二进制文件空间） */
+    .bss : ALIGN(4) {
+        _bss_start = .;
+        *(.bss*)
+        *(.sbss*)
+        *(.scommon)
+        _bss_end = .;
+    } > SRAM
 
-  /* 确保堆区结束后，数据和代码不会发生重叠 */
-  end = .;
-  _end = .;
+    /* 栈区设置在 SRAM 末尾 */
+    . = ORIGIN(SRAM) + LENGTH(SRAM);
+    _stack_top = . - 0x1000;    /* 4KB 栈空间 */
+    _stack_pointer = _stack_top;
+
+    /* 堆区起始地址 */
+    _heap_start = ALIGN(4);
 }

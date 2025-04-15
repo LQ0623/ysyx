@@ -165,7 +165,18 @@ module ysyx_24100006_memu(
 						axi_awvalid		<= 1'b1;
 						axi_wvalid		<= 1'b1;
 						axi_wlast		<= 1'b1;	// 说明是最后一组数据
-						axi_wstrb		<= 4'b1;
+						// 写入掩码需要按照实际的指令以及写入的地址来变化
+						axi_wstrb		<= 	(Mem_WMask_M == 8'b00000001) ? 	// sb指令，存储一个字节
+												(	(locked_addr[1:0] == 2'b00) ? 4'b0001 : 
+													(locked_addr[1:0] == 2'b01) ? 4'b0010 :
+													(locked_addr[1:0] == 2'b10) ? 4'b0100 :
+													(locked_addr[1:0] == 2'b11) ? 4'b1000 : 4'b0000) :
+											(Mem_WMask_M == 8'b00000011) ?	// sh指令，存储两个字节
+												(	(locked_addr[1:0] == 2'b00) ? 4'b0011 : 
+													(locked_addr[1:0] == 2'b01) ? 4'b0110 :
+													(locked_addr[1:0] == 2'b10) ? 4'b1100 : 4'b0000) :
+											(Mem_WMask_M == 8'b00001111) ?	// sh指令，存储两个字节
+												(	(locked_addr[1:0] == 2'b00) ? 4'b1111 : 4'b0000) : 4'b0000;
 						state			<= WRITE_ADDR;
 					end else begin
 						state			<= S_DELAY;

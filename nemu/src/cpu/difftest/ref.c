@@ -69,6 +69,7 @@ __EXPORT void difftest_raise_intr(word_t NO) {
 }
 
 __EXPORT void difftest_init(int port) {
+  // TODO:这里需要添加东西，以便链接上soc
   void init_mem();
   init_mem();
   /* Perform ISA dependent initialization. */

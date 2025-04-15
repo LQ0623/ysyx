@@ -14,12 +14,15 @@ LDFLAGS   += --defsym=_pmem_start=0x20000000 --defsym=_entry_offset=0x0
 LDFLAGS   += --defsym=_sram_start=0x0f000000 --defsym=_sram_offset=0x0
 LDFLAGS   += --gc-sections -e _start 
 
+CFLAGS += -fsanitize=address         # 启用 ASan
+LDFLAGS += -fsanitize=address        # 链接 ASan 库
+
 # NPC的一些参数
 NPCFLAGS += -l $(shell dirname $(IMAGE).bin)/npc_log.txt
 NPCFLAGS += -e $(IMAGE).elf	#这是elf文件
 
-#NPCFLAGS += -d $(NPC_HOME)/tools/nemu-diff/riscv32-nemu-interpreter-so	#加入difftest测试
-NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/spike-diff/build/riscv32-spike-so
+NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/nemu-diff/riscv32-nemu-interpreter-so	#加入difftest测试
+#NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/spike-diff/build/riscv32-spike-so
 NPCFLAGS += -b
 
 MAINARGS_MAX_LEN = 64
