@@ -79,7 +79,7 @@ bool static checkregs(struct CPU_state *ref_r){
     for(int i = 0;i < 4;i++){
         if(ref_r -> csr[i] != csr[i]){
             Log("PC = 0x%x, Difftest CSR Compare failed at %s, Difftest CSR Get " FMT_WORD ", NPC CSR Get " FMT_WORD, pc, SysReg[i], ref_r->csr[i], csr[i]);
-            //flag = false;
+            flag = false;
         }
     }
     if(ref_r -> pc != pc){
@@ -119,9 +119,6 @@ void difftest_step() {
     
     ref_difftest_exec(1);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-for(int i = 0;i < 4;i++){
-        printf("ref_r.csr[%d] is %x\n",i,ref_r.csr[i]);
-    }
     if(!checkregs(&ref_r)){
         isa_reg_display();
         assert(0);

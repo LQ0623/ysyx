@@ -43,7 +43,6 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
   // assert(0);
   int i = 0;
   struct diff_context_t *dut_state = (struct diff_context_t *)dut;
-  // printf("213123\n");
   if(direction == DIFFTEST_TO_REF){
     for(i = 0;i < NR_GPR ; i++){
       cpu.gpr[i] = dut_state->gpr[i];
@@ -59,9 +58,6 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
     dut_state->csr[1] = cpu.csr[0x305]; //mtvec
     dut_state->csr[2] = cpu.csr[0x341]; //mepc
     dut_state->csr[3] = cpu.csr[0x342]; //mcause
-    for(int i = 0;i < 4;i++){
-        printf("ref_r.csr[%d] is %x\n",i,cpu.csr[i]);
-    }
   }
 }
 
