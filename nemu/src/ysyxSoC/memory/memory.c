@@ -62,7 +62,7 @@ void soc_write(paddr_t paddr, int len, word_t data){
     switch (len) {
         case 1: *(uint8_t  *)ptr = data; return;
         case 2: *(uint16_t *)ptr = data; return;
-        case 4: *(uint32_t *)ptr = data; return;
+        case 4: printf("addr is %08x, data is %08x\n",paddr,*(uint32_t *)ptr); *(uint32_t *)ptr = data; return;
         default: assert(0);
     }
 }
