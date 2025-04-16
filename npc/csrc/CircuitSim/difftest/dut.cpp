@@ -115,7 +115,7 @@ void difftest_step() {
         ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
         return;
     }
-    printf("pc is %x\n",pc);
+    // printf("pc is %x\n",pc);
     ref_difftest_exec(1);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
     if(!checkregs(&ref_r)){
