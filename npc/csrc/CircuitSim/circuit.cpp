@@ -122,7 +122,7 @@ static void trace_and_difftest() {
 	 */
 	#ifdef CONFIG_DIFFTEST
 		if(if_valid == 1){
-			printf("NPC: %x: %08x\n",pc,inst);
+			// printf("NPC: %x: %08x\n",pc,inst);
 			difftest_step();
 		}
 	#endif

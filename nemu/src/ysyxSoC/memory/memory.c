@@ -44,7 +44,7 @@ word_t soc_read(paddr_t paddr, int len){
     switch (len) {
         case 1: return *(uint8_t  *)ptr;
         case 2: return *(uint16_t *)ptr;
-        case 4: printf("data is %08x\n",*(uint32_t *)ptr); return *(uint32_t *)ptr;
+        case 4: printf("addr is %08lx,data is %08x\n",(uintptr_t)(uint32_t *)ptr,*(uint32_t *)ptr); return *(uint32_t *)ptr;
         default: assert(0);
     }
     assert(0);      // 到达这里说明没有取出来数据
