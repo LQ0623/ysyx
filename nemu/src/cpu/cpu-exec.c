@@ -45,38 +45,12 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   point_difftest();
 #endif
 }
-// 打印指令的PC、机器码和反汇编结果
-static void print_disassembly(uint32_t pc, uint32_t snpc, uint32_t inst_val, int ilen) {
-    // 打印PC地址
-    printf(FMT_WORD ":", pc);
-
-    // 打印指令字节码（按字节逆序，小端显示）
-    uint8_t *inst = (uint8_t *)&inst_val;
-    for (int i = ilen - 1; i >= 0; i--) {
-        printf(" %02x", inst[i]);
-    }
-
-    // 计算对齐空格（保持与原始格式一致）
-    int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
-    int space_len = ilen_max - ilen;
-    if (space_len < 0) space_len = 0;
-    space_len = space_len * 3 + 1; // 每字节占3字符（" xx"），末尾加1空格
-    printf("%*s", space_len, "");  // 打印对齐空格
-
-    // 反汇编并直接打印结果
-    char disasm_buf[128]; // 反汇编结果缓冲区
-    void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-    disassemble(disasm_buf, sizeof(disasm_buf), 
-               MUXDEF(CONFIG_ISA_x86, snpc, pc), 
-               (uint8_t *)&inst_val, ilen);
-    printf("%s\n", disasm_buf);
-} 
 
 static void exec_once(Decode *s, vaddr_t pc) {
   s->pc = pc;
   s->snpc = pc;
   isa_exec_once(s);
-print_disassembly(s->pc,s->snpc,s->isa.inst.val,4);
+
 #ifdef CONFIG_MTRACE
   write_inst_buffer(s->logbuf);
 #endif
