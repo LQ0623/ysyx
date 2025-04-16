@@ -44,7 +44,7 @@ word_t soc_read(paddr_t paddr, int len){
     switch (len) {
         case 1: return *(uint8_t  *)ptr;
         case 2: return *(uint16_t *)ptr;
-        case 4: return *(uint32_t *)ptr;
+        case 4: printf("data is %d\n",*(uint32_t *)ptr); return *(uint32_t *)ptr;
         default: assert(0);
     }
     assert(0);      // 到达这里说明没有取出来数据
