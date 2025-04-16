@@ -29,6 +29,7 @@ struct diff_context_t {
  */
 __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
   // assert(0);
+  printf("addr is %08x\n",addr);
   void *nemu_buf = (void *)guest_to_host(addr);
   if(direction == DIFFTEST_TO_REF)  //dut -> ref (buf -> addr(nemu_buf))
     memcpy(nemu_buf , buf , n);
