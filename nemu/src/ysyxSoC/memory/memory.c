@@ -5,12 +5,14 @@ static uint8_t *sram = NULL;
 
 void init_mrom(){
     mrom = malloc(0xfff);
+    memset(mrom, 0, 0xfff);     // 使用实际分配的大小清零
     assert(mrom);
     Log("mrom area [" FMT_PADDR ", " FMT_PADDR "]", MROM_BASE, MROM_BASE + MROM_SIZE);
 }
 
 void init_sram(){
     sram = malloc(0x1fff);
+    memset(sram, 0, 0x1fff);     // 使用实际分配的大小清零
     assert(sram);
     Log("sram area [" FMT_PADDR ", " FMT_PADDR "]", SRAM_BASE, SRAM_BASE + SRAM_SIZE);
 }
