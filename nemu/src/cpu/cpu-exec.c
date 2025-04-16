@@ -51,7 +51,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
   s->snpc = pc;
   isa_exec_once(s);
 printf("%x: %08x\n",pc,s->isa.inst.val);
-if(pc == 0x20000064){
+if(pc == 0x20000060){
   isa_reg_display();
 }
 #ifdef CONFIG_MTRACE
