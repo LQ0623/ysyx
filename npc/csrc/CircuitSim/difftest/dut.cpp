@@ -6,6 +6,7 @@
 struct CPU_state {
   word_t gpr[REGNUM];
   word_t pc;
+  word_t csr[4];
 };
 bool is_skip_diff = false;
 void (*ref_difftest_memcpy)(paddr_t addr, void *buf, size_t n, bool direction) = NULL;
@@ -20,6 +21,10 @@ void init_difftest(char *ref_so_file, long img_size) {
 
     void *handle;
     handle = dlopen(ref_so_file, RTLD_LAZY);
+    if (!handle) {
+        fprintf(stderr, "dlopen failed: %s\n", dlerror());
+        assert(0);
+    }
     assert(handle);
 
     ref_difftest_memcpy = (void(*)(paddr_t,void *,size_t,bool))dlsym(handle, "difftest_memcpy");
@@ -50,9 +55,12 @@ void init_difftest(char *ref_so_file, long img_size) {
     ref_difftest_memcpy(RESET_VECTOR, (void *)guest_to_host(RESET_VECTOR), img_size, DIFFTEST_TO_REF);
     //get dut reg into CPU_state struct
     CPU_state dut_r;
-    dut_r.pc = 0x80000000;
+    dut_r.pc = RESET_VECTOR;
     for(int i = 0;i < REGNUM;i++)
         dut_r.gpr[i] = gpr[i];
+    for(int i = 0;i < 4;i++){
+        dut_r.csr[i] = csr[i];
+    }
     ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
 
     printf("Difftests Init\n");
@@ -64,6 +72,12 @@ bool static checkregs(struct CPU_state *ref_r){
         // nemu的gpr与npc的gpr相比
         if(ref_r -> gpr[i] != gpr[i]){
             Log("PC = 0x%x, Difftest Reg Compare failed at %s, Difftest reg Get " FMT_WORD ", NPC reg Get " FMT_WORD, pc, regs[i], ref_r->gpr[i], gpr[i]);
+            flag = false;
+        }
+    }
+    for(int i = 0;i < 4;i++){
+        if(ref_r -> csr[i] != csr[i]){
+            Log("PC = 0x%x, Difftest CSR Compare failed at %s, Difftest CSR Get " FMT_WORD ", NPC CSR Get " FMT_WORD, pc, SysReg[i], ref_r->csr[i], csr[i]);
             flag = false;
         }
     }
@@ -101,10 +115,9 @@ void difftest_step() {
         ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
         return;
     }
-    
+    // printf("pc is %x\n",pc);
     ref_difftest_exec(1);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-
     if(!checkregs(&ref_r)){
         isa_reg_display();
         assert(0);

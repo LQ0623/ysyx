@@ -122,6 +122,7 @@ static void trace_and_difftest() {
 	 */
 	#ifdef CONFIG_DIFFTEST
 		if(if_valid == 1){
+			// printf("NPC: %x: %08x\n",pc,inst);
 			difftest_step();
 		}
 	#endif
@@ -147,7 +148,7 @@ void cpu_exec(uint32_t n){
 		snpc = pc + 4;
 		inst = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__sram_axi_rdata;
 		pc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__pc_FD;
-		dnpc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__npc_EF;
+		dnpc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__IF__DOT__PC__DOT__real_npc;
 		// PCW = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__PCW;
 		if_valid = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__axi_rready_if;	// if_valid为高表示已经取到了指令
 		// printf("inst is %#x\n",inst);

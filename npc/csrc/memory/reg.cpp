@@ -14,6 +14,10 @@ const char *regs[] = {
     "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
 
+const char *SysReg[] = {
+    "mstatus", "mtvec", "mepc", "mcause"
+};
+
 void get_reg(){
     for(int i = 0;i < REGNUM; i++){
         gpr[i] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__GPR__DOT__rf[i];

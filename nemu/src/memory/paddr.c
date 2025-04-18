@@ -18,6 +18,7 @@
 #include <device/mmio.h>
 #include <isa.h>
 #include <memory/mtrace.h>
+#include <ysyxsoc.h>
 
 #if   defined(CONFIG_PMEM_MALLOC)
 static uint8_t *pmem = NULL;
@@ -25,7 +26,16 @@ static uint8_t *pmem = NULL;
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 #endif
 
-uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
+// TODO：修改这里，完成对meom和sram的diff test的添加
+uint8_t* guest_to_host(paddr_t paddr) { 
+  uint8_t *ptr = NULL;
+  if(in_pmem(paddr)){
+    ptr = pmem + paddr - CONFIG_MBASE;
+  } else if(in_Mrom(paddr)){
+    ptr = mrom + paddr - 0x20000000;
+  }
+  return ptr;
+}
 paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 
 static word_t pmem_read(paddr_t addr, int len) {
@@ -49,6 +59,7 @@ void init_mem() {
 #endif
   IFDEF(CONFIG_MEM_RANDOM, memset(pmem, rand(), CONFIG_MSIZE));
   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
+  init_soc();
 }
 
 word_t paddr_read(paddr_t addr, int len) {
@@ -56,7 +67,7 @@ word_t paddr_read(paddr_t addr, int len) {
 #if CONFIG_MTRACE
   mtrace_log_write(addr, len, 'r', 0);
 #endif
-
+  if (in_socMem(addr)) return soc_read(addr, len);
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);
@@ -69,6 +80,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
   mtrace_log_write(addr, len, 'w', data);
 #endif
   
+  if (in_socMem(addr))  { soc_write(addr, len, data); return; }
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);

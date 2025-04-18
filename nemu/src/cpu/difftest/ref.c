@@ -21,6 +21,7 @@
 struct diff_context_t {
   word_t gpr[32];
   word_t pc;
+  word_t csr[4];
 };
 
 /**
@@ -28,6 +29,7 @@ struct diff_context_t {
  */
 __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
   // assert(0);
+  printf("addr is %08x\n",addr);
   void *nemu_buf = (void *)guest_to_host(addr);
   if(direction == DIFFTEST_TO_REF)  //dut -> ref (buf -> addr(nemu_buf))
     memcpy(nemu_buf , buf , n);
@@ -53,6 +55,10 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
       dut_state->gpr[i] = cpu.gpr[i];
     }
     dut_state->pc = cpu.pc;
+    dut_state->csr[0] = cpu.csr[0x300]; //mstatus
+    dut_state->csr[1] = cpu.csr[0x305]; //mtvec
+    dut_state->csr[2] = cpu.csr[0x341]; //mepc
+    dut_state->csr[3] = cpu.csr[0x342]; //mcause
   }
 }
 
@@ -69,8 +75,9 @@ __EXPORT void difftest_raise_intr(word_t NO) {
 }
 
 __EXPORT void difftest_init(int port) {
-  void init_mem();
-  init_mem();
+  // TODO:这里需要添加东西，以便链接上soc
+  void init_soc();
+  init_soc();
   /* Perform ISA dependent initialization. */
   init_isa();
 }

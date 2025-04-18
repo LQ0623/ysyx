@@ -57,6 +57,9 @@ module ysyx_24100006_memu(
 	output 	reg [3:0]	axi_wstrb,
 	output	reg			axi_wlast,
 
+	// 用于分辨原始的地址的后两位
+	output 	reg [1:0]	axi_addr_suffix,
+
 
 	// 握手机制使用
 	input 				exe_valid,
@@ -121,6 +124,8 @@ module ysyx_24100006_memu(
 			axi_wstrb	<= 4'b0;
 			axi_wlast	<= 1'b0;
 
+			axi_addr_suffix<= 2'b0;
+
 			// 模块握手使用
 			mem_valid	<= 1'b0;
 			mem_ready	<= 1'b1;
@@ -150,6 +155,8 @@ module ysyx_24100006_memu(
 						axi_arsize		<= 	(Mem_RMask_M == 0 || Mem_RMask_M == 1) ? 3'b000 :
 											(Mem_RMask_M == 2 || Mem_RMask_M == 3) ? 3'b001 :
 											(Mem_RMask_M == 4) ? 3'b010 : 3'b010;
+						
+						axi_addr_suffix	<= locked_addr[1:0];
 
 						// axi握手
 						axi_arvalid		<= 1'b1;
@@ -165,7 +172,18 @@ module ysyx_24100006_memu(
 						axi_awvalid		<= 1'b1;
 						axi_wvalid		<= 1'b1;
 						axi_wlast		<= 1'b1;	// 说明是最后一组数据
-						axi_wstrb		<= 4'b1;
+						// 写入掩码需要按照实际的指令以及写入的地址来变化
+						axi_wstrb		<= 	(Mem_WMask_M == 8'b00000001) ? 	// sb指令，存储一个字节
+												(	(locked_addr[1:0] == 2'b00) ? 4'b0001 : 
+													(locked_addr[1:0] == 2'b01) ? 4'b0010 :
+													(locked_addr[1:0] == 2'b10) ? 4'b0100 :
+													(locked_addr[1:0] == 2'b11) ? 4'b1000 : 4'b0000) :
+											(Mem_WMask_M == 8'b00000011) ?	// sh指令，存储两个字节
+												(	(locked_addr[1:0] == 2'b00) ? 4'b0011 : 
+													(locked_addr[1:0] == 2'b01) ? 4'b0110 :
+													(locked_addr[1:0] == 2'b10) ? 4'b1100 : 4'b0000) :
+											(Mem_WMask_M == 8'b00001111) ?	// sh指令，存储两个字节
+												(	(locked_addr[1:0] == 2'b00) ? 4'b1111 : 4'b0000) : 4'b0000;
 						state			<= WRITE_ADDR;
 					end else begin
 						state			<= S_DELAY;
@@ -224,6 +242,7 @@ module ysyx_24100006_memu(
 					// 将读取字节和写入字节复位
 					axi_arsize	<= 3'b0;
 					axi_awsize	<= 3'b010;
+					axi_addr_suffix	<= 2'b0;
 				end
 				S_ACCESS: begin
 					if(mem_valid && wb_ready) begin
@@ -256,8 +275,8 @@ module ysyx_24100006_memu(
 
 
     /* 为了对齐地址 */
-	assign mem_addr = locked_addr & (~32'h3);	// 对齐到4字节边界
-	assign place = locked_addr - mem_addr;		// 计算实际地址与字节之间的偏移
+	assign mem_addr = locked_addr;	// 对齐到4字节边界
+	assign place = locked_addr - locked_addr & (~32'h3);		// 计算实际地址与字节之间的偏移
 	assign RealMemWmask = Mem_WMask_M << place;	// 真实的写内存的掩码
 	
 

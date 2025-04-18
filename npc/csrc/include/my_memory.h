@@ -18,6 +18,7 @@
 extern uint32_t gpr[REGNUM];
 extern uint32_t csr[4];
 extern const char *regs[];
+extern const char *SysReg[];
 
 void init_mem(size_t size);
 uint8_t *guest_to_host(uint32_t addr);

@@ -248,6 +248,8 @@ module ysyx_24100006(
 	reg	[2:0]	axi_awsize_mem;
 	reg	[3:0]	axi_wstrb_mem;
 	reg			axi_wlast_mem;
+
+	reg [1:0]	axi_addr_suffix;
     
 	// 下面的SRAM_axi_信号是指从xbar输出的信号，连接到axi模块的，本来是连接到存储SRAM（即mem）
 	// 读地址通道
@@ -373,6 +375,9 @@ module ysyx_24100006(
 	wire [2:0]	m_axi_awsize;
 	wire [3:0]	m_axi_wstrb;
 	wire		m_axi_wlast;
+
+	// Access Fault异常信号
+	wire [1:0] 	Access_Fault;
 
 	// 仲裁器
 	ysyx_24100006_axi_arbiter arbiter(
@@ -594,6 +599,8 @@ module ysyx_24100006(
 		.m_axi_awsize(m_axi_awsize),
 		.m_axi_wstrb(m_axi_wstrb),
 		.m_axi_wlast(m_axi_wlast),
+
+		.m_addr_suffix(axi_addr_suffix),
 		
 
 		// SRAM 从设备接口 (写通道)
@@ -651,7 +658,10 @@ module ysyx_24100006(
 		.clint_axi_rvalid(clint_axi_rvalid),
 		.clint_axi_rready(clint_axi_rready),
 		.clint_axi_rdata(clint_axi_rdata),
-		.clint_axi_rresp(clint_axi_rresp)
+		.clint_axi_rresp(clint_axi_rresp),
+
+		// Access Fault异常
+		.Access_Fault(Access_Fault)
 	);
 
 	ysyx_24100006_ifu IF(
@@ -682,7 +692,10 @@ module ysyx_24100006(
 		.id_ready(id_ready),
 		.if_valid(if_valid),
 		.pc_F(pc_FD),
-		.PCW(PCW)
+		.PCW(PCW),
+
+		// Access Fault异常
+		.Access_Fault(Access_Fault)
 	);
 	
 	ysyx_24100006_idu ID(
@@ -821,6 +834,8 @@ module ysyx_24100006(
 		.axi_awsize(axi_awsize_mem),
 		.axi_wstrb(axi_wstrb_mem),
 		.axi_wlast(axi_wlast_mem),
+		.axi_addr_suffix(axi_addr_suffix),
+
 		// 模块握手信号
 		.exe_valid(exe_valid),
 		.wb_ready(wb_ready),
