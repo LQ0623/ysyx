@@ -26,7 +26,7 @@ void copy_data(void){
  */
 void set_bss_zero(void){
     uint8_t *dst = &_bss_start;
-    int bss_size = _bss_end - _bss_start;
+    int bss_size = &_bss_end - &_bss_start;
     while(bss_size--){
         *dst++ = 0;
     }
@@ -39,13 +39,13 @@ void set_bss_zero(void){
  */
 void bootloader() {
     // 拷贝数据段
-    int data_size = _data - _data;
+    int data_size = &_data - &_data;
     if(data_size > 0){
         copy_data();
     }
 
     // 清零bss段
-    int bss_size = _bss_end - _bss_start;
+    int bss_size = &_bss_end - &_bss_start;
     if(bss_size > 0){
         set_bss_zero();
     }
