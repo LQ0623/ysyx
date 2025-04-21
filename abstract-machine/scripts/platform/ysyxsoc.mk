@@ -14,6 +14,7 @@ LDSCRIPTS += $(AM_HOME)/scripts/linkersoc.ld
 LDFLAGS   += --defsym=_pmem_start=0x20000000 --defsym=_entry_offset=0x0
 LDFLAGS   += --defsym=_sram_start=0x0f000000 --defsym=_sram_offset=0x0
 LDFLAGS   += --gc-sections -e _start 
+# LDFLAGS   += --print-map
 
 # CFLAGS += -fsanitize=address         # 启用 ASan
 # LDFLAGS += -fsanitize=address        # 链接 ASan 库

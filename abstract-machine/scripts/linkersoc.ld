@@ -31,14 +31,12 @@ SECTIONS {
   .data : {
     _data = .;
     *(.data*)           /* 包含所有.data子段 */
+    *(.sdata*)          /* 显式包含.sdata.str1/.sdata.test */
     _edata = .;
   } > sram AT > mrom : data
   _edata = .;
 
-  /* SRAM布局 */
-  . = ORIGIN(sram);     /* 起始地址0x0F000000 */
-
-  /* BSS段 */
+  /* BSS段 (不分配到任何PHDR) */
   .bss : {
     _bss_start = .;
     *(.bss*)
@@ -46,6 +44,9 @@ SECTIONS {
     *(.scommon)
     _bss_end = .;
   } > sram
+
+  /* SRAM布局 */
+  . = ORIGIN(sram);     /* 起始地址0x0F000000 */
 
   /* 堆栈和堆定义 */
   _stack_top = ADDR(.bss) + SIZEOF(.bss);
