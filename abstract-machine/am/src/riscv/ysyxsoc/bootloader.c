@@ -1,54 +1,49 @@
-// 需要将存储在MROM中的数据搬到SRAM中
 #include <stdint.h>
 
-void _trm_init();
-void  bootloader() __attribute__((section(".text.boot")));
-
-extern uint8_t _sdata_lma; // LMA:初始数据在MROM的地址
-extern uint8_t _data;      // 运行时数据在SRAM的地址
-extern uint8_t _edata;     // 数据段结束符号
-extern uint8_t _bss_start; // bss段起始地址
-extern uint8_t _bss_end;   // bss段结束地址
+/* 声明外部符号 */
+extern void _trm_init();
+extern uint8_t _sdata_lma;  // 数据段在MROM的起始地址
+extern uint8_t _data;       // 数据段在SRAM的起始地址
+extern uint8_t _edata;      // 数据段在SRAM的结束地址
+extern uint8_t _bss_start;  // BSS段起始地址
+extern uint8_t _bss_end;    // BSS段结束地址
 
 /**
  * 将 .data 段从 MROM 复制到 SRAM
  */
-void copy_data(void){
-    uint8_t *src = &_sdata_lma;
-    uint8_t *dst = &_data;
-    while(dst < &_edata){
+static void copy_data() {
+    uint8_t *src = &_sdata_lma;  // MROM地址
+    uint8_t *dst = &_data;       // SRAM地址
+    while (dst < &_edata) {
         *dst++ = *src++;
     }
 }
 
 /**
- * 将 .bss 段全部归为0
+ * 清零 BSS 段
  */
-void set_bss_zero(void){
+static void clear_bss() {
     uint8_t *dst = &_bss_start;
-    int bss_size = &_bss_end - &_bss_start;
-    while(bss_size--){
+    while (dst < &_bss_end) {  // 修正为_bss_end
         *dst++ = 0;
     }
 }
 
 /**
- * 1. 复制 .data 段
- * 2. 清零 .bss 段
- * 3. 调用 trm_init
+ * Bootloader入口
  */
+void bootloader() __attribute__((section(".text.boot")));
 void bootloader() {
-    // 拷贝数据段
-    int data_size = &_data - &_data;
-    if(data_size > 0){
+    /* 1. 复制数据段 */
+    if (&_edata > &_data) {
         copy_data();
     }
 
-    // 清零bss段
-    int bss_size = &_bss_end - &_bss_start;
-    if(bss_size > 0){
-        set_bss_zero();
+    /* 2. 清零BSS段 */
+    if (&_bss_end > &_bss_start) {
+        clear_bss();
     }
 
-    _trm_init();
+    /* 3. 跳转到主程序 */
+    _trm_init();  // 假设_trm_init是主程序入口
 }

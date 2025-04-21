@@ -14,26 +14,31 @@ SECTIONS {
   . = ORIGIN(mrom);
   .text : {
     *(entry)
-    *(.text.boot)
-    *(.text*)
+    *(.text.boot)       /* bootloader代码 */
+    *(.text*)           /* 其他代码 */
     _etext = .;
   } > mrom AT > mrom : text
   etext = .;
 
+  /* 只读数据段 */
   .rodata : {
     _rodata = .;
     *(.rodata*)
     _erodata = .;
-  } > mrom AT > mrom
+  } > mrom AT > mrom : text
 
+  /* 数据段 (从MROM加载到SRAM) */
   .data : {
     _data = .;
-    *(.data)
+    *(.data*)           /* 包含所有.data子段 */
     _edata = .;
   } > sram AT > mrom : data
+  _edata = .;
 
-  /* BSS段放在SRAM低地址 */
-  . = ORIGIN(sram);  /* 0x0F000000 */
+  /* SRAM布局 */
+  . = ORIGIN(sram);     /* 起始地址0x0F000000 */
+
+  /* BSS段 */
   .bss : {
     _bss_start = .;
     *(.bss*)
@@ -42,18 +47,17 @@ SECTIONS {
     _bss_end = .;
   } > sram
 
-  /* 栈从sram末尾往下 */
-  _stack_pointer = ORIGIN(sram) + LENGTH(sram);  /* 0x0F002000 */
-  _stack_top = _stack_pointer - 0x800;           /* 栈底（预留1KB） */
-
+  /* 堆栈和堆定义 */
+  _stack_top = ADDR(.bss) + SIZEOF(.bss);
+  . = _stack_top + 0x800;
+  _stack_pointer = .;
   end = .;
   _end = .;
 
-  /* 堆放在 bss 之后，假设在栈和 bss 之间分配 */
-  _heap_start = _bss_end;
-  _heap_end = _stack_top;
+  _heap_start = _stack_pointer;
+  _heap_end = _heap_start + 0x300;
 
-  /* 加载地址符号 */
-  _sdata_lma = LOADADDR(.data);
+  /* 数据段加载地址符号 */
+  _sdata_lma = LOADADDR(.data);  /* MROM中的起始地址 */
   _edata_lma = _sdata_lma + SIZEOF(.data);
 }

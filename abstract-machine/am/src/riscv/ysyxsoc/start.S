@@ -6,3 +6,5 @@ _start:
   mv s0, zero
   la sp, _stack_pointer
   call bootloader
+
+.size _start, . - _start
