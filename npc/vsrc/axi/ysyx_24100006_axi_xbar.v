@@ -43,6 +43,8 @@ module ysyx_24100006_axi_xbar #(
 	input [3:0]	 m_axi_wstrb,
 	input        m_axi_wlast,
 
+    input [1:0]  m_addr_suffix,
+
     // SRAM从设备
     output        sram_axi_awvalid,
     input         sram_axi_awready,
@@ -97,7 +99,15 @@ module ysyx_24100006_axi_xbar #(
     output        clint_axi_rvalid,
     output        clint_axi_rready,
     input  [31:0] clint_axi_rdata,
-    input  [1:0]  clint_axi_rresp
+    input  [1:0]  clint_axi_rresp,
+
+    // 实现让NPC抛出Access Fault异常
+    // 根据rresp和bresp进行错误判断
+    // 当xresp表示有错误信息是，将下面的信号拉高，然后IFU中将pc置为0
+    // 00: 读写正确
+    // 01: 读发生错误
+    // 10: 写发生错误
+    output  [1:0]  Access_Fault  //  Access Fault Alert
 );
 
     // 地址解码
@@ -158,7 +168,7 @@ module ysyx_24100006_axi_xbar #(
     assign m_axi_rvalid     = sel_sram ? sram_axi_rvalid :
                                 sel_clint ? clint_axi_rvalid : 0;
 
-    assign m_axi_rdata      = sel_sram ? sram_axi_rdata :
+    assign m_axi_rdata      = sel_sram ? real_sram_data :
                                 sel_clint ? clint_axi_rdata : 32'h0;
 
     assign m_axi_rresp      = sel_sram ? sram_axi_rresp :
@@ -167,11 +177,29 @@ module ysyx_24100006_axi_xbar #(
     // 新增AXI信号
     assign m_axi_rlast      = sram_axi_rlast;
     assign sram_axi_arlen   = m_axi_arlen;
-    assign sram_axi_arsize  = m_axi_arsize;
+    assign sram_axi_arsize  = 3'b010;           // 读SRAM是地址对齐的，所以需要直接读取4字节，然后在选择
     assign sram_axi_awlen   = m_axi_awlen;
     assign sram_axi_awsize  = m_axi_awsize;
     assign sram_axi_wstrb   = m_axi_wstrb;
     assign sram_axi_wlast   = m_axi_wlast;
+
+    // 根据非对齐地址来进行选择
+    wire [31:0] real_sram_data;
+    assign real_sram_data   =   (m_axi_arsize == 3'b000) ? // lb / lbu指令，读取一个字节
+                                    (   (m_addr_suffix == 2'b00) ? {24'b0,sram_axi_rdata[7:0]}      :
+                                        (m_addr_suffix == 2'b01) ? {24'b0,sram_axi_rdata[15:8]}     :
+                                        (m_addr_suffix == 2'b10) ? {24'b0,sram_axi_rdata[23:16]}    :
+                                        (m_addr_suffix == 2'b11) ? {24'b0,sram_axi_rdata[31:24]}    : 32'b0) :
+                                (m_axi_arsize == 3'b001) ? // lh / lhu指令，读取三个字节
+                                    (   (m_addr_suffix == 2'b00) ? {16'b0,sram_axi_rdata[15:0]}     :
+                                        (m_addr_suffix == 2'b01) ? {16'b0,sram_axi_rdata[23:8]}     :
+                                        (m_addr_suffix == 2'b10) ? {16'b0,sram_axi_rdata[31:16]}    : 32'b0) :
+                                (m_axi_arsize == 3'b010) ? // lw指令，读取四个字节
+                                    (   (m_addr_suffix == 2'b00) ? sram_axi_rdata                   : 32'b0) : 32'b0;
+
+    // Acess Fault信号
+    assign Access_Fault     = (sram_axi_rresp != 2'b00 || clint_axi_rresp != 2'b00) ? 2'b01 : 
+                                ((sram_axi_bresp != 2'b00 || clint_axi_bresp != 2'b00) ? 2'b10 : 2'b00);
 
 endmodule
 

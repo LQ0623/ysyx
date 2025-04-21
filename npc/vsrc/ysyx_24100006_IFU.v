@@ -35,7 +35,10 @@ module ysyx_24100006_ifu(
     output 	reg [31:0] 	pc_F,
 
 	// PC更换为NPC的有效信号，本来可以直接使用if_valid的，但是因为访问指令寄存器加入了延时之后，导致取指和pc更新对不上拍
-	output 	reg 		PCW
+	output 	reg 		PCW,
+
+	// Access Fault异常
+	input	[1:0]		Access_Fault
 );
 
 	reg [3:0] delay_counter;	// 因为现在的取指还是需要受到下面的模块执行情况的控制，所以需要将if_valid置为1之前需要延迟几个时钟周期，等到后面的模块执行完毕
@@ -119,6 +122,7 @@ module ysyx_24100006_ifu(
 		.clk(clk),
 		.reset(reset),
 		.PCW(PCW),
+		.Access_Fault(Access_Fault),
 		.npc(npc),
 		.pc(pc_F)
 	);

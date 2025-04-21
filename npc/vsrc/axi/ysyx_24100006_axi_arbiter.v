@@ -236,13 +236,28 @@ module ysyx_24100006_axi_arbiter (
     //     end
     // end
 
+    // 写入的实际数据，数据需要移位的
+    wire [31:0] real_axi_wdata;
+    assign real_axi_wdata = (mem_axi_wstrb == 4'b0001) ? ({24'b0,mem_axi_wdata[7:0]}) :
+                                (mem_axi_wstrb == 4'b0010) ? ({16'b0,mem_axi_wdata[7:0],8'b0}) :
+                                (mem_axi_wstrb == 4'b0100) ? ({8'b0,mem_axi_wdata[7:0],16'b0}) :
+                                (mem_axi_wstrb == 4'b1000) ? ({mem_axi_wdata[7:0],24'b0}) :
+                                // sh 指令
+                                (mem_axi_wstrb == 4'b0011) ? ({16'b0,mem_axi_wdata[15:0]}) :
+                                (mem_axi_wstrb == 4'b0110) ? ({8'b0,mem_axi_wdata[15:0],8'b0}) :
+                                (mem_axi_wstrb == 4'b1100) ? ({mem_axi_wdata[15:0],16'b0}) :
+                                // sw 指令
+                                (mem_axi_wstrb == 4'b1111) ? mem_axi_wdata : 32'b0;
+
+
+
     // SRAM 写通道
     assign sram_axi_awvalid =   mem_axi_awvalid;
     assign sram_axi_wvalid  =   mem_axi_wvalid;
     assign sram_axi_bready  =   mem_axi_bready;
     assign sram_axi_awaddr  =   mem_axi_awaddr; //  写地址可以一直传输,但是只有当valid=1时才能够有效
     // assign sram_axi_awaddr  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;
-    assign sram_axi_wdata   =   mem_axi_wdata;
+    assign sram_axi_wdata   =   real_axi_wdata;
     assign sram_axi_bytes   =   mem_axi_bytes;
 
     // AXI新增信号

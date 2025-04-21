@@ -57,6 +57,9 @@ module ysyx_24100006_memu(
 	output 	reg [3:0]	axi_wstrb,
 	output	reg			axi_wlast,
 
+	// 用于分辨原始的地址的后两位
+	output 	reg [1:0]	axi_addr_suffix,
+
 
 	// 握手机制使用
 	input 				exe_valid,
@@ -121,6 +124,8 @@ module ysyx_24100006_memu(
 			axi_wstrb	<= 4'b0;
 			axi_wlast	<= 1'b0;
 
+			axi_addr_suffix<= 2'b0;
+
 			// 模块握手使用
 			mem_valid	<= 1'b0;
 			mem_ready	<= 1'b1;
@@ -150,6 +155,8 @@ module ysyx_24100006_memu(
 						axi_arsize		<= 	(Mem_RMask_M == 0 || Mem_RMask_M == 1) ? 3'b000 :
 											(Mem_RMask_M == 2 || Mem_RMask_M == 3) ? 3'b001 :
 											(Mem_RMask_M == 4) ? 3'b010 : 3'b010;
+						
+						axi_addr_suffix	<= locked_addr[1:0];
 
 						// axi握手
 						axi_arvalid		<= 1'b1;
@@ -235,6 +242,7 @@ module ysyx_24100006_memu(
 					// 将读取字节和写入字节复位
 					axi_arsize	<= 3'b0;
 					axi_awsize	<= 3'b010;
+					axi_addr_suffix	<= 2'b0;
 				end
 				S_ACCESS: begin
 					if(mem_valid && wb_ready) begin
@@ -267,8 +275,8 @@ module ysyx_24100006_memu(
 
 
     /* 为了对齐地址 */
-	assign mem_addr = locked_addr & (~32'h3);	// 对齐到4字节边界
-	assign place = locked_addr - mem_addr;		// 计算实际地址与字节之间的偏移
+	assign mem_addr = locked_addr;	// 对齐到4字节边界
+	assign place = locked_addr - locked_addr & (~32'h3);		// 计算实际地址与字节之间的偏移
 	assign RealMemWmask = Mem_WMask_M << place;	// 真实的写内存的掩码
 	
 
