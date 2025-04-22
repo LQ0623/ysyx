@@ -1,5 +1,6 @@
 AM_SRCS := riscv/ysyxsoc/start.S \
            riscv/ysyxsoc/trm.c \
+           riscv/ysyxsoc/bootloader.c \
            riscv/ysyxsoc/ioe.c \
            riscv/ysyxsoc/timer.c \
            riscv/ysyxsoc/input.c \
@@ -13,6 +14,7 @@ LDSCRIPTS += $(AM_HOME)/scripts/linkersoc.ld
 LDFLAGS   += --defsym=_pmem_start=0x20000000 --defsym=_entry_offset=0x0
 LDFLAGS   += --defsym=_sram_start=0x0f000000 --defsym=_sram_offset=0x0
 LDFLAGS   += --gc-sections -e _start 
+# LDFLAGS   += --print-map
 
 # CFLAGS += -fsanitize=address         # 启用 ASan
 # LDFLAGS += -fsanitize=address        # 链接 ASan 库
@@ -32,10 +34,12 @@ CFLAGS += -DMAINARGS_MAX_LEN=$(MAINARGS_MAX_LEN) -DMAINARGS_PLACEHOLDER=\""$(MAI
 insert-arg: image
 	@python $(AM_HOME)/tools/insert-arg.py $(IMAGE).bin $(MAINARGS_MAX_LEN) "$(MAINARGS_PLACEHOLDER)" "$(mainargs)"
 
+# bss不含有数据，所以不能设置为contents属性，contents属性表示该段在目标文件中包含实际数据（即在文件中占用存储空间），但是bss本来就不应该在文件中占空间
+# bss如果不设置contents属性就表示不会被写入到bin文件中，只有在实际运行的时候才会别分配空间
 image: image-dep
 	@$(OBJDUMP) -d $(IMAGE).elf > $(IMAGE).txt
 	@echo + OBJCOPY "->" $(IMAGE_REL).bin
-	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $(IMAGE).elf $(IMAGE).bin
+	@$(OBJCOPY) -S --set-section-flags .bss=alloc -O binary $(IMAGE).elf $(IMAGE).bin
 
 run: insert-arg
 	$(MAKE) -C $(NPC_HOME) ISA=$(ISA) run ARGS="$(NPCFLAGS)" IMG=$(IMAGE).bin

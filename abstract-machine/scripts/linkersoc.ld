@@ -1,54 +1,66 @@
 ENTRY(_start)
-PHDRS { text PT_LOAD; data PT_LOAD; }
+PHDRS { 
+  text PT_LOAD; 
+  data PT_LOAD; 
+}
+
+MEMORY {
+  mrom : ORIGIN = 0x20000000, LENGTH = 4K
+  sram : ORIGIN = 0x0f000000, LENGTH = 8K
+}
 
 SECTIONS {
   /* 代码段 */
-  . = _pmem_start + _entry_offset;
+  . = ORIGIN(mrom);
   .text : {
     *(entry)
-    *(.text*)
-  } : text
+    *(.text.boot)       /* bootloader代码 */
+    *(.text*)           /* 其他代码 */
+    _etext = .;
+  } > mrom AT > mrom : text
   etext = .;
-  _etext = .;
-  
+
   /* 只读数据段 */
   .rodata : {
+    _rodata = .;
     *(.rodata*)
-  }
-  
-  /* 数据段 */
+    _erodata = .;
+  } > mrom AT > mrom
+
+  /* 数据段 (从MROM加载到SRAM) */
   .data : {
-    *(.data)
-  } : data
-  edata = .;
-  _data = .;
-  
-  /* SRAM布局 (0x0F000000-0x0F0001FFF) */
-  . = _sram_start;         /* 起始地址0x0F000000 */
-  
-  /* BSS段 */
+    _data = .;
+    *(.data*)           /* 包含所有.data子段 */
+    *(.sdata*)          /* 显式包含.sdata.str1/.sdata.test */
+    _edata = .;
+  } > sram AT > mrom : data
+  /* _edata = .; */
+
+  /* BSS段 (不分配到任何PHDR) */
   .bss : {
     _bss_start = .;
     *(.bss*)
     *(.sbss*)
     *(.scommon)
     _bss_end = .;
-  }
-  
-  /* 堆区设置 */
-  _heap_start = .;         /* 堆起始地址0x0F000000 */
-  _heap_end = . + 0x1C00;  /* 堆结束地址0x0F001C00（7KB） */
-  
-  /* 栈区设置 */
-  . = _heap_end;           /* 栈起始地址0x0F001C00 */
-  _stack_top = .;
-  . = . + 0x400;          /* 栈区大小1KB（实际结束地址0x0F002000，但需限制在SRAM内） */
-  
-  /* 强制限制在SRAM物理范围内 */
-  . = _sram_start + 0x2000; /* SRAM实际结束地址0x0F0001FFF */
-  _stack_pointer = .;      /* 正确栈指针地址0x0F001FFF */
-  
-  /* 调试符号 */
+  } > sram
+
+  /* SRAM布局 */
+  /*. = ORIGIN(sram);     /* 起始地址0x0F000000 */
+
+  /* 堆栈和堆定义 */
+  /* _stack_top = ADDR(.bss) + SIZEOF(.bss); */
+  _stack_top = ALIGN(0x10);
+  . = _stack_top + 0x800;
+  _stack_pointer = .;
   end = .;
   _end = .;
+
+  /* _heap_start = _stack_pointer; */
+  _heap_start = ALIGN(0x10);
+  _heap_end = _heap_start + 0x400;
+
+  /* 数据段加载地址符号 */
+  _sdata_lma = LOADADDR(.data);  /* MROM中的起始地址 */
+  _edata_lma = _sdata_lma + SIZEOF(.data);
 }
