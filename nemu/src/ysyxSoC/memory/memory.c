@@ -86,7 +86,7 @@ word_t uart_io_read(paddr_t addr, int len){
 }
 
 void uart_io_write(paddr_t addr, int len, word_t data){
-    assert(len ==1 && addr == UART_REG_RB);
+    assert(len ==1);
     // if(addr == UART_REG_RB){
     //     putchar(data);
     // }
