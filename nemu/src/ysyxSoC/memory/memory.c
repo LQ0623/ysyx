@@ -82,7 +82,10 @@ void soc_write(paddr_t paddr, int len, word_t data){
 }
 
 word_t uart_io_read(paddr_t addr, int len){
-    assert(0);  //  uart目前不能读取
+    assert(len == 1);
+    if(addr == UART_REG_LS)
+        return 32;          // 说明FIFO现在是空的
+    return 0;
 }
 
 void uart_io_write(paddr_t addr, int len, word_t data){

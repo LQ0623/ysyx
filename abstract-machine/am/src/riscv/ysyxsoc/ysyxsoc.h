@@ -7,6 +7,17 @@
 #define UART_REG_DL2 0x10000001
 #define UART_REG_LS  0x10000005
 
+// Line Status Register bits
+#define UART_LS_DR	0	// Data ready
+#define UART_LS_OE	1	// Overrun Error
+#define UART_LS_PE	2	// Parity Error
+#define UART_LS_FE	3	// Framing Error
+#define UART_LS_BI	4	// Break interrupt
+#define UART_LS_TFE	5	// Transmit FIFO is empty
+#define UART_LS_TE	6	// Transmitter Empty indicator
+#define UART_LS_EI	7	// Error indicator
+
+
 #define DEVICE_BASE 	0xa0000000
 #define MMIO_BASE 	    0xa0000000
 

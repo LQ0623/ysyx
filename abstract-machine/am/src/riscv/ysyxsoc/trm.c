@@ -23,6 +23,12 @@ void init_uart(uint16_t div){
 }
 
 void putch(char ch) {
+  uint8_t ls;     // 读取LS寄存器
+  uint8_t tfe = 1;    // 判断发送FIFO是否有数据
+  do{
+    ls  = inb(UART_REG_LS);
+    tfe = (ls >> UART_LS_TFE) & 1;
+  }while(tfe == 0); // tfe==1表示FIFO中没有数据
   outb(UART_REG_RB, ch);
 }
 
@@ -32,7 +38,7 @@ void halt(int code) {
 }
 
 void _trm_init() {
-  init_uart(400);
+  init_uart(20);
   int ret = main(mainargs);
   halt(ret);
 }
