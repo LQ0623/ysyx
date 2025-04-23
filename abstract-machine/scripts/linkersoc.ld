@@ -25,7 +25,7 @@ SECTIONS {
     _rodata = .;
     *(.rodata*)
     _erodata = .;
-  } > mrom AT > mrom : text
+  } > mrom AT > mrom
 
   /* 数据段 (从MROM加载到SRAM) */
   .data : {
@@ -34,7 +34,7 @@ SECTIONS {
     *(.sdata*)          /* 显式包含.sdata.str1/.sdata.test */
     _edata = .;
   } > sram AT > mrom : data
-  _edata = .;
+  /* _edata = .; */
 
   /* BSS段 (不分配到任何PHDR) */
   .bss : {
@@ -46,17 +46,19 @@ SECTIONS {
   } > sram
 
   /* SRAM布局 */
-  . = ORIGIN(sram);     /* 起始地址0x0F000000 */
+  /*. = ORIGIN(sram);     /* 起始地址0x0F000000 */
 
   /* 堆栈和堆定义 */
-  _stack_top = ADDR(.bss) + SIZEOF(.bss);
+  /* _stack_top = ADDR(.bss) + SIZEOF(.bss); */
+  _stack_top = ALIGN(0x10);
   . = _stack_top + 0x800;
   _stack_pointer = .;
   end = .;
   _end = .;
 
-  _heap_start = _stack_pointer;
-  _heap_end = _heap_start + 0x300;
+  /* _heap_start = _stack_pointer; */
+  _heap_start = ALIGN(0x10);
+  _heap_end = _heap_start + 0x400;
 
   /* 数据段加载地址符号 */
   _sdata_lma = LOADADDR(.data);  /* MROM中的起始地址 */
