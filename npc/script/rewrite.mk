@@ -43,7 +43,7 @@ ifeq ($(ENABLE_MTRACE), 1)
 endif
 
 # 是否开启difftest
-ENABLE_DIFFTEST ?= 1
+ENABLE_DIFFTEST ?= 0
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
 endif

@@ -42,7 +42,7 @@ static long load_img() {
   fflush(stdout);
 
   fseek(fp, 0, SEEK_SET);
-  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp);
+  int ret = fread(guest_to_host(MROM_BASE), size, 1, fp);
   assert(ret == 1);
 
   fclose(fp);
@@ -86,7 +86,11 @@ void init_monitor(int argc, char *argv[]){
 
     init_log(log_file);
 
-    init_mem(0x1fffffff);
+    // init_mem(0x7fffffff);
+
+    init_mrom();
+
+    init_flash();
 
     long img_size = load_img();
 

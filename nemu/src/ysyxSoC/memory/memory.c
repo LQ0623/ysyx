@@ -31,8 +31,20 @@ static inline bool in_Sram(paddr_t addr){
     return addr - SRAM_BASE < SRAM_SIZE;
 }
 
+static inline bool in_uart(paddr_t addr){
+    return addr - UART_BASE < UART_SIZE;
+}
+
 bool in_socMem(paddr_t addr){
     return in_Mrom(addr) || in_Sram(addr);
+}
+
+bool in_socDevW(paddr_t addr){
+    return in_uart(addr);
+}
+// TAG：目前只是留一个接口
+bool in_socDevR(paddr_t addr){
+    return in_uart(addr);
 }
 
 word_t soc_read(paddr_t paddr, int len){
@@ -67,4 +79,32 @@ void soc_write(paddr_t paddr, int len, word_t data){
         case 4: *(uint32_t *)ptr = data; return;
         default: assert(0);
     }
+}
+
+word_t uart_io_read(paddr_t addr, int len){
+    assert(len == 1);
+    if(addr == UART_REG_LS)
+        return 32;          // 说明FIFO现在是空的
+    return 0;
+}
+
+void uart_io_write(paddr_t addr, int len, word_t data){
+    assert(len ==1);
+    // if(addr == UART_REG_RB){
+    //     putchar(data);
+    // }
+}
+
+word_t socDev_read(paddr_t addr,int len){
+    word_t ret;
+    if(in_uart(addr)){
+        ret = uart_io_read(addr, len);
+    } else assert(0);
+    return ret;
+}
+
+void socDev_write(paddr_t addr, int len, word_t data){
+    if(in_uart(addr)){
+        uart_io_write(addr, len, data);
+    } else assert(0);
 }
