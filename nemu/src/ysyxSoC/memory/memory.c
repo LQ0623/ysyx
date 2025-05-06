@@ -14,7 +14,7 @@ void init_mrom(){
 void init_flash(){
     flash = malloc(0xfffffff);
     assert(flash);
-    memset(flash, 0, 0x1fff);     // 使用实际分配的大小清零
+    memset(flash, 0, 0xfffffff);     // 使用实际分配的大小清零
     Log("flash area [" FMT_PADDR ", " FMT_PADDR "]", FLASH_BASE, FLASH_BASE + FLASH_SIZE);
 }
 
@@ -101,7 +101,8 @@ void soc_write(paddr_t paddr, int len, word_t data){
 word_t uart_io_read(paddr_t addr, int len){
     assert(len == 1);
     if(addr == UART_REG_LS)
-        return 32;          // 说明FIFO现在是空的
+        // return 32;          // 说明FIFO现在是空的
+        return 0x60;        // FIFO为空 且 移位寄存器已完成最后一位发送后置位   
     return 0;
 }
 
