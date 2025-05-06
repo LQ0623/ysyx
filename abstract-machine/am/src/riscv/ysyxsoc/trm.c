@@ -97,7 +97,7 @@ void halt(int code) {
 }
 
 void _trm_init() {
-  init_uart(300);
+  init_uart(1);
   int ret = main(mainargs);
   halt(ret);
 }
