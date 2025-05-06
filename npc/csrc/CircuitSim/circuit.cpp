@@ -15,7 +15,7 @@ void difftest_step();
 #define LOG_BUF_SIZE 256
 uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
-word_t pc, snpc, dnpc, inst, prev_pc, PCW, if_valid;
+word_t pc, snpc, dnpc, inst, prev_pc, PCW, if_valid, read_target_module;
 uint64_t timer_start, timer_end,g_timer;	// 测试运行的时间的
 uint64_t timer,count = 0;
 static uint8_t opcode;
@@ -88,6 +88,16 @@ static void trace_and_difftest() {
 	#ifdef CONFIG_ITRACE
 		if(if_valid == 1){
 			char log_buf[LOG_BUF_SIZE] = {0};
+			
+			// TAG:这里是为了找bug加入的,后面可以删除
+			// printf("if_valid is %d\n",if_valid);
+			// uint8_t *ptr = (uint8_t*)&inst; // 将指针转为uint8_t类型
+			// for(int i=0; i<4; i++) {
+			// 	printf("%02x", ptr[i]); // 通过索引访问连续字节
+			// }
+			// printf("\n");
+
+
 			instruction_disassemble(log_buf, (uint8_t *)&inst);
 			// 输出到屏幕
 			if (g_print_step) { puts(log_buf); }
@@ -150,7 +160,8 @@ void cpu_exec(uint32_t n){
 		pc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__pc_FD;
 		dnpc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__IF__DOT__PC__DOT__real_npc;
 		// PCW = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__PCW;
-		if_valid = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__axi_rready_if;	// if_valid为高表示已经取到了指令
+		read_target_module = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__arbiter__DOT__read_targeted_module;
+		if_valid = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__sram_axi_rvalid & (read_target_module == 1);	// if_valid为高表示已经取到了指令
 		// printf("inst is %#x\n",inst);
 		// printf("if_valid is %d\t",if_valid);
 		// printf("PCW is %d\t",PCW);

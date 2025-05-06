@@ -1,30 +1,43 @@
 #include "../include/memory.h"
 
 uint8_t *mrom = NULL;
+uint8_t *flash = NULL;
 static uint8_t *sram = NULL;
 
 void init_mrom(){
     mrom = malloc(0xfff);
-    memset(mrom, 0, 0xfff);     // 使用实际分配的大小清零
     assert(mrom);
+    memset(mrom, 0, 0xfff);     // 使用实际分配的大小清零
     Log("mrom area [" FMT_PADDR ", " FMT_PADDR "]", MROM_BASE, MROM_BASE + MROM_SIZE);
+}
+
+void init_flash(){
+    flash = malloc(0xfffffff);
+    assert(flash);
+    memset(flash, 0, 0x1fff);     // 使用实际分配的大小清零
+    Log("flash area [" FMT_PADDR ", " FMT_PADDR "]", FLASH_BASE, FLASH_BASE + FLASH_SIZE);
 }
 
 void init_sram(){
     sram = malloc(0x1fff);
-    memset(sram, 0, 0x1fff);     // 使用实际分配的大小清零
     assert(sram);
+    memset(sram, 0, 0x1fff);     // 使用实际分配的大小清零
     Log("sram area [" FMT_PADDR ", " FMT_PADDR "]", SRAM_BASE, SRAM_BASE + SRAM_SIZE);
 }
 
 void init_soc(){
-    init_mrom();
+    // init_mrom();
+    init_flash();
     init_sram();
     Log("soc init");
 }
 
 inline bool in_Mrom(paddr_t addr){
     return addr - MROM_BASE < MROM_SIZE;
+}
+
+inline bool in_Flash(paddr_t addr){
+    return addr - FLASH_BASE < FLASH_SIZE;
 }
 
 static inline bool in_Sram(paddr_t addr){
@@ -36,7 +49,7 @@ static inline bool in_uart(paddr_t addr){
 }
 
 bool in_socMem(paddr_t addr){
-    return in_Mrom(addr) || in_Sram(addr);
+    return in_Mrom(addr) || in_Sram(addr) || in_Flash(addr);
 }
 
 bool in_socDevW(paddr_t addr){
@@ -53,6 +66,8 @@ word_t soc_read(paddr_t paddr, int len){
         ptr = mrom + paddr - MROM_BASE;
     } else if(in_Sram(paddr)){
         ptr = sram + paddr - SRAM_BASE;
+    } else if(in_Flash(paddr)){
+        ptr = flash + paddr - FLASH_BASE;
     } else assert(0);
 
     switch (len) {
@@ -71,6 +86,8 @@ void soc_write(paddr_t paddr, int len, word_t data){
         ptr = mrom + paddr - MROM_BASE;
     } else if(in_Sram(paddr)){
         ptr = sram + paddr - SRAM_BASE;
+    } else if(in_Flash(paddr)){
+        ptr = flash + paddr - FLASH_BASE;
     } else assert(0);
 
     switch (len) {

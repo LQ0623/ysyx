@@ -33,10 +33,12 @@ uint8_t* guest_to_host(paddr_t paddr) {
     ptr = pmem + paddr - CONFIG_MBASE;
   } else if(in_Mrom(paddr)){
     ptr = mrom + paddr - 0x20000000;
+  } else if(in_Flash(paddr)){
+    ptr = flash + paddr - 0x30000000;
   }
   return ptr;
 }
-paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
+paddr_t host_to_guest(uint8_t *paddr) { return paddr - pmem + CONFIG_MBASE; }
 
 static word_t pmem_read(paddr_t addr, int len) {
   word_t ret = host_read(guest_to_host(addr), len);

@@ -29,7 +29,7 @@ module ysyx_24100006_pc(
 		2'b10,32'b0
 	});
 
-	ysyx_24100006_Reg #(32,32'h20000000) pc1(
+	ysyx_24100006_Reg #(32,32'h30000000) pc1(
 		.clk(clk),
 		.rst(reset),
 		.din(real_npc),

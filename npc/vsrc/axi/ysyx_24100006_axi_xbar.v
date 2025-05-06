@@ -1,7 +1,8 @@
 module ysyx_24100006_axi_xbar #(
     parameter SRAM_ADDR     = 32'h8000_0000,
-    parameter UART_ADDR     = 32'ha000_03f8,
-    parameter CLINT_ADDR    = 32'ha000_0048
+    parameter UART_ADDR     = 32'h1000_0000,
+    parameter CLINT_ADDR    = 32'ha000_0048,
+    parameter SPI_ADDR      = 32'h1000_1000
 )(
     input         clk,
     input         reset,
@@ -117,6 +118,9 @@ module ysyx_24100006_axi_xbar #(
     // wire sel_clint  = (m_axi_awaddr >= CLINT_ADDR && m_axi_awaddr < (CLINT_ADDR + 32'h0000_0008)) ||
     //                 (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
 
+    wire sel_uart = (m_axi_araddr >= UART_ADDR && m_axi_araddr < (UART_ADDR + 32'h0000_1000));           // UART
+    wire sel_spi  = (m_axi_araddr >= SPI_ADDR && m_axi_araddr < (SPI_ADDR + 32'h0000_1000));           // SPI
+
     wire sel_sram = 1;
     wire sel_clint = 0;
 
@@ -177,7 +181,9 @@ module ysyx_24100006_axi_xbar #(
     // 新增AXI信号
     assign m_axi_rlast      = sram_axi_rlast;
     assign sram_axi_arlen   = m_axi_arlen;
-    assign sram_axi_arsize  = 3'b010;           // 读SRAM是地址对齐的，所以需要直接读取4字节，然后在选择
+    // 读SRAM是地址对齐的，所以需要直接读取4字节，然后在选择；
+    // 但是读取UART的时候，只能读取一个字节，所以需要改变大小，不然就会强制读取对齐边界的地址的值
+    assign sram_axi_arsize  = sel_uart ? 3'b000 : (sel_spi ? m_axi_arsize : 3'b010);
     assign sram_axi_awlen   = m_axi_awlen;
     assign sram_axi_awsize  = m_axi_awsize;
     assign sram_axi_wstrb   = m_axi_wstrb;
