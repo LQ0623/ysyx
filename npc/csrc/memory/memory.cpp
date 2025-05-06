@@ -104,7 +104,7 @@ uint8_t *guest_to_host(uint32_t paddr){
 
 extern "C" void flash_read(int32_t addr, int32_t *data) {
 	addr = addr + FLASH_BASE;
-	printf("flash addr is 0x%08x\n",addr);
+	// printf("flash addr is 0x%08x\n",addr);
 	int align_addr = addr & (~3);
 
 	// 需要转化大小端

@@ -25,7 +25,7 @@ endif
 
 # 是否记录执行的指令到log文件中
 # 记录执行过的指令的功能不要开(因为这里没有给char-test建文件夹,导致执行过的指令无法写入到npc-log.txt中就会直接输出到终端)
-ENABLE_ITRACE ?= 1
+ENABLE_ITRACE ?= 0
 ifeq ($(ENABLE_ITRACE), 1)
     CPPFLAGS += -DCONFIG_ITRACE
 endif
@@ -37,7 +37,7 @@ ifeq ($(ENABLE_FTRACE), 1)
 endif
 
 # 是否开启mtrace
-ENABLE_MTRACE ?= 1
+ENABLE_MTRACE ?= 0
 ifeq ($(ENABLE_MTRACE), 1)
     CPPFLAGS += -DCONFIG_MTRACE
 endif

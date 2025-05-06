@@ -23,17 +23,17 @@ module ysyx_24100006_CSR #(ADDR_WIDTH = 12, DATA_WIDTH = 32) (
   reg [DATA_WIDTH-1:0] rf [5:0];
 
   // 选择写入到哪个寄存器
-  wire [1:0]waddr_in;
+  wire [2:0]waddr_in;
   wire [2:0]raddr_in;
   
-  ysyx_24100006_MuxKey #(4, 12, 2) waddr_mux(
+  ysyx_24100006_MuxKey #(4, 12, 3) waddr_mux(
     .out 	(waddr_in  ),
     .key 	(waddr  ),
     .lut 	({
-      `MSTATUS, 2'b00,
-      `MTVEC  , 2'b01,
-      `MCAUSE , 2'b10,
-      `MEPC   , 2'b11
+      `MSTATUS, 3'b000,
+      `MTVEC  , 3'b001,
+      `MCAUSE , 3'b010,
+      `MEPC   , 3'b011
     }  )
   );
   ysyx_24100006_MuxKey #(6, 12, 3) raddr_mux(
@@ -62,7 +62,7 @@ module ysyx_24100006_CSR #(ADDR_WIDTH = 12, DATA_WIDTH = 32) (
     end
     rf[0] <= 32'h1800;
     rf[4] <= 32'h79737978;
-    rf[5] <= 32'h16FBCA6;
+    rf[5] <= 32'd24100006;
   end
 
   assign rdata = rf[raddr_in];
