@@ -22,6 +22,27 @@ void init_uart(uint16_t div){
   outb(UART_REG_LC, 0b00000011);
 }
 
+void putch(char ch) {
+  uint8_t lsr;     // 读取LS寄存器
+  uint8_t tfe;    // 判断发送FIFO是否有数据
+  do{
+    lsr  = inb(UART_REG_LS);
+    tfe = (lsr >> UART_LS_TFE) & 1;
+  }while(tfe == 0); // tfe==1表示FIFO中没有数据
+  outb(UART_REG_RB, ch);
+}
+
+void halt(int code) {
+  npc_trap(code);
+  while (1);
+}
+
+void _trm_init() {
+  init_uart(1);
+  int ret = main(mainargs);
+  halt(ret);
+}
+
 // 初始化SPI协议的配置
 void init_spi(uint32_t spi_clock, uint8_t spi_ss, uint8_t char_len, uint8_t tx_neg, uint8_t rx_neg, uint8_t lsb){
   uint16_t divider = 500000000 / (spi_clock * 2) - 1;  // 除数设置寄存器
@@ -79,25 +100,4 @@ void spi_tx_start(){
   ctrl &= ~0x100;    // 清除GO_BUSY
   outl(SPI_CTRL, ctrl);
   outl(SPI_CTRL, ctrl | 0x100);  // 将SPI_CTRL的GO_BUSSY位置为高表示要发送数据
-}
-
-void putch(char ch) {
-  uint8_t lsr;     // 读取LS寄存器
-  uint8_t tfe;    // 判断发送FIFO是否有数据
-  do{
-    lsr  = inb(UART_REG_LS);
-    tfe = (lsr >> UART_LS_TFE) & 1;
-  }while(tfe == 0); // tfe==1表示FIFO中没有数据
-  outb(UART_REG_RB, ch);
-}
-
-void halt(int code) {
-  npc_trap(code);
-  while (1);
-}
-
-void _trm_init() {
-  init_uart(1);
-  int ret = main(mainargs);
-  halt(ret);
 }
