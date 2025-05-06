@@ -43,7 +43,8 @@ ifeq ($(ENABLE_MTRACE), 1)
 endif
 
 # 是否开启difftest
-ENABLE_DIFFTEST ?= 1
+# 现在开着diff test进行轮询串口还是存在问题,可能需要直接skip掉这轮询的时候的检测,不然的话UART_REG_LS的值一直变化,nemu不好返回值
+ENABLE_DIFFTEST ?= 0
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
 endif
