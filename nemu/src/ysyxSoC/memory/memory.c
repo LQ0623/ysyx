@@ -36,7 +36,7 @@ inline bool in_Mrom(paddr_t addr){
     return addr - MROM_BASE < MROM_SIZE;
 }
 
-inline bool in_Flash(paddr_t addr){
+inline bool in_Flash (paddr_t addr){
     return addr - FLASH_BASE < FLASH_SIZE;
 }
 
