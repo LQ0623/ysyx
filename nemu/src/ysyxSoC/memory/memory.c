@@ -108,9 +108,9 @@ word_t uart_io_read(paddr_t addr, int len){
 
 void uart_io_write(paddr_t addr, int len, word_t data){
     assert(len ==1);
-    if(addr == UART_REG_RB){
-        putchar(data);
-    }
+    // if(addr == UART_REG_RB){
+    //     putchar(data);
+    // }
 }
 
 word_t socDev_read(paddr_t addr,int len){
