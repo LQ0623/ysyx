@@ -82,7 +82,8 @@ void init_flash(){
 	flash = (uint8_t *)malloc(FLASH_SIZE * sizeof(uint8_t));
 	memset(flash, 0, FLASH_SIZE);
 	// memcpy(flash, flash_src_data, FLASH_SIZE);
-	memcpy(flash, img_char_test, sizeof(img_char_test));
+	// memcpy(flash, img_char_test, sizeof(img_char_test));
+	memcpy(flash, img, sizeof(img));
 
 	if(flash == NULL) assert(0);
 	printf("flash memory area [%#x, %#lx]\n",FLASH_BASE, FLASH_BASE + FLASH_SIZE * sizeof(uint8_t));

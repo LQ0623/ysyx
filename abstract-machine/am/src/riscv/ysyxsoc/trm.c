@@ -82,12 +82,12 @@ void spi_tx_start(){
 }
 
 void putch(char ch) {
-  uint8_t lsr;     // 读取LS寄存器
-  uint8_t tfe;    // 判断发送FIFO是否有数据
-  do{
-    lsr  = inb(UART_REG_LS);
-    tfe = (lsr >> UART_LS_TFE) & 1;
-  }while(tfe == 0); // tfe==1表示FIFO中没有数据
+  // uint8_t lsr;     // 读取LS寄存器
+  // uint8_t tfe;    // 判断发送FIFO是否有数据
+  // do{
+  //   lsr  = inb(UART_REG_LS);
+  //   tfe = (lsr >> UART_LS_TFE) & 1;
+  // }while(tfe == 0); // tfe==1表示FIFO中没有数据
   outb(UART_REG_RB, ch);
 }
 
@@ -97,7 +97,7 @@ void halt(int code) {
 }
 
 void _trm_init() {
-  init_uart(300);
+  init_uart(30000);
   int ret = main(mainargs);
   halt(ret);
 }
