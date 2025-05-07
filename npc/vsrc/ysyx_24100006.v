@@ -475,7 +475,7 @@ module ysyx_24100006(
 		.AXI_LEN_WIDTH     (8),
 		.AXI_SIZE_WIDTH    (3),
 		.AXI_BURST_WIDTH   (2)
-	) u_axi4_inst (
+	) axi4_inst (
 		// 全局信号
 		.clk                      (clock),
 		.reset                    (reset),

@@ -6,7 +6,7 @@ include VysyxSoCFull.mk
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
 # 是否开启波形生成
-ENABLE_WAVE ?= 1
+ENABLE_WAVE ?= 0
 ifeq ($(ENABLE_WAVE), 1)
     CPPFLAGS += -DCONFIG_DUMP_WAVE
 endif
@@ -18,14 +18,14 @@ ifeq ($(ENABLE_WATCHPOINT), 1)
 endif
 
 # 是否开启trace功能
-ENABLE_TRACE ?= 1
+ENABLE_TRACE ?= 0
 ifeq ($(ENABLE_TRACE), 1)
     CPPFLAGS += -DCONFIG_TRACE
 endif
 
 # 是否记录执行的指令到log文件中
 # 记录执行过的指令的功能不要开(因为这里没有给char-test建文件夹,导致执行过的指令无法写入到npc-log.txt中就会直接输出到终端)
-ENABLE_ITRACE ?= 1
+ENABLE_ITRACE ?= 0
 ifeq ($(ENABLE_ITRACE), 1)
     CPPFLAGS += -DCONFIG_ITRACE
 endif
@@ -37,12 +37,13 @@ ifeq ($(ENABLE_FTRACE), 1)
 endif
 
 # 是否开启mtrace
-ENABLE_MTRACE ?= 1
+ENABLE_MTRACE ?= 0
 ifeq ($(ENABLE_MTRACE), 1)
     CPPFLAGS += -DCONFIG_MTRACE
 endif
 
 # 是否开启difftest
+# 现在开着diff test进行轮询串口还是存在问题,可能需要直接skip掉轮询的时候的检测,不然的话UART_REG_LS的值一直变化,nemu不好返回值
 ENABLE_DIFFTEST ?= 0
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST

@@ -52,10 +52,10 @@ void init_difftest(char *ref_so_file, long img_size) {
     #endif
 
     ref_difftest_init();
-    ref_difftest_memcpy(MROM_BASE, (void *)guest_to_host(MROM_BASE), img_size, DIFFTEST_TO_REF);
+    ref_difftest_memcpy(FLASH_BASE, (void *)guest_to_host(FLASH_BASE), img_size, DIFFTEST_TO_REF);
     //get dut reg into CPU_state struct
     CPU_state dut_r;
-    dut_r.pc = MROM_BASE;
+    dut_r.pc = FLASH_BASE;
     for(int i = 0;i < REGNUM;i++)
         dut_r.gpr[i] = gpr[i];
     for(int i = 0;i < 4;i++){

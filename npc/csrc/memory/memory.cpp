@@ -82,7 +82,8 @@ void init_flash(){
 	flash = (uint8_t *)malloc(FLASH_SIZE * sizeof(uint8_t));
 	memset(flash, 0, FLASH_SIZE);
 	// memcpy(flash, flash_src_data, FLASH_SIZE);
-	memcpy(flash, img_char_test, sizeof(img_char_test));
+	// memcpy(flash, img_char_test, sizeof(img_char_test));
+	memcpy(flash, img, sizeof(img));
 
 	if(flash == NULL) assert(0);
 	printf("flash memory area [%#x, %#lx]\n",FLASH_BASE, FLASH_BASE + FLASH_SIZE * sizeof(uint8_t));
@@ -105,7 +106,22 @@ extern "C" void flash_read(int32_t addr, int32_t *data) {
 	addr = addr + FLASH_BASE;
 	// printf("flash addr is 0x%08x\n",addr);
 	int align_addr = addr & (~3);
-	*data = *(int32_t *)guest_to_host(align_addr);
+
+	// 需要转化大小端
+	uint32_t read_value;
+	read_value = *(uint32_t *)guest_to_host(align_addr);
+
+	// 手动交换32位数据的字节序
+    uint32_t swapped_value = 
+        ((read_value & 0x000000FF) << 24) |
+        ((read_value & 0x0000FF00) << 8)  |
+        ((read_value & 0x00FF0000) >> 8)  |
+        ((read_value & 0xFF000000) >> 24);
+
+	// 赋值给输出参数
+    *data = (int32_t)swapped_value;
+
+	// *data = *(int32_t *)guest_to_host(align_addr);
 }
 
 extern "C" void mrom_read(int32_t addr, int32_t *data) {

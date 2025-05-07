@@ -3,9 +3,11 @@
 #include <common.h>
 
 extern uint8_t *mrom;
+extern uint8_t *flash;
 void init_soc();
 bool in_socMem(paddr_t addr);       // 判断是否在SOC对应的存储中
 bool in_Mrom(paddr_t addr);         // 判断是否在MROM中
+bool in_Flash(paddr_t addr);        // 判断是否在FLASH
 bool in_socDevW(paddr_t addr);      // 是否写设备
 bool in_socDevR(paddr_t addr);      // 是否读设备
 

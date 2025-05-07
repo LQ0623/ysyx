@@ -419,7 +419,7 @@ module ysyx_24100006_controller_remake(
 
     always @(*) begin
         if(opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) begin
-            $display("asdasdasdasd");
+            // $display("asdasdasdasd");
             time_end();
             npc_trap(timer_counter);
         end

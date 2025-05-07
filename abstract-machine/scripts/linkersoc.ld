@@ -5,19 +5,20 @@ PHDRS {
 }
 
 MEMORY {
-  mrom : ORIGIN = 0x20000000, LENGTH = 4K
-  sram : ORIGIN = 0x0f000000, LENGTH = 8K
+  mrom  : ORIGIN = 0x20000000, LENGTH = 4K
+  flash : ORIGIN = 0x30000000, LENGTH = 1600M
+  sram  : ORIGIN = 0x0f000000, LENGTH = 8K
 }
 
 SECTIONS {
   /* 代码段 */
-  . = ORIGIN(mrom);
+  . = ORIGIN(flash);
   .text : {
     *(entry)
     *(.text.boot)       /* bootloader代码 */
     *(.text*)           /* 其他代码 */
     _etext = .;
-  } > mrom AT > mrom : text
+  } > flash AT > flash : text
   etext = .;
 
   /* 只读数据段 */
@@ -25,9 +26,9 @@ SECTIONS {
     _rodata = .;
     *(.rodata*)
     _erodata = .;
-  } > mrom AT > mrom
+  } > flash AT > flash
 
-  /* 可以在这里获取data段的地址,也可以在后面使用LOADADDR获取data段在MROM中的地址 */
+  /* 可以在这里获取data段的地址,也可以在后面使用LOADADDR获取data段在FLASH中的地址 */
   /* _sdata_lma = .; */
   /* 数据段 (从MROM加载到SRAM) */
   .data : {
@@ -35,7 +36,7 @@ SECTIONS {
     *(.data*)           /* 包含所有.data子段 */
     *(.sdata*)          /* 显式包含.sdata.str1/.sdata.test */
     _edata = .;
-  } > sram AT > mrom : data
+  } > sram AT > flash : data
   /* _edata = .; */
 
   /* BSS段 (不分配到任何PHDR) */
