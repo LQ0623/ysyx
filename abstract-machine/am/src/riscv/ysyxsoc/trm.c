@@ -25,6 +25,7 @@ void init_uart(uint16_t div){
 void putch(char ch) {
   uint8_t lsr;     // 读取LS寄存器
   uint8_t tfe;    // 判断发送FIFO是否有数据
+  // 下面是负责串口轮询的
   do{
     lsr  = inb(UART_REG_LS);
     tfe = (lsr >> UART_LS_TFE) & 1;

@@ -43,6 +43,7 @@ static const uint32_t img_char_test[] = {
 static uint8_t *pmem = NULL;
 static uint8_t *mrom = NULL;
 static uint8_t *flash = NULL;
+static uint8_t *psram = NULL;
 static int cnt = 0;
 static uint8_t flash_src_data[FLASH_SIZE];  // 原始数据缓冲区
 
@@ -76,6 +77,7 @@ void generate_pattern_data() {
 }
 
 void init_flash(){
+	// TAG:下面三行是测试flash_read使用的，可以删除
 	printf("generate START\n");
 	generate_pattern_data();
 	printf("generate END\n");
@@ -89,19 +91,37 @@ void init_flash(){
 	printf("flash memory area [%#x, %#lx]\n",FLASH_BASE, FLASH_BASE + FLASH_SIZE * sizeof(uint8_t));
 }
 
+void init_psram(){
+	psram = (uint8_t *)malloc(PSRAM_SIZE * sizeof(uint8_t));
+	memcpy(psram, img, sizeof(img));
+	
+	if(psram == NULL) assert(0);
+	printf("psram memory area [%#x, %#lx]\n",PSRAM_BASE, PSRAM_BASE + PSRAM_SIZE * sizeof(uint8_t));
+}
+
 uint8_t *guest_to_host(uint32_t paddr){
-	if(in_pmem(paddr)){
-		return pmem + (paddr - PMEM_BASE);
-	} else if(in_mrom(paddr)){
+	if(in_mrom(paddr)){
 		return mrom + (paddr - MROM_BASE);
 	} else if(in_flash(paddr)){
 		return flash + (paddr - FLASH_BASE);
-	} else{
+	}
+	#ifdef CONFIG_SOC
+		else if(in_psram(paddr)){
+			return psram + (paddr - PSRAM_BASE);
+		} 
+		
+	#else 
+		else if(in_pmem(paddr)){
+			return pmem + (paddr - PMEM_BASE);
+		}
+	#endif
+	else{
 		panic("%#x is out of bound of npc",paddr);
 	}
 }
 
-
+// TAG:FALSH的大小端转化可能后续需要调整一下位置，现在是在flash_read将小端序转化为了大端序，然后在flash.v中转化为了小端序进行执行
+// flash读取出来的数据需要转化大小端，因为使用的flash是MSB优先的
 extern "C" void flash_read(int32_t addr, int32_t *data) {
 	addr = addr + FLASH_BASE;
 	// printf("flash addr is 0x%08x\n",addr);
@@ -110,6 +130,7 @@ extern "C" void flash_read(int32_t addr, int32_t *data) {
 	// 需要转化大小端
 	uint32_t read_value;
 	read_value = *(uint32_t *)guest_to_host(align_addr);
+	// printf("real read value is %08x\n",read_value);
 
 	// 手动交换32位数据的字节序
     uint32_t swapped_value = 
@@ -122,6 +143,59 @@ extern "C" void flash_read(int32_t addr, int32_t *data) {
     *data = (int32_t)swapped_value;
 
 	// *data = *(int32_t *)guest_to_host(align_addr);
+	// printf("real read value is %08x\n",*data);
+}
+
+extern "C" void psram_read(int32_t addr, int32_t *data){
+	// printf("psram read addr is %08x\n",addr);
+	addr = addr + PSRAM_BASE;	// 如果传过来的地址不只是偏移量，这个就可以直接删除
+	
+	int align_addr = addr & (~3);
+
+	// 需要转化大小端
+	// uint32_t read_value;
+	// read_value = *(uint32_t *)guest_to_host(align_addr);
+	// // printf("real read value is %08x\n",read_value);
+
+	// // 手动交换32位数据的字节序
+    // uint32_t swapped_value = 
+    //     ((read_value & 0x000000FF) << 24) |
+    //     ((read_value & 0x0000FF00) << 8)  |
+    //     ((read_value & 0x00FF0000) >> 8)  |
+    //     ((read_value & 0xFF000000) >> 24);
+
+	// // 赋值给输出参数
+    // *data = (int32_t)swapped_value;
+
+	*data = *(int32_t *)guest_to_host(align_addr);
+	// printf("READ addr = %#x , data = %#x\n",align_addr - PSRAM_BASE, *data);
+}
+
+extern "C" void psram_write(int addr, int data,int wstrb){
+	// printf("psram write addr is %08x\n",addr);
+	addr = addr + PSRAM_BASE;	// 如果传过来的地址不只是偏移量，这个就可以直接删除
+
+	// int align_addr = addr & (~3);
+	int align_addr = addr;		// 在这里写入不用进行对齐的操作
+	switch (wstrb)
+	{
+		case 0b0001:
+			*(uint8_t *)guest_to_host(align_addr) = (uint8_t)data;
+			// printf("WRITE addr = %#x , data = %#x ,wstrb = %d\n",align_addr - PSRAM_BASE, data, wstrb);
+			break;
+		case 0b0011:
+			*(uint16_t *)guest_to_host(align_addr) = (uint16_t)data;
+			// printf("WRITE addr = %#x , data = %#x ,wstrb = %d\n",align_addr, data, wstrb);
+			break;
+		case 0b1111:
+			*(uint32_t *)guest_to_host(align_addr) = (uint32_t)data;
+			// printf("WRITE addr = %#x , data = %#x ,wstrb = %d\n",align_addr - PSRAM_BASE, data, wstrb);
+			break;
+		default:
+			printf("wstrb is %x\n",wstrb);
+			panic("DONOT SUPPORT THIS WSTRB");
+			break;
+	}
 }
 
 extern "C" void mrom_read(int32_t addr, int32_t *data) {

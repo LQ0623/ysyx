@@ -144,6 +144,7 @@ static void exec_once(){
 	single_cycle();
 }
 extern bool is_skip_diff;
+// TAG：这里如果执行的程序很大，需要改为uint64或者uint128，因为uint32可能不够
 void cpu_exec(uint64_t n){
 	//max inst to print to stdout
 	g_print_step = (n < MAX_INST_TO_PRINT);
@@ -161,7 +162,7 @@ void cpu_exec(uint64_t n){
 		dnpc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__IF__DOT__PC__DOT__real_npc;
 		// PCW = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__PCW;
 		read_target_module = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__arbiter__DOT__read_targeted_module;
-		if_valid = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__sram_axi_rvalid & (read_target_module == 1);	// if_valid为高表示已经取到了指令
+		if_valid = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__sram_axi_rvalid & (read_target_module == 1);	// if_valid为高表示已经取到了指令，使用sram_axi_rvalid判断可能会有取数的指令干扰，所以需要加入read_targeted_module==1辅助判断是否为取指
 		// printf("inst is %#x\n",inst);
 		// printf("if_valid is %d\t",if_valid);
 		// printf("PCW is %d\t",PCW);

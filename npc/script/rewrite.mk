@@ -18,14 +18,14 @@ ifeq ($(ENABLE_WATCHPOINT), 1)
 endif
 
 # 是否开启trace功能
-ENABLE_TRACE ?= 0
+ENABLE_TRACE ?= 1
 ifeq ($(ENABLE_TRACE), 1)
     CPPFLAGS += -DCONFIG_TRACE
 endif
 
 # 是否记录执行的指令到log文件中
 # 记录执行过的指令的功能不要开(因为这里没有给char-test建文件夹,导致执行过的指令无法写入到npc-log.txt中就会直接输出到终端)
-ENABLE_ITRACE ?= 0
+ENABLE_ITRACE ?= 1
 ifeq ($(ENABLE_ITRACE), 1)
     CPPFLAGS += -DCONFIG_ITRACE
 endif

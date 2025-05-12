@@ -6,11 +6,16 @@ PHDRS {
 
 MEMORY {
   mrom  : ORIGIN = 0x20000000, LENGTH = 4K
-  flash : ORIGIN = 0x30000000, LENGTH = 1600M
+  flash : ORIGIN = 0x30000000, LENGTH = 16M
+  /* psram : ORIGIN = 0x80000000, LENGTH = 512M */
+  psram : ORIGIN = 0x80000000, LENGTH = 4M
   sram  : ORIGIN = 0x0f000000, LENGTH = 8K
 }
 
 SECTIONS {
+  _psram_start = ORIGIN(psram);
+  _psram_end = _psram_start + LENGTH(psram);
+
   /* 代码段 */
   . = ORIGIN(flash);
   .text : {
