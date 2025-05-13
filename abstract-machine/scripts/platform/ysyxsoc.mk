@@ -42,10 +42,7 @@ image: image-dep
 	@echo + OBJCOPY "->" $(IMAGE_REL).bin
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc -O binary $(IMAGE).elf $(IMAGE).bin
 
-JOBS     ?= $(shell nproc)  # 默认使用全部核心
-THREADS  ?= $(shell nproc)  # 默认线程数
-
 run: insert-arg
-	$(MAKE) -C $(NPC_HOME) ISA=$(ISA) run ARGS="$(NPCFLAGS) +threads=$(THREADS)" IMG=$(IMAGE).bin -j$(JOBS) 
+	$(MAKE) -C $(NPC_HOME) ISA=$(ISA) run ARGS="$(NPCFLAGS)" IMG=$(IMAGE).bin
 
 .PHONY: insert-arg

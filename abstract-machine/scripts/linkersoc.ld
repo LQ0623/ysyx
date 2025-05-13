@@ -6,11 +6,16 @@ PHDRS {
 
 MEMORY {
   mrom  : ORIGIN = 0x20000000, LENGTH = 4K
-  flash : ORIGIN = 0x30000000, LENGTH = 1600M
+  flash : ORIGIN = 0x30000000, LENGTH = 16M
+  /* psram : ORIGIN = 0x80000000, LENGTH = 512M */
+  psram : ORIGIN = 0x80000000, LENGTH = 4M
   sram  : ORIGIN = 0x0f000000, LENGTH = 8K
 }
 
 SECTIONS {
+  _psram_start = ORIGIN(psram);
+  _psram_end = _psram_start + LENGTH(psram);
+
   /* 代码段 */
   . = ORIGIN(flash);
   .text : {
@@ -30,14 +35,13 @@ SECTIONS {
 
   /* 可以在这里获取data段的地址,也可以在后面使用LOADADDR获取data段在FLASH中的地址 */
   /* _sdata_lma = .; */
-  /* 数据段 (从MROM加载到SRAM) */
+  /* 数据段 (加载到PSRAM) */
   .data : {
     _data = .;
     *(.data*)           /* 包含所有.data子段 */
     *(.sdata*)          /* 显式包含.sdata.str1/.sdata.test */
     _edata = .;
-  } > sram AT > flash : data
-  /* _edata = .; */
+  } > psram AT > flash : data
 
   /* BSS段 (不分配到任何PHDR) */
   .bss : {
@@ -46,24 +50,30 @@ SECTIONS {
     *(.sbss*)
     *(.scommon)
     _bss_end = .;
-  } > sram
+  } > psram
 
-  /* SRAM布局 */
-  /*. = ORIGIN(sram);     /* 起始地址0x0F000000 */
 
   /* 堆栈和堆定义 */
-  /* _stack_top = ALIGN(0x10); */
-  _stack_top = . + 0x200;   /* 这是为了测试flash中调用char-test */
-  . = _stack_top + 0x800;
-  _stack_pointer = .;
-  end = .;
-  _end = .;
-
-  /* _heap_start = _stack_pointer; */
-  _heap_start = ALIGN(0x10);
-  _heap_end = _heap_start + 0x400;
+  /* 堆区定义在PSRAM的剩余空间 */
+  /* 堆区现在的 . 就是PSRAM存放了data段和bss段之后的地址 */
+  .heap (NOLOAD) : {
+    . = ALIGN(0x10);  /* 对齐至16字节 */
+    _heap_start = .;
+    . = ORIGIN(psram) + LENGTH(psram);
+    _heap_end = .;
+  } > psram
+  /* SRAM中的堆栈 */
+  .stack (NOLOAD) : {
+    . = ALIGN(0x10);
+    _stack_bottom = .;
+    . = ORIGIN(sram) + LENGTH(sram);
+    _stack_top = .;
+    _stack_pointer = .;
+    end = .;
+    _end = .;
+  } > sram
 
   /* 数据段加载地址符号 */
-  _sdata_lma = LOADADDR(.data);  /* MROM中数据段的起始地址,LOADADDR是获取data段的加载地址 */
+  _sdata_lma = LOADADDR(.data);  /* 数据段的起始地址,LOADADDR是获取data段的加载地址 */
   _edata_lma = _sdata_lma + SIZEOF(.data);
 }

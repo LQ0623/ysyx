@@ -25,7 +25,7 @@ extern CPU *cpu;
 extern word_t inst,pc,dnpc;
 //circuit
 void single_cycle();
-void cpu_exec(uint32_t n);
+void cpu_exec(uint64_t n);
 void reset_cpu(int n);
 //wave
 void init_wave();
