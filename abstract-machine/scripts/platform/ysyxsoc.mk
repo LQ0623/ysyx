@@ -9,7 +9,7 @@ AM_SRCS := riscv/ysyxsoc/start.S \
            platform/dummy/vme.c \
            platform/dummy/mpe.c
 
-CFLAGS    += -fdata-sections -ffunction-sections
+CFLAGS    += -fdata-sections -ffunction-sections -Os
 LDSCRIPTS += $(AM_HOME)/scripts/linkersoc.ld
 LDFLAGS   += --defsym=_pmem_start=0x20000000 --defsym=_entry_offset=0x0
 LDFLAGS   += --defsym=_sram_start=0x0f000000 --defsym=_sram_offset=0x0
