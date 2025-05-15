@@ -172,7 +172,7 @@ extern "C" void psram_read(int32_t addr, int32_t *data){
 }
 
 extern "C" void psram_write(int addr, int data,int wstrb){
-	// printf("psram write addr is %08x\n",addr);
+	// printf("psram write addr is %08x, data is %#x\n",addr,data);
 	addr = addr + PSRAM_BASE;	// 如果传过来的地址不只是偏移量，这个就可以直接删除
 
 	// int align_addr = addr & (~3);

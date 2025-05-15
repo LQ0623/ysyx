@@ -1,13 +1,17 @@
-ENTRY(_start)
+/*
+  这份能够跑通microbench，在完整测试PSRAM的访问之前的版本
+*/
 
-PHDRS {
-  text PT_LOAD;
-  data PT_LOAD;
+ENTRY(_start)
+PHDRS { 
+  text PT_LOAD; 
+  data PT_LOAD; 
 }
 
 MEMORY {
   mrom  : ORIGIN = 0x20000000, LENGTH = 4K
   flash : ORIGIN = 0x30000000, LENGTH = 16M
+  /* psram : ORIGIN = 0x80000000, LENGTH = 512M */
   psram : ORIGIN = 0x80000000, LENGTH = 4M
   sram  : ORIGIN = 0x0f000000, LENGTH = 8K
 }
@@ -16,13 +20,15 @@ SECTIONS {
   _psram_start = ORIGIN(psram);
   _psram_end = _psram_start + LENGTH(psram);
 
-  /* 主程序代码段 */
+  /* 代码段 */
+  . = ORIGIN(flash);
   .text : {
     *(entry)
     *(.text.boot)       /* bootloader代码 */
-    *(.text*)
+    *(.text*)           /* 其他代码 */
     _etext = .;
   } > flash AT > flash : text
+  etext = .;
 
   /* 只读数据段 */
   .rodata : {
@@ -31,15 +37,17 @@ SECTIONS {
     _erodata = .;
   } > flash AT > flash
 
-  /* 主程序数据段 (加载到PSRAM) */
+  /* 可以在这里获取data段的地址,也可以在后面使用LOADADDR获取data段在FLASH中的地址 */
+  /* _sdata_lma = .; */
+  /* 数据段 (加载到PSRAM) */
   .data : {
     _data = .;
-    *(.data*)
-    *(.sdata*)
+    *(.data*)           /* 包含所有.data子段 */
+    *(.sdata*)          /* 显式包含.sdata.str1/.sdata.test */
     _edata = .;
   } > psram AT > flash : data
 
-  /* 主程序BSS段 (不分配到任何PHDR) */
+  /* BSS段 (不分配到任何PHDR) */
   .bss : {
     _bss_start = .;
     *(.bss*)
@@ -48,47 +56,19 @@ SECTIONS {
     _bss_end = .;
   } > psram
 
-  /* mem-test代码段 (运行在SRAM) */
-  .text_memtest : {
-    _stext_memtest = .;
-    *(.text.memtest)
-    _etext_memtest = .;
-  } > sram AT > flash : text
 
-  /* mem-test只读数据段 (运行在SRAM) */
-  .rodata_memtest : {
-    _srodata_memtest = .;
-    *(.rodata.memtest)
-    _erodata_memtest = .;
-  } > sram AT > flash
-
-  /* mem-test数据段 (运行在SRAM) */
-  .data_memtest : {
-    _sdata_memtest = .;
-    *(.data.memtest)
-    *(.sdata.memtest)
-    _edata_memtest = .;
-  } > sram AT > flash : data
-
-  /* mem-test BSS段 (运行在SRAM) */
-  .bss_memtest (NOLOAD) : {
-    _sbss_memtest = .;
-    *(.bss.memtest)
-    *(.sbss.memtest)
-    _ebss_memtest = .;
-  } > sram
-
-  /* 堆区定义在SRAM中，避开已使用的段 */
+  /* 堆栈和堆定义 */
+  /* 堆区定义在PSRAM的剩余空间 */
+  /* 堆区现在的 . 就是PSRAM存放了data段和bss段之后的地址 */
   .heap (NOLOAD) : {
-    . = ALIGN(4);
+    . = ALIGN(0x10);  /* 对齐至16字节 */
     _heap_start = .;
-    . += 0x1000;  /* 堆区大小设为4KB，可根据需要调整 */
+    . = ORIGIN(psram) + LENGTH(psram);
     _heap_end = .;
-  } > sram
-
-  /* 栈区定义在SRAM顶部 */
+  } > psram
+  /* SRAM中的堆栈 */
   .stack (NOLOAD) : {
-    . = ALIGN(4);
+    . = ALIGN(0x10);
     _stack_bottom = .;
     . = ORIGIN(sram) + LENGTH(sram);
     _stack_top = .;
@@ -97,9 +77,7 @@ SECTIONS {
     _end = .;
   } > sram
 
-  /* 获取各段的加载地址 (LMA) */
-  _sdata_lma = LOADADDR(.data);
-  _sdata_memtest_lma = LOADADDR(.data_memtest);
-  _stext_memtest_lma = LOADADDR(.text_memtest);
-  _srodata_memtest_lma = LOADADDR(.rodata_memtest);
+  /* 数据段加载地址（LMA）符号 */
+  _sdata_lma = LOADADDR(.data);  /* 数据段的起始地址,LOADADDR是获取data段的加载地址 */
+  _edata_lma = _sdata_lma + SIZEOF(.data);
 }
