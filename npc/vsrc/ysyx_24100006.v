@@ -689,6 +689,7 @@ module ysyx_24100006(
 		.axi_arsize(axi_arsize_if),
 		.axi_rlast(axi_rlast_if),
 		// 模块握手信号
+		.wb_ready(wb_ready),
 		.id_ready(id_ready),
 		.if_valid(if_valid),
 		.pc_F(pc_FD),

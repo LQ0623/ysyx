@@ -93,6 +93,7 @@ void init_flash(){
 
 void init_psram(){
 	psram = (uint8_t *)malloc(PSRAM_SIZE * sizeof(uint8_t));
+	memset(psram, 0, PSRAM_SIZE);
 	memcpy(psram, img, sizeof(img));
 	
 	if(psram == NULL) assert(0);
@@ -172,7 +173,7 @@ extern "C" void psram_read(int32_t addr, int32_t *data){
 }
 
 extern "C" void psram_write(int addr, int data,int wstrb){
-	// printf("psram write addr is %08x\n",addr);
+	// printf("psram write addr is %08x, data is %#x\n",addr,data);
 	addr = addr + PSRAM_BASE;	// 如果传过来的地址不只是偏移量，这个就可以直接删除
 
 	// int align_addr = addr & (~3);
