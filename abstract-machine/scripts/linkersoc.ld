@@ -1,5 +1,4 @@
-ENTRY(bootloader)
-
+ENTRY(_start)
 PHDRS {
   boot PT_LOAD;  
   text PT_LOAD;  
@@ -9,6 +8,7 @@ PHDRS {
 MEMORY {
   mrom  : ORIGIN = 0x20000000, LENGTH = 4K
   flash : ORIGIN = 0x30000000, LENGTH = 16M
+  /* psram : ORIGIN = 0x80000000, LENGTH = 512M */
   psram : ORIGIN = 0x80000000, LENGTH = 4M
   sram  : ORIGIN = 0x0F000000, LENGTH = 8K
 }
@@ -21,7 +21,7 @@ SECTIONS {
   . = ORIGIN(flash);
   .text.bootloader : {
     *(entry)
-    *(.text.bootloader)
+    *(.text.boot)
     _boot = .;
   } > flash AT> flash : boot
 
