@@ -93,6 +93,7 @@ void init_flash(){
 
 void init_psram(){
 	psram = (uint8_t *)malloc(PSRAM_SIZE * sizeof(uint8_t));
+	memset(psram, 0, PSRAM_SIZE);
 	memcpy(psram, img, sizeof(img));
 	
 	if(psram == NULL) assert(0);

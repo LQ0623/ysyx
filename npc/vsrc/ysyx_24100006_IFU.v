@@ -29,6 +29,7 @@ module ysyx_24100006_ifu(
 	input 	reg			axi_rlast,
 
 	// 握手信号
+	input 				wb_ready,	// 这个是决定if_valid是否有效,表示上一条指令执行完毕
 	input 				id_ready,
 	output 	reg 		if_valid,
 
@@ -41,15 +42,31 @@ module ysyx_24100006_ifu(
 	input	[1:0]		Access_Fault
 );
 
-	reg [3:0] delay_counter;	// 因为现在的取指还是需要受到下面的模块执行情况的控制，所以需要将if_valid置为1之前需要延迟几个时钟周期，等到后面的模块执行完毕
+	reg [6:0] delay_counter;	// 因为现在的取指还是需要受到下面的模块执行情况的控制，所以需要将if_valid置为1之前需要延迟几个时钟周期，等到后面的模块执行完毕
 
 	// 握手机制
 	parameter S_IDLE = 0, S_FETCH = 1, S_DELAY_1 = 2, S_DELAY_2 = 3, S_DELAY_3 = 4, S_DELAY_4 = 5, S_DELAY_5 = 6, S_DELAY_6 = 7, S_DELAY_7 = 8, S_DELAY_8 = 9, S_DELAY_9 = 10, S_AR_DELAY = 11, S_R_DELAY = 12, S_DELAY_12 = 13, S_DELAY_13 = 14, S_DELAY_14 = 15, S_DELAY_15 = 16, S_DELAY_16 = 17, S_DELAY_17 = 18, S_DELAY_18 = 19, S_DELAY_19 = 20, S_WAIT = 21;
 	reg [5:0] state;
 
+	// 判断是否取下一条指令，new_ins信号为高表示可以取下一条指令
+	reg new_ins;
+	always @(posedge clk) begin
+		if(reset)begin
+			new_ins		<= 1'b1;
+		end else if(wb_ready == 1'b0)begin
+			new_ins		<= 1'b1;
+		end else if(if_valid == 1'b1)begin
+			new_ins		<= 1'b0;
+		end else begin
+			new_ins		<= new_ins;
+		end
+	end
+
+
 	always @(posedge clk) begin
 		if(reset) begin
 			state 			<= S_IDLE;
+			// state 			<= S_DELAY_7;
 			if_valid		<= 1'b0;
 			PCW				<= 1'b0;
 			axi_arvalid 	<= 1'b0;
@@ -64,7 +81,7 @@ module ysyx_24100006_ifu(
 		end else begin
 			case (state)
 				S_IDLE: begin
-					if(if_valid == 1'b0) begin
+					if(if_valid == 1'b0 && new_ins == 1'b1) begin
 						// 后续如果修改的建议：判断是否有指令需要发送，然后在跳转到下一个状态
 						axi_arvalid	<= 1'b1;
 						state		<= S_FETCH;
@@ -92,7 +109,7 @@ module ysyx_24100006_ifu(
 					if(if_valid && id_ready) begin
 						if_valid		<= 1'b0;
 						delay_counter	<= 2;
-						state			<= S_DELAY_4;
+						state			<= S_DELAY_4;	// 这一个在多周期的环节不能省去
 					end
 				end
 
