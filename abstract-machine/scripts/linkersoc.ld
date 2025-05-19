@@ -1,6 +1,7 @@
 ENTRY(_start)
 PHDRS {
-  boot PT_LOAD;  
+  fsbl PT_LOAD;
+  ssbl PT_LOAD;  
   text PT_LOAD;  
   data PT_LOAD;  
 }
@@ -18,12 +19,26 @@ SECTIONS {
   _psram_end = _psram_start + LENGTH(psram);
 
   /* Bootloader 段（位于 Flash） */
-  . = ORIGIN(flash);
+  /* . = ORIGIN(flash);
   .text.bootloader : {
     *(entry)
     *(.text.boot)
     _boot = .;
-  } > flash AT> flash : boot
+  } > flash AT> flash : boot */
+  .text.fsbootloader :
+  {
+    *(entry)
+    _fsbl = .;
+    *(.text.fsbl)
+    _efsbl = .;
+  } > flash AT >flash : fsbl
+
+  .text.ssbootloader :
+  {
+    _ssbl = .;
+    *(.text.ssbl)
+    _essbl = .;
+  } > sram AT >flash : ssbl
 
   /* 代码段（运行在 PSRAM） */
   .text : {
@@ -38,7 +53,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*)
     _erodata = .;
-  } > psram AT> flash
+  } > psram AT> flash : text
 
   /* 数据段（运行在 PSRAM） */
   .data : {
@@ -75,6 +90,7 @@ SECTIONS {
   } > psram
 
   /* 段加载地址（LMA）符号 */
+  _ssbl_lma  = LOADADDR(.text.ssbootloader);
   _stext_lma = LOADADDR(.text);
   _srodata_lma = LOADADDR(.rodata);
   _sdata_lma = LOADADDR(.data);

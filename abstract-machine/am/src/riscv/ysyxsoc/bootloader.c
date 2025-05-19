@@ -2,7 +2,10 @@
 
 /* 声明外部符号 */
 extern void _trm_init();  // 主程序入口
-extern char _boot;        // bootloader 起始地址
+// extern char _boot;        // bootloader 起始地址
+extern char _ssbl;        // .text.ssbootloader段在PSRAM中的起始地址
+extern char _essbl;       // .text.ssbootloader段在PSRAM中的结束地址
+extern char _ssbl_lma;    // .text.ssbootloader段在FLASH中的起始地址
 extern char _text;        // .text 段在 PSRAM 中的起始地址
 extern char _etext;       // .text 段在 PSRAM 中的结束地址
 extern char _stext_lma;   // .text 段在 Flash 中的起始地址
@@ -18,7 +21,7 @@ extern char _bss_end;     // BSS 段结束地址
 /**
  * 拷贝 .text 段从 Flash 到 PSRAM
  */
-void copy_text() __attribute__((section(".text.boot")));
+void copy_text() __attribute__((section(".text.ssbl")));
 void copy_text() {
     char *src = &_stext_lma;
     char *dst = &_text;
@@ -30,7 +33,7 @@ void copy_text() {
 /**
  * 拷贝 .rodata 段从 Flash 到 PSRAM
  */
-void copy_rodata() __attribute__((section(".text.boot")));
+void copy_rodata() __attribute__((section(".text.ssbl")));
 void copy_rodata() {
     char *src = &_srodata_lma;
     char *dst = &_rodata;
@@ -42,7 +45,7 @@ void copy_rodata() {
 /**
  * 拷贝 .data 段从 Flash 到 PSRAM
  */
-void copy_data() __attribute__((section(".text.boot")));
+void copy_data() __attribute__((section(".text.ssbl")));
 void copy_data() {
     char *src = &_sdata_lma;
     char *dst = &_data;
@@ -54,7 +57,7 @@ void copy_data() {
 /**
  * 清零 BSS 段
  */
-void clear_bss() __attribute__((section(".text.boot")));
+void clear_bss() __attribute__((section(".text.ssbl")));
 void clear_bss() {
     char *dst = &_bss_start;
     while (dst < &_bss_end) {
@@ -65,7 +68,7 @@ void clear_bss() {
 /**
  * Bootloader 入口点
  */
-void bootloader() __attribute__((section(".text.boot")));
+void bootloader() __attribute__((section(".text.ssbl")));
 void bootloader() {
     // .text、.rodata、.data段在Flash中是各自独立的段 ，其加载地址（LMA）可能不连续，因此不能简单地一次性复制整个区域
 
@@ -88,4 +91,24 @@ void bootloader() {
 
     /* 5. 跳转到主程序 */
     _trm_init();
+}
+
+/**
+ * 拷贝 .text.ssbootloader 段从 Flash 到 PSRAM
+ */
+void copy_ssbl() __attribute__((section(".text.fsbl")));
+void copy_ssbl() {
+    char *src = &_ssbl_lma;
+    char *dst = &_ssbl;
+    while (dst < &_essbl) {
+        *dst++ = *src++;
+    }
+}
+
+
+void fsbl() __attribute__((section(".text.fsbl")));
+void fsbl() {
+    copy_ssbl();
+
+    bootloader();
 }
