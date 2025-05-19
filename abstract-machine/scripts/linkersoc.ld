@@ -1,9 +1,9 @@
 ENTRY(_start)
 PHDRS {
-  fsbl PT_LOAD;
-  ssbl PT_LOAD;  
-  text PT_LOAD;  
-  data PT_LOAD;  
+  fsbl PT_LOAD FLAGS(RX);
+  ssbl PT_LOAD FLAGS(RX);  
+  text PT_LOAD FLAGS(RX);  
+  data PT_LOAD FLAGS(RW);  
 }
 
 MEMORY {
