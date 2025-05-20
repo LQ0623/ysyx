@@ -20,6 +20,10 @@ uint64_t timer_start, timer_end,g_timer;	// 测试运行的时间的
 uint64_t timer,count = 0;
 static uint8_t opcode;
 
+// TAG: 判断一条指令是否卡死使用
+word_t prev_inst;
+uint32_t ins_counter;	// 计数这个指令运行了多少个周期,超过一定的周期就停止
+
 static bool is_change = false;	// 监视点是否有改变
 
 void single_cycle(){  //  0 --> 0 > 1 --> 1 > 0 this is a cycle in cpu  _|-|_|-
@@ -148,6 +152,11 @@ extern bool is_skip_diff;
 void cpu_exec(uint64_t n){
 	//max inst to print to stdout
 	g_print_step = (n < MAX_INST_TO_PRINT);
+	
+	// TAG: 判断一条指令是否卡死使用
+	prev_inst	 = 0;
+	ins_counter  = 0;
+
 	while(n > 0){
 		// timer = get_time() - timer_start;
 		// if(timer / 1000000 == count){
@@ -180,6 +189,18 @@ void cpu_exec(uint64_t n){
 		#endif
 		IFDEF(CONFIG_DEVICE, device_update());
 		n--;
+
+		// 判断指令的运行周期是否超过上限(存在卡死的情况)
+		if(prev_inst == inst){
+			ins_counter++;
+			if(ins_counter >= MAX_NUM_CYC){
+				printf("pc is %08x,inst is %#x\n",pc,inst);
+				panic("The number of instruction execution cycles exceeds the maximum execution cycle");
+			}
+		}else{
+			ins_counter = 0;
+			prev_inst = inst;
+		}
 	}
 }
 

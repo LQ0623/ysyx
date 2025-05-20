@@ -1,8 +1,9 @@
 ENTRY(_start)
-PHDRS { 
-  boot PT_LOAD;
-  text PT_LOAD; 
-  data PT_LOAD; 
+PHDRS {
+  fsbl PT_LOAD FLAGS(RX); /* First Stage Bootloader */
+  ssbl PT_LOAD FLAGS(RX); /* Second Stage Bootloader */
+  text PT_LOAD FLAGS(RX); /* Code and read-only data */
+  data PT_LOAD FLAGS(RW); /* Writable data */
 }
 
 MEMORY {
@@ -10,83 +11,93 @@ MEMORY {
   flash : ORIGIN = 0x30000000, LENGTH = 16M
   /* psram : ORIGIN = 0x80000000, LENGTH = 512M */
   psram : ORIGIN = 0x80000000, LENGTH = 4M
-  sram  : ORIGIN = 0x0f000000, LENGTH = 8K
+  sram  : ORIGIN = 0x0F000000, LENGTH = 8K
 }
 
 SECTIONS {
   _psram_start = ORIGIN(psram);
   _psram_end = _psram_start + LENGTH(psram);
 
-  /* 代码段 */
-  . = ORIGIN(flash);
-  .text.bootloader : {
+  /* first stage Bootloader 段（位于 Flash） */
+  .text.fsbootloader :
+  {
     *(entry)
-    *(.text.boot)       /* bootloader代码 */
-    _boot = .;
-  } > flash AT > flash : boot
+    _fsbl = .;
+    *(.text.fsbl)
+    _efsbl = .;
+  } > flash AT > flash : fsbl
 
+  /* second stage Bootloader 段（位于 SRAM */
+  .text.ssbootloader :
+  {
+    _ssbl = .;
+    *(.text.ssbl)
+    _essbl = .;
+  } > sram AT >flash : ssbl
+
+  /* 代码段（运行在 PSRAM） */
   .text : {
     _text = .;
-    *(.text*)           /* 其他代码 */
+    *(.text*)
     _etext = .;
-  } > sram AT > flash : text
+  } > psram AT > flash : text
 
-  /* 只读数据段 */
+  /* 只读数据段（运行在 PSRAM） */
   .rodata : {
     _rodata = .;
     *(.rodata*)
+    *(.srodata*)
     _erodata = .;
-  } > sram AT > flash
+  } > psram AT> flash : text
 
-  /* 可以在这里获取data段的地址,也可以在后面使用LOADADDR获取data段在FLASH中的地址 */
-  /* 数据段 (加载到PSRAM) */
+  /* 数据段（运行在 PSRAM） */
   .data : {
     _data = .;
-    *(.data*)           /* 包含所有.data子段 */
-    *(.sdata*)          /* 显式包含.sdata.str1/.sdata.test */
+    *(.data*)
+    *(.sdata*)
     _edata = .;
-  } > sram AT > flash : data
+  } > psram AT > flash : data
 
-  /* BSS段 (不分配到任何PHDR) */
-  .bss : {
+  /* 判断 RTT 中是否定义了 data_extra 和 bss_extra */
+  _data_extra       = DEFINED(_data_extra)      ? _data_extra       : 0;
+  _edata_extra      = DEFINED(_edata_extra)     ? _edata_extra      : 0;
+  _data_extra_lma   = DEFINED(_data_extra_lma)  ? _data_extra_lma   : 0;
+  _edata_extra_lma  = DEFINED(_edata_extra_lma) ? _edata_extra_lma  : 0;
+
+  /* BSS 段（运行在 PSRAM） */
+  .bss (NOLOAD) : {
     _bss_start = .;
     *(.bss*)
     *(.sbss*)
     *(.scommon)
     _bss_end = .;
-  } > sram
+  } > psram
 
-  .rela ALIGN(4) :
-  {
-    _rela = .;
-    *(.rela*);
-    _erela = .;
-  }
+  /* 判断 RTT 中是否定义了 data_extra 和 bss_extra */
+  _bss_extra        = DEFINED(_bss_extra)       ? _bss_extra        : 0;
+  _ebss_extra       = DEFINED(_ebss_extra)      ? _ebss_extra       : 0;
 
-  /* 堆栈和堆定义 */
-  /* 堆区定义在PSRAM的剩余空间 */
-  /* 堆区现在的 . 就是PSRAM存放了data段和bss段之后的地址 */
-  .heap (NOLOAD) : {
-    . = ALIGN(0x10);  /* 对齐至16字节 */
-    _heap_start = .;
-    /* . = ORIGIN(psram) + LENGTH(psram); */
-    . = . + 0x100;
-    _heap_end = .;
-  } > sram
-  /* SRAM中的堆栈 */
+  /* 堆栈（运行在 SRAM） */
   .stack (NOLOAD) : {
     . = ALIGN(0x10);
     _stack_bottom = .;
-    . = ORIGIN(sram) + LENGTH(sram);
+    . = ORIGIN(sram) + LENGTH(sram) - 0x100;
     _stack_top = .;
     _stack_pointer = .;
-    end = .;
-    _end = .;
   } > sram
 
-  /* 数据段加载地址（LMA）符号 */
-  _stext_lma = LOADADDR(.text); /* 代码段的加载起始地址 */
-  _srodata_lma = LOADADDR(.rodata); /* 只读数据段的加载起始地址 */
-  _sdata_lma = LOADADDR(.data);  /* 数据段的起始地址,LOADADDR是获取data段的加载地址 */
+  /* 堆（运行在 PSRAM） */
+  .heap (NOLOAD) : {
+    . = ALIGN(0x10);
+    _heap_start = .;
+    . = ORIGIN(psram) + LENGTH(psram) - 0x100;
+    _heap_end = .;
+  } > psram
+
+  /* 段加载地址（LMA）符号 */
+  _ssbl_lma  = LOADADDR(.text.ssbootloader);
+  _stext_lma = LOADADDR(.text);
+  _srodata_lma = LOADADDR(.rodata);
+  _sdata_lma = LOADADDR(.data);
   _edata_lma = _sdata_lma + SIZEOF(.data);
 }
