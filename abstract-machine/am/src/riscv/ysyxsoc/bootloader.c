@@ -18,6 +18,15 @@ extern char _sdata_lma;   // .data 段在 Flash 中的起始地址
 extern char _bss_start;   // BSS 段起始地址
 extern char _bss_end;     // BSS 段结束地址
 
+
+/* 声明 RTT 的额外段符号 */
+extern char _data_extra;
+extern char _edata_extra;
+extern char _data_extra_lma;
+extern char _edata_extra_lma;
+extern char _bss_extra;
+extern char _ebss_extra;
+
 /**
  * 拷贝 .text 段从 Flash 到 PSRAM
  */
@@ -52,6 +61,15 @@ void copy_data() {
     while (dst < &_edata) {
         *dst++ = *src++;
     }
+
+    /* 如果存在 RTT 的 data_extra 段，则也复制 */
+    if (&_edata_extra > &_data_extra) {
+        src = &_data_extra_lma;
+        dst = &_data_extra;
+        while (dst < &_edata_extra) {
+            *dst++ = *src++;
+        }
+    }
 }
 
 /**
@@ -62,6 +80,14 @@ void clear_bss() {
     char *dst = &_bss_start;
     while (dst < &_bss_end) {
         *dst++ = 0;
+    }
+
+    /* 如果存在 RTT 的 bss_extra 段，则也清零 */
+    if (&_ebss_extra > &_bss_extra) {
+        dst = &_bss_extra;
+        while (dst < &_ebss_extra) {
+            *dst++ = 0;
+        }
     }
 }
 

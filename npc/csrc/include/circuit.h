@@ -22,6 +22,10 @@ extern CPU *cpu;
 #define CPU Vysyx_24100006
 extern CPU *cpu;
 #endif
+
+// 一条指令最多运行的周期,超过就报错
+#define MAX_NUM_CYC 5000
+
 extern word_t inst,pc,dnpc;
 //circuit
 void single_cycle();
