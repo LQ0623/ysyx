@@ -20,6 +20,7 @@ uint64_t timer_start, timer_end,g_timer;	// 测试运行的时间的
 uint64_t timer,count = 0;
 static uint8_t opcode;
 
+// TAG: 判断一条指令是否卡死使用
 word_t prev_inst;
 uint32_t ins_counter;	// 计数这个指令运行了多少个周期,超过一定的周期就停止
 
