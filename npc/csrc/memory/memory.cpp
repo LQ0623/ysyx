@@ -44,6 +44,10 @@ static uint8_t *pmem = NULL;
 static uint8_t *mrom = NULL;
 static uint8_t *flash = NULL;
 static uint8_t *psram = NULL;
+static uint8_t *sdramChip0 = NULL;
+static uint8_t *sdramChip1 = NULL;
+static uint8_t *sdramChip2 = NULL;
+static uint8_t *sdramChip3 = NULL;
 static int cnt = 0;
 static uint8_t flash_src_data[FLASH_SIZE];  // 原始数据缓冲区
 
@@ -98,6 +102,19 @@ void init_psram(){
 	
 	if(psram == NULL) assert(0);
 	printf("psram memory area [%#x, %#lx]\n",PSRAM_BASE, PSRAM_BASE + PSRAM_SIZE * sizeof(uint8_t));
+}
+
+void init_sdram(){
+	sdramChip0 = (uint8_t *)malloc(SDRAM_SIZE * sizeof(uint8_t));
+	sdramChip1 = (uint8_t *)malloc(SDRAM_SIZE * sizeof(uint8_t));
+	sdramChip2 = (uint8_t *)malloc(SDRAM_SIZE * sizeof(uint8_t));
+	sdramChip3 = (uint8_t *)malloc(SDRAM_SIZE * sizeof(uint8_t));
+
+	if(sdramChip0 == NULL) assert(0);
+	if(sdramChip1 == NULL) assert(0);
+	if(sdramChip2 == NULL) assert(0);
+	if(sdramChip3 == NULL) assert(0);
+	printf("sdram memory area [%#x, %#lx]\n",SDRAM_BASE, SDRAM_BASE + SDRAM_SIZE * sizeof(uint8_t));
 }
 
 uint8_t *guest_to_host(uint32_t paddr){
@@ -197,7 +214,88 @@ extern "C" void psram_write(int addr, int data,int wstrb){
 			panic("DONOT SUPPORT THIS WSTRB");
 			break;
 	}
+	return;
 }
+
+
+// TAG：因为加入了位扩展，所以需要判断chip_id，所以单独写了一个访问函数
+uint8_t *guest_to_host_sdram(uint32_t paddr, int chip_id){
+	if(chip_id == 0){
+		if(in_sdram(paddr)){
+			return sdramChip0 + (paddr - SDRAM_BASE);
+		}
+	} else if(chip_id == 1){
+		if(in_sdram(paddr)){
+			return sdramChip1 + (paddr - SDRAM_BASE);
+		}
+	} else if(chip_id == 2){
+		if(in_sdram(paddr)){
+			return sdramChip2 + (paddr - SDRAM_BASE);
+		}
+	} else if(chip_id == 3){
+		if(in_sdram(paddr)){
+			return sdramChip3 + (paddr - SDRAM_BASE);
+		}
+	}
+	assert(0);
+}
+
+extern "C" void sdram_read(int chip_id, int bank_id, int row_id, int col_id, int *data){
+	// 使用的sdram的颗粒是4个bank总共32MB，所以一个bank也就8MB
+	int align_addr = (bank_id * 8192 * 512 * 2) + (row_id * 512 * 2) + (col_id * 2) + SDRAM_BASE;
+	*data = *(uint16_t *)guest_to_host_sdram(align_addr, chip_id);
+	align_addr = (chip_id == 2 || chip_id == 3)? align_addr + 0x2000000 : align_addr;
+	// printf("READ  addr = %#x , data = %#x\t",align_addr, *data);
+	// printf(" chip_id = %d, ba = %d, ra = %d, ca = %d\n", chip_id, bank_id, row_id, col_id);
+	
+	#ifdef CONFIG_MTRACE
+		mtrace_log_write(chip_id, 16, 'r', 0);
+	#endif
+
+	return;
+}
+
+extern "C" void sdram_write(int chip_id, int bank_id, int row_id, int col_id, int wstrb, int wdata) {
+	int align_addr = (bank_id * 8192 * 512 * 2) + (row_id * 512 * 2) + (col_id * 2) + SDRAM_BASE;
+	switch (wstrb)
+	{
+		case 0b0001:
+			*(uint8_t *)guest_to_host_sdram(align_addr, chip_id) = wdata;
+			// 一个MT48LC16M16A2颗粒的大小是32M,所以第二个chip的颗粒的地址是在第一个chip的颗粒的地址基础上加个0x2000000,
+			// 当然真实访问颗粒的时候不用,加上0x2000000只是为了记录是否访问到了另外一个chip颗粒
+			align_addr = (chip_id == 2 || chip_id == 3)? align_addr + 0x2000000 : align_addr;
+			// printf("WRITE addr = %#x , data = %#x\t,wstrb = %d\t",align_addr, wdata, wstrb);
+			// printf(" chip_id = %d, ba = %d, ra = %d, ca = %d\n", chip_id, bank_id, row_id, col_id);
+			break;
+		case 0b0010:
+			*(uint8_t *)(guest_to_host_sdram(align_addr, chip_id) + 1) = (wdata >> 8);
+			align_addr = (chip_id == 2 || chip_id == 3)? align_addr + 0x2000000 : align_addr;
+			// printf("WRITE addr = %#x , data = %#x\t,wstrb = %d\t",align_addr, wdata >> 8, wstrb);
+			// printf(" chip_id = %d, ba = %d, ra = %d, ca = %d\n", chip_id, bank_id, row_id, col_id);
+			break;
+		case 0b0011:
+			*(uint16_t *)guest_to_host_sdram(align_addr, chip_id) = wdata;
+			align_addr = (chip_id == 2 || chip_id == 3)? align_addr + 0x2000000 : align_addr;
+			// printf("WRITE addr = %#x , data = %#x\t,wstrb = %d\t",align_addr, wdata, wstrb);
+			// printf(" chip_id = %d, ba = %d, ra = %d, ca = %d\n", chip_id, bank_id, row_id, col_id);
+			break;
+		case 0b1111:
+			assert(0);
+			*(uint32_t *)guest_to_host_sdram(align_addr, chip_id) = wdata;
+			align_addr = (chip_id == 2 || chip_id == 3)? align_addr + 0x2000000 : align_addr;
+			// printf("WRITE addr = %#x , data = %#x\t,wstrb = %d\t",align_addr, wdata, wstrb);
+			// printf(" chip_id = %d, ba = %d, ra = %d, ca = %d\n", chip_id, bank_id, row_id, col_id);
+			break;
+		default:
+			printf("wstrb is %d\n", wstrb);
+			break;
+	}
+	#ifdef CONFIG_MTRACE
+		mtrace_log_write(chip_id, wstrb, 'w', wdata);
+	#endif
+	return;
+}
+
 
 extern "C" void mrom_read(int32_t addr, int32_t *data) {
     // MROM 地址范围为 0x20000000 ~ 0x20000FFF（4KB）

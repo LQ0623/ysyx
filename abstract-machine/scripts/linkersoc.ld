@@ -12,11 +12,15 @@ MEMORY {
   /* psram : ORIGIN = 0x80000000, LENGTH = 512M */
   psram : ORIGIN = 0x80000000, LENGTH = 4M
   sram  : ORIGIN = 0x0F000000, LENGTH = 8K
+  sdram : ORIGIN = 0xa0000000, LENGTH = 64M
 }
 
 SECTIONS {
   _psram_start = ORIGIN(psram);
   _psram_end = _psram_start + LENGTH(psram);
+
+  _sdram_start  = ORIGIN(sdram);
+  _sdram_end    = _sdram_start + LENGTH(sdram);
 
   /* first stage Bootloader 段（位于 Flash） */
   .text.fsbootloader :
@@ -33,30 +37,30 @@ SECTIONS {
     _ssbl = .;
     *(.text.ssbl)
     _essbl = .;
-  } > sram AT >flash : ssbl
+  } > sram AT > flash : ssbl
 
-  /* 代码段（运行在 PSRAM） */
+  /* 代码段（运行在 SDRAM） */
   .text : {
     _text = .;
     *(.text*)
     _etext = .;
-  } > psram AT > flash : text
+  } > sdram AT > flash : text
 
-  /* 只读数据段（运行在 PSRAM） */
+  /* 只读数据段（运行在 SDRAM） */
   .rodata : {
     _rodata = .;
     *(.rodata*)
     *(.srodata*)
     _erodata = .;
-  } > psram AT> flash : text
+  } > sdram AT> flash : text
 
-  /* 数据段（运行在 PSRAM） */
+  /* 数据段（运行在 SDRAM） */
   .data : {
     _data = .;
     *(.data*)
     *(.sdata*)
     _edata = .;
-  } > psram AT > flash : data
+  } > sdram AT > flash : data
 
   /* 判断 RTT 中是否定义了 data_extra 和 bss_extra */
   _data_extra       = DEFINED(_data_extra)      ? _data_extra       : 0;
@@ -64,14 +68,14 @@ SECTIONS {
   _data_extra_lma   = DEFINED(_data_extra_lma)  ? _data_extra_lma   : 0;
   _edata_extra_lma  = DEFINED(_edata_extra_lma) ? _edata_extra_lma  : 0;
 
-  /* BSS 段（运行在 PSRAM） */
+  /* BSS 段（运行在 SDRAM） */
   .bss (NOLOAD) : {
     _bss_start = .;
     *(.bss*)
     *(.sbss*)
     *(.scommon)
     _bss_end = .;
-  } > psram
+  } > sdram
 
   /* 判断 RTT 中是否定义了 data_extra 和 bss_extra */
   _bss_extra        = DEFINED(_bss_extra)       ? _bss_extra        : 0;
@@ -86,13 +90,13 @@ SECTIONS {
     _stack_pointer = .;
   } > sram
 
-  /* 堆（运行在 PSRAM） */
+  /* 堆（运行在 SDRAM） */
   .heap (NOLOAD) : {
     . = ALIGN(0x10);
     _heap_start = .;
-    . = ORIGIN(psram) + LENGTH(psram) - 0x100;
+    . = ORIGIN(sdram) + LENGTH(sdram) - 0x100;
     _heap_end = .;
-  } > psram
+  } > sdram
 
   /* 段加载地址（LMA）符号 */
   _ssbl_lma  = LOADADDR(.text.ssbootloader);
