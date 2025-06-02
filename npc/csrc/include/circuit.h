@@ -23,6 +23,10 @@ extern CPU *cpu;
 extern CPU *cpu;
 #endif
 
+#include <nvboard.h>
+// nvboard
+void nvboard_bind_all_pins(CPU* top);
+
 // 一条指令最多运行的周期,超过就报错
 #define MAX_NUM_CYC 5000
 

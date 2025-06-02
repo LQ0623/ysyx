@@ -12,7 +12,7 @@ MEMORY {
   /* psram : ORIGIN = 0x80000000, LENGTH = 512M */
   psram : ORIGIN = 0x80000000, LENGTH = 4M
   sram  : ORIGIN = 0x0F000000, LENGTH = 8K
-  sdram : ORIGIN = 0xa0000000, LENGTH = 32M
+  sdram : ORIGIN = 0xa0000000, LENGTH = 64M
 }
 
 SECTIONS {

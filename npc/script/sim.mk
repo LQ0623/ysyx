@@ -1,6 +1,6 @@
 NPC_EXEC := $(BIN) $(ARGS) $(IMG)
 #sim
-$(BIN): $(VSRCS) $(CSRCS)
+$(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 	@echo "$(COLOR_YELLOW)[VERILATE]$(COLOR_NONE) $(notdir $(BUILD_DIR))/$(notdir $(BIN))"
 	@rm -rf $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)

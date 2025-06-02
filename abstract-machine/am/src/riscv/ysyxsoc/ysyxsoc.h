@@ -1,7 +1,7 @@
 #include <riscv/riscv.h>
 
 //uart
-#define UART_REG_RB  0x10000000
+#define UART_REG_RB  0x10000000     // receiver buffer
 #define UART_REG_LC  0x10000003
 #define UART_REG_DL1 0x10000000
 #define UART_REG_DL2 0x10000001

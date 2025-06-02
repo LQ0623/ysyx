@@ -5,8 +5,11 @@ include VysyxSoCFull.mk
 
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
+#nvboard
+CPPFLAGS += -I$(NVBOARD_HOME)/usr/include
+
 # 是否开启波形生成
-ENABLE_WAVE ?= 0
+ENABLE_WAVE ?= 1
 ifeq ($(ENABLE_WAVE), 1)
     CPPFLAGS += -DCONFIG_DUMP_WAVE
 endif
@@ -55,7 +58,7 @@ ifeq ($(ENABLE_SOC), 1)
     CPPFLAGS += -DCONFIG_SOC
 endif
 
-ENABLE_DEVICE ?= 1
+ENABLE_DEVICE ?= 0
 ifeq ($(ENABLE_DEVICE), 1)
     CPPFLAGS += -DCONFIG_DEVICE
 endif
@@ -85,6 +88,6 @@ $(LIBCAPSTONE):
 endif
 
 # LIBS += -lreadline
-LIBS += -lreadline $(shell pkg-config --libs sdl2)
+LIBS += -lreadline $(shell pkg-config --libs sdl2 SDL2_image SDL2_ttf)  # 跑nvboard，需要加SDL2_image SDL2_ttf两个参数
 
 LINK := g++

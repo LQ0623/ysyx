@@ -5,6 +5,7 @@ BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
 
+# 一些配置信息
 REWRITE = $(NPC_HOME)/script/rewrite.mk
 
 #verilator variable
@@ -20,6 +21,10 @@ endif
 ARCH ?= riscv32e-ysyxsoc
 # Print build info message
 -include $(NPC_HOME)/script/arch/$(ARCH).mk
+
+# nvboard
+# rules for NVBoard
+include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 #sim
 include $(NPC_HOME)/script/sim.mk

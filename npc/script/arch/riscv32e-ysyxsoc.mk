@@ -1,8 +1,17 @@
 #top name
 TOPNAME = ysyxSoCFull
 
+NXDC_FILES = constr/ysyxSoC.nxdc #nvboard pin file
+
 #ysyxSoC
 YSYXSoC = ../ysyxSoC
+
+$(shell mkdir -p $(BUILD_DIR))
+
+# constraint file
+SRC_AUTO_BIND = $(abspath $(BUILD_DIR)/auto_bind.cpp)
+$(SRC_AUTO_BIND): $(NXDC_FILES)
+	python3 $(NVBOARD_HOME)/scripts/auto_pin_bind.py $^ $@
 
 #verilator flag
 # 将ysyxSoC/perip/uart16550/rtl和ysyxSoC/perip/spi/rtl两个目录加入verilator的include搜索路径中
@@ -19,3 +28,5 @@ VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
 VSRCS += $(shell find $(abspath $(YSYXSoC)/perip) -name "*.v")
 VSRCS += $(shell find $(abspath $(YSYXSoC)/build) -name "*.v")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+
+CSRCS += $(SRC_AUTO_BIND)

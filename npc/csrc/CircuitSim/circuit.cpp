@@ -46,8 +46,9 @@ void reset_cpu(int n) {
 }
 
 void assert_fail_msg() {
-  isa_reg_display();
-  statistic();
+	nvboard_quit();
+	isa_reg_display();
+	statistic();
 }
 
 /**
@@ -145,6 +146,7 @@ static void trace_and_difftest() {
 
 /* cpu single cycle in exec */
 static void exec_once(){
+	nvboard_update();
 	single_cycle();
 }
 extern bool is_skip_diff;
@@ -221,6 +223,8 @@ extern "C" void time_end(){
 
 // timer_counter 是表示用了多少个时钟周期
 extern "C" void npc_trap(int timer_counter){
+	nvboard_quit();
+
 	#ifdef CONFIG_DUMP_WAVE
 		dump_wave_inc();
 		close_wave();
