@@ -31,6 +31,9 @@
 #define SPI_DEVIDE  SPI_BASE + 0x14
 #define SPI_SS      SPI_BASE + 0x18
 
+// PS/2
+#define PS2_BASE    0x10011000
+
 
 #define DEVICE_BASE 	0xa0000000
 #define MMIO_BASE 	    0xa0000000

@@ -52,7 +52,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*)
     _erodata = .;
-  } > sdram AT> flash : text
+  } > sdram AT > flash : text
 
   /* 数据段（运行在 SDRAM） */
   .data : {

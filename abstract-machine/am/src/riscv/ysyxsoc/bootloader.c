@@ -28,7 +28,7 @@ extern char _bss_extra;
 extern char _ebss_extra;
 
 /**
- * 拷贝 .text 段从 Flash 到 PSRAM
+ * 拷贝 .text 段从 Flash 到 SDARM
  */
 void copy_text() __attribute__((section(".text.ssbl")));
 void copy_text() {
@@ -40,7 +40,7 @@ void copy_text() {
 }
 
 /**
- * 拷贝 .rodata 段从 Flash 到 PSRAM
+ * 拷贝 .rodata 段从 Flash 到 SDARM
  */
 void copy_rodata() __attribute__((section(".text.ssbl")));
 void copy_rodata() {
@@ -52,7 +52,7 @@ void copy_rodata() {
 }
 
 /**
- * 拷贝 .data 段从 Flash 到 PSRAM
+ * 拷贝 .data 段从 Flash 到 SDARM
  */
 void copy_data() __attribute__((section(".text.ssbl")));
 void copy_data() {
