@@ -1,55 +1,111 @@
 #include <am.h>
 #include "ysyxsoc.h"
 
-// TODO：这里需要改，全部重写的改：首先建立映射表，然后根据按下状态和扫描码判断是否有按键按下
-// 有E0的就前面加上一个1,表示这是扩展键盘
-static uint32_t keymap[512] = {};
-#define NPC_KEYS(f) \
-  f(ESCAPE, 0x76) f(F1, 0x05) f(F2, 0x06) f(F3, 0x04) f(F4, 0x0C) f(F5, 0x03) f(F6, 0x0B) f(F7, 0x83) f(F8, 0x0A) f(F9, 0x01) f(F10, 0x09) f(F11, 0x78) f(F12, 0x07) \
-  f(GRAVE, 0x0E) f(1, 0x16) f(2, 0x1E) f(3, 0x26) f(4, 0x25) f(5, 0x2E) f(6, 0x36) f(7, 0x3D) f(8, 0x3E) f(9, 0x46) f(0, 0x45) f(MINUS, 0x4E) f(EQUALS, 0x55) f(BACKSPACE, 0x66) \
-  f(TAB, 0x0D) f(Q, 0x15) f(W, 0x1D) f(E, 0x24) f(R, 0x2D) f(T, 0x2C) f(Y, 0x35) f(U, 0x3C) f(I, 0x43) f(O, 0x44) f(P, 0x4D) f(LEFTBRACKET, 0x54) f(RIGHTBRACKET, 0x5B) f(BACKSLASH, 0x5D) \
-  f(CAPSLOCK, 0x58) f(A, 0x1C) f(S, 0x1B) f(D, 0x23) f(F, 0x2B) f(G, 0x34) f(H, 0x33) f(J, 0x3B) f(K, 0x42) f(L, 0x4B) f(SEMICOLON, 0x4C) f(APOSTROPHE, 0x52) f(RETURN, 0x5A) \
-  f(LSHIFT, 0x12) f(Z, 0x1A) f(X, 0x22) f(C, 0x21) f(V, 0x2A) f(B, 0x32) f(N, 0x31) f(M, 0x3A) f(COMMA, 0x41) f(PERIOD, 0x49) f(SLASH, 0x4A) f(RSHIFT, 0x59) \
-  f(LCTRL, 0x14) f(APPLICATION, 0x11) f(LALT, 0x11) f(SPACE, 0x29) f(RALT, 0x111) f(RCTRL, 0x114) \
-  f(UP, 0x175) f(DOWN, 0x172) f(LEFT, 0x16B) f(RIGHT, 0x174) f(INSERT, 0x170) f(DELETE, 0x171) f(HOME, 0x16C) f(END, 0x169) f(PAGEUP, 0x17D) f(PAGEDOWN, 0x17A)
+static const int LOOKUP_SCANCODE_NORMAL[256] = {
+    [0x0E] = AM_KEY_GRAVE,
+    [0x16] = AM_KEY_1,
+    [0x1E] = AM_KEY_2,
+    [0x26] = AM_KEY_3,
+    [0x25] = AM_KEY_4,
+    [0x2E] = AM_KEY_5,
+    [0x36] = AM_KEY_6,
+    [0x3D] = AM_KEY_7,
+    [0x3E] = AM_KEY_8,
+    [0x46] = AM_KEY_9,
+    [0x45] = AM_KEY_0,
+    [0x4E] = AM_KEY_MINUS,
+    [0x55] = AM_KEY_EQUALS,
+    [0x1C] = AM_KEY_A,
+    [0x32] = AM_KEY_B,
+    [0x21] = AM_KEY_C,
+    [0x23] = AM_KEY_D,
+    [0x24] = AM_KEY_E,
+    [0x2B] = AM_KEY_F,
+    [0x34] = AM_KEY_G,
+    [0x33] = AM_KEY_H,
+    [0x43] = AM_KEY_I,
+    [0x3B] = AM_KEY_J,
+    [0x42] = AM_KEY_K,
+    [0x4B] = AM_KEY_L,
+    [0x3A] = AM_KEY_M,
+    [0x31] = AM_KEY_N,
+    [0x44] = AM_KEY_O,
+    [0x4D] = AM_KEY_P,
+    [0x15] = AM_KEY_Q,
+    [0x2D] = AM_KEY_R,
+    [0x1B] = AM_KEY_S,
+    [0x2C] = AM_KEY_T,
+    [0x3C] = AM_KEY_U,
+    [0x2A] = AM_KEY_V,
+    [0x1D] = AM_KEY_W,
+    [0x22] = AM_KEY_X,
+    [0x35] = AM_KEY_Y,
+    [0x1A] = AM_KEY_Z,
+    [0x54] = AM_KEY_LEFTBRACKET,
+    [0x5B] = AM_KEY_RIGHTBRACKET,
+    [0x5D] = AM_KEY_BACKSLASH,
+    [0x4C] = AM_KEY_SEMICOLON,
+    [0x52] = AM_KEY_APOSTROPHE,
+    [0x5A] = AM_KEY_RETURN,
+    [0x41] = AM_KEY_COMMA,
+    [0x49] = AM_KEY_PERIOD,
+    [0x4A] = AM_KEY_SLASH,
+    [0x66] = AM_KEY_BACKSPACE,
+    [0x0D] = AM_KEY_TAB,
+    [0x58] = AM_KEY_CAPSLOCK,
+    [0x12] = AM_KEY_LSHIFT,
+    [0x14] = AM_KEY_LCTRL,
+    [0x11] = AM_KEY_LALT,
+    [0x29] = AM_KEY_SPACE,
+    [0x59] = AM_KEY_RSHIFT,
+    [0x76] = AM_KEY_ESCAPE,
+    [0x05] = AM_KEY_F1,
+    [0x06] = AM_KEY_F2,
+    [0x04] = AM_KEY_F3,
+    [0x0C] = AM_KEY_F4,
+    [0x03] = AM_KEY_F5,
+    [0x0B] = AM_KEY_F6,
+    [0x83] = AM_KEY_F7,
+    [0x0A] = AM_KEY_F8,
+    [0x01] = AM_KEY_F9,
+    [0x09] = AM_KEY_F10,
+    [0x78] = AM_KEY_F11,
+    [0x07] = AM_KEY_F12,
+};
 
-// ##是一个连接符号，用于将宏参数与周围的记号拼接在一起。
-// 相当于是使用宏定义写入数组
-#define SCANCODE_KEYS_MAP(k, c) keymap[c] = AM_KEY_ ## k;
+static const int LOOKUP_SCANCODE_EXTEND[256] = {
+    [0x11] = AM_KEY_RALT,
+    [0x14] = AM_KEY_RCTRL,
+    [0x71] = AM_KEY_DELETE,
+    [0x69] = AM_KEY_END,
+    [0x6C] = AM_KEY_HOME,
+    [0x70] = AM_KEY_INSERT,
+    [0x7A] = AM_KEY_PAGEDOWN,
+    [0x7D] = AM_KEY_PAGEUP,
+    [0x72] = AM_KEY_DOWN,
+    [0x6B] = AM_KEY_LEFT,
+    [0x74] = AM_KEY_RIGHT,
+    [0x75] = AM_KEY_UP,
+};
 
-// 初始化数组
-void __am_keymap_init() {
-  NPC_KEYS(SCANCODE_KEYS_MAP)
-}
-
-uint16_t get_scan(uint16_t scan_code);
 
 void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
-  uint16_t scan_code = get_scan(0);
-  if(scan_code == 0){
-    kbd->keycode = AM_KEY_NONE;
-  }
-  if((scan_code >> 9) == 1)             // 表示松开按键了
-    kbd->keydown = 0;
-  scan_code = scan_code & 0x1FF;
-  kbd->keycode = keymap[scan_code];
-}
 
-uint16_t get_scan(uint16_t scan_code){
-  uint8_t code = inb(PS2_BASE);         // 读取ps/2的状态
-  switch(code)
-  {
-    case 0xE0:
-      scan_code |= (1 << 8);            // 如果是扩展键盘，则在第八位加上一个1
-      scan_code = get_scan(scan_code);
-      break;
-    case 0xF0:
-      scan_code |= (1 << 9);            // 用于判断是否为松开的事件
-      scan_code = get_scan(scan_code);
-      break;
-    default:
-      scan_code = (scan_code & 0xFF00) | code;  // 正式判断按键是什么
-      break;
+  static bool is_break = false;
+  static bool is_extend = false;
+  const uint8_t scancode = inb(PS2_KBD_ADDR + PS2_KBD_REG_SCANCODE);
+
+  kbd->keydown = false;
+  kbd->keycode = AM_KEY_NONE;
+
+  if (scancode == 0xe0) {
+    is_extend = true;
+  } else if (scancode == 0xf0) {
+    is_break = true;
+  } else if (scancode != 0x0) {
+    kbd->keydown = !is_break;
+    kbd->keycode = is_extend ? LOOKUP_SCANCODE_EXTEND[scancode] : LOOKUP_SCANCODE_NORMAL[scancode];
+    is_extend = false;
+    is_break = false;
   }
-  return scan_code;
 }
