@@ -34,6 +34,10 @@
 // PS/2
 #define PS2_BASE    0x10011000
 
+// VGA
+#define VGA_BASE    0x21000000
+#define VGA_SIZE    0x00200000
+
 
 #define DEVICE_BASE 	0xa0000000
 #define MMIO_BASE 	    0xa0000000

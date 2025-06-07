@@ -31,9 +31,9 @@ static void *lut[128] = {
   [AM_UART_CONFIG]  = __am_uart_config,
   [AM_UART_RX]      = __am_uart_rx,
 
-  // [AM_GPU_CONFIG] = __am_gpu_config,
-  // [AM_GPU_FBDRAW] = __am_gpu_fbdraw,
-  // [AM_GPU_STATUS] = __am_gpu_status,
+  [AM_GPU_CONFIG] = __am_gpu_config,
+  [AM_GPU_FBDRAW] = __am_gpu_fbdraw,
+  [AM_GPU_STATUS] = __am_gpu_status,
 };
 
 static void fail(void *buf) { panic("access nonexist register"); }
@@ -42,7 +42,7 @@ bool ioe_init() {
   for (int i = 0; i < LENGTH(lut); i++)
     if (!lut[i]) lut[i] = fail;
   __am_timer_init();
-  // __am_keymap_init();
+  __am_keymap_init();
   // __am_gpu_init();
   return true;
 }
