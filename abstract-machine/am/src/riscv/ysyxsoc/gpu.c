@@ -33,6 +33,17 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
   }
 }
 
+// void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl){
+//     int i,j;
+//     ctl->sync = true;
+//     uint32_t *p = (uint32_t *)ctl->pixels; 
+//     uint32_t *fb = (uint32_t *)(uintptr_t)(VGA_BASE + (ctl->y*VGA_WIDTH + ctl->x) * sizeof(uint32_t));
+//     for(i = 0;i < ctl->h;i++){
+//         for(j = 0;j < ctl->w;j++)
+//             fb[j] = *p++;
+//         fb += VGA_WIDTH;
+//     }
+// }
 
 void __am_gpu_status(AM_GPU_STATUS_T *status) {
   status->ready = true;
