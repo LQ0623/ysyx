@@ -76,7 +76,7 @@ static inline bool in_gpio(paddr_t addr) {
 }
 
 bool in_socMem(paddr_t addr){
-    return in_Mrom(addr) || in_Sram(addr) || in_sdram(addr);
+    return in_Mrom(addr) || in_Sram(addr) || in_sdram(addr) || in_Flash(addr);
 }
 //only support uart and clint
 bool in_socDevW(paddr_t addr){
