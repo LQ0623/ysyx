@@ -6,6 +6,7 @@ NXDC_FILES = constr/ysyxSoC.nxdc #nvboard pin file
 #ysyxSoC
 YSYXSoC = ../ysyxSoC
 
+# 这是因为绑定管脚的需要写入build文件夹
 $(shell mkdir -p $(BUILD_DIR))
 
 # constraint file

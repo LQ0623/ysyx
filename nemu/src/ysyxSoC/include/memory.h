@@ -14,6 +14,18 @@
 #define SRAM_BASE 0x0f000000
 #define SRAM_SIZE 0x1fff
 
+#define PSRAM_BASE 0x80000000
+#define PSRAM_SIZE 0x00200000
+
+#define SDRAM_BASE 0xa0000000
+#define SDRAM_SIZE 0x02000000
+
+#define CLINT_BASE 0x02000000
+#define CLINT_SIZE 0x0000ffff
+
+#define GPIO_BASE 0x10002000
+#define GPIO_SIZE 0xf
+
 // UART
 #define UART_BASE 0x10000000
 #define UART_SIZE 0xfff

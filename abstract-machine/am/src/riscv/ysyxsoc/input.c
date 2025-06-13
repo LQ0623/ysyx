@@ -33,7 +33,7 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
     kbd->keycode = AM_KEY_NONE;
   }
 
-  if((scan_code >> 9) == 1)             // 表示松开按键了
+  if((scan_code >> 9) == 1)                     // 表示松开按键了
     kbd->keydown = 0;
   scan_code = scan_code & 0x1FF;
   kbd->keycode = keymap[scan_code];
@@ -41,15 +41,15 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
 }
 
 uint16_t get_scan(uint16_t scan_code){
-  uint8_t code = inb(PS2_BASE + 0x0);         // 读取ps/2的状态
+  uint8_t code = inb(PS2_BASE + 0x0);           // 读取ps/2的状态
   switch(code)
   {
     case 0xE0:
-      scan_code |= (1 << 8);            // 如果是扩展键盘，则在第八位加上一个1
+      scan_code |= (1 << 8);                    // 如果是扩展键盘，则在第八位加上一个1
       scan_code = get_scan(scan_code);
       break;
     case 0xF0:
-      scan_code |= (1 << 9);            // 用于判断是否为松开的事件
+      scan_code |= (1 << 9);                    // 用于判断是否为松开的事件
       scan_code = get_scan(scan_code);
       break;
     default:

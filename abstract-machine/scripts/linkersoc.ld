@@ -2,8 +2,8 @@ ENTRY(_start)
 PHDRS {
   fsbl PT_LOAD FLAGS(RX); /* First Stage Bootloader */
   ssbl PT_LOAD FLAGS(RX); /* Second Stage Bootloader */
-  text PT_LOAD FLAGS(RX); /* Code and read-only data */
-  ro   PT_LOAD FLAGS(R);
+  text PT_LOAD FLAGS(RX); /* Code */
+  ro   PT_LOAD FLAGS(R);  /* read-only data */
   data PT_LOAD FLAGS(RW); /* Writable data */
 }
 

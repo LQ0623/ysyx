@@ -6,7 +6,7 @@
 #define VGA_WIDTH 640
 #define VGA_HIGH  480
 
-// TODO:应该只需要下面的三个函数，不需要init函数，这个我记得是为了长度和宽度可变才需要
+// TAG:只需要下面的三个函数，这三个是为了渲染使用，将输入的信号写出到VGA的地址去
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true, 
@@ -33,17 +33,6 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
   }
 }
 
-// void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl){
-//     int i,j;
-//     ctl->sync = true;
-//     uint32_t *p = (uint32_t *)ctl->pixels; 
-//     uint32_t *fb = (uint32_t *)(uintptr_t)(VGA_BASE + (ctl->y*VGA_WIDTH + ctl->x) * sizeof(uint32_t));
-//     for(i = 0;i < ctl->h;i++){
-//         for(j = 0;j < ctl->w;j++)
-//             fb[j] = *p++;
-//         fb += VGA_WIDTH;
-//     }
-// }
 
 void __am_gpu_status(AM_GPU_STATUS_T *status) {
   status->ready = true;
