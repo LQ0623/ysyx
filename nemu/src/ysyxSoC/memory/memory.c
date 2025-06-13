@@ -80,11 +80,11 @@ bool in_socMem(paddr_t addr){
 }
 //only support uart and clint
 bool in_socDevW(paddr_t addr){
-    return in_uart(addr) || in_gpio(addr);
+    return in_uart(addr) || in_gpio(addr) || in_clint(addr);
 }
 
 bool in_socDevR(paddr_t addr){
-    return in_uart(addr) || in_clint(addr);
+    return in_uart(addr) || in_gpio(addr) || in_clint(addr);
 }
 
 word_t soc_read(paddr_t paddr, int len){
@@ -166,6 +166,8 @@ word_t socDev_read(paddr_t addr,int len){
         ret = uart_io_read(addr, len);
     } else if(in_clint(addr)){
         ret = clint_io_read(addr, len);
+    } else if(in_gpio(addr)){
+        ret = 0;
     } else assert(0);
     return ret;
 }
