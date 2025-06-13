@@ -34,6 +34,10 @@
 #define VGA_BASE    0x21000000
 #define VGA_SIZE    0x00200000
 
+// PS2
+#define PS2_BASE 0x10011000
+#define PS2_SIZE 0x8
+
 // UART
 #define UART_BASE 0x10000000
 #define UART_SIZE 0xfff

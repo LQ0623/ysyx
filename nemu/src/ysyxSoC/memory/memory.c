@@ -79,16 +79,20 @@ static inline bool in_vga(paddr_t addr) {
     return addr - VGA_BASE < VGA_SIZE;
 }
 
+static inline bool in_ps2(paddr_t addr){
+    return addr - PS2_BASE < PS2_SIZE;
+}
+
 bool in_socMem(paddr_t addr){
     return in_Mrom(addr) || in_Sram(addr) || in_sdram(addr) || in_Flash(addr);
 }
 //only support uart and clint
 bool in_socDevW(paddr_t addr){
-    return in_uart(addr) || in_gpio(addr) || in_clint(addr) || in_vga(addr);
+    return in_uart(addr) || in_gpio(addr) || in_clint(addr) || in_vga(addr) || in_ps2(addr);
 }
 
 bool in_socDevR(paddr_t addr){
-    return in_uart(addr) || in_gpio(addr) || in_clint(addr) || in_vga(addr);
+    return in_uart(addr) || in_gpio(addr) || in_clint(addr) || in_vga(addr) || in_ps2(addr);
 }
 
 word_t soc_read(paddr_t paddr, int len){
@@ -170,7 +174,7 @@ word_t socDev_read(paddr_t addr,int len){
         ret = uart_io_read(addr, len);
     } else if(in_clint(addr)){
         ret = clint_io_read(addr, len);
-    } else if(in_gpio(addr) || in_vga(addr)){
+    } else if(in_gpio(addr) || in_vga(addr) || in_ps2(addr)){
         ret = 0;
     } else assert(0);
     return ret;
@@ -181,7 +185,7 @@ void socDev_write(paddr_t addr, int len, word_t data){
         uart_io_write(addr, len, data);
     } else if(in_clint(addr)){
         clint_io_write(addr, len, data);
-    } else if(in_gpio(addr) || in_vga(addr)){
+    } else if(in_gpio(addr) || in_vga(addr) || in_ps2(addr)){
         return;
     } else assert(0);
 }
