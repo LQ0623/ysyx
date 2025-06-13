@@ -101,11 +101,8 @@ void difftest_step() {
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
     is_skip_diff = ref_difftest_skip();
     // printf("此时的dut的pc为 %#x\tref执行前的 ref_r.pc: %#x\tis_skip_diff 为 %d\n",pc,ref_r.pc,is_skip_diff);
-    // 因为如果设备跳过之后，给定的pc是npc，所以在执行完一拍之后才能对上拍
-    if(ref_r.pc == pc){
-        return;
-    }
 
+    printf("is_skip_diff is %d\n",is_skip_diff);
     if(is_skip_diff == true){
         is_skip_diff = false;
         //get dut reg into CPU_state struct
