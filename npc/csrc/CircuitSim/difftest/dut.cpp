@@ -102,7 +102,7 @@ void difftest_step() {
     is_skip_diff = ref_difftest_skip();
     // printf("此时的dut的pc为 %#x\tref执行前的 ref_r.pc: %#x\tis_skip_diff 为 %d\n",pc,ref_r.pc,is_skip_diff);
 
-    printf("is_skip_diff is %d\n",is_skip_diff);
+    // printf("is_skip_diff is %d\n",is_skip_diff);
     if(is_skip_diff == true){
         is_skip_diff = false;
         //get dut reg into CPU_state struct

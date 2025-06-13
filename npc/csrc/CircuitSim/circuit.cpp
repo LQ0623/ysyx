@@ -141,7 +141,7 @@ static void trace_and_difftest() {
 		// 	difftest_step();
 		// }
 		if(wb_ready == 0){	// 	更改进行diff test的时机
-			printf("NPC: %x: %08x\n",pc,inst);
+			// printf("NPC: %x: %08x\n",pc,inst);
 			difftest_step();
 		}
 	#endif
