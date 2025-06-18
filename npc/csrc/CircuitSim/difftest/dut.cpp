@@ -13,6 +13,7 @@ void (*ref_difftest_memcpy)(paddr_t addr, void *buf, size_t n, bool direction) =
 void (*ref_difftest_regcpy)(void *dut, bool direction) = NULL;
 void (*ref_difftest_exec)(uint64_t n) = NULL;
 void (*ref_difftest_raise_intr)(uint64_t NO) = NULL;
+bool (*ref_difftest_skip)() = NULL;
 
 enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF };
 
@@ -41,6 +42,10 @@ void init_difftest(char *ref_so_file, long img_size) {
 
     void (*ref_difftest_init)() = (void(*)())dlsym(handle, "difftest_init");
     assert(ref_difftest_init);
+
+    ref_difftest_skip = (bool(*)())dlsym(handle, "difftest_skip");
+    assert(ref_difftest_skip);
+
 
     #ifdef CONFIG_TRACE
         Log("Differential testing: %s", ANSI_FMT("ON", ANSI_FG_GREEN));
@@ -92,15 +97,13 @@ void difftest_step() {
     if(ref_difftest_memcpy == NULL) return;
 
     CPU_state ref_r;
+    ref_difftest_exec(1);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    is_skip_diff = ref_difftest_skip();
     // printf("此时的dut的pc为 %#x\tref执行前的 ref_r.pc: %#x\tis_skip_diff 为 %d\n",pc,ref_r.pc,is_skip_diff);
-    // 因为如果设备跳过之后，给定的pc是npc，所以在执行完一拍之后才能对上拍
-    if(ref_r.pc == pc){
-        return;
-    }
 
+    // printf("is_skip_diff is %d\n",is_skip_diff);
     if(is_skip_diff == true){
-        ref_difftest_exec(1);
         is_skip_diff = false;
         //get dut reg into CPU_state struct
         CPU_state dut_r;
@@ -111,15 +114,20 @@ void difftest_step() {
         for(int i = 0;i < REGNUM;i++){
             dut_r.gpr[i] = gpr[i];
         }
+        for(int i = 0;i < 4;i++){
+            dut_r.csr[i] = csr[i];
+        }
         //copy reg to ref to skip this inst
         ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
         return;
     }
-    // printf("pc is %x\n",pc);
-    ref_difftest_exec(1);
-    ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+
     if(!checkregs(&ref_r)){
         isa_reg_display();
+        #ifdef CONFIG_DUMP_WAVE
+            dump_wave_inc();
+            close_wave();
+        #endif
         assert(0);
     }
 }

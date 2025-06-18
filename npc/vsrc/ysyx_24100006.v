@@ -98,7 +98,7 @@ module ysyx_24100006(
 	//-----------------------------
 	// 所有 output 信号强制置零
 	//-----------------------------
-	assign io_slave_awready  = 1'b0;   // 1-bit
+	assign io_slave_awready   = 1'b0;   // 1-bit
 	assign io_slave_wready    = 1'b0;   // 1-bit
 	assign io_slave_bvalid    = 1'b0;   // 1-bit
 	assign io_slave_bresp     = 2'h0;   // 2-bit
@@ -180,7 +180,6 @@ module ysyx_24100006(
 	wire [31:0] wdata_csr_WD;
 
 	// MEMU -> MEM
-	wire [7:0] RealMemWmask_M;	// 真正的Mem写的掩码
 	wire [31:0] mem_addr_M;		// 对齐到四字节边界的地址
 	wire [31:0] rdraw_M;		// 从mem读取出来的内容
 
@@ -249,6 +248,7 @@ module ysyx_24100006(
 	reg	[3:0]	axi_wstrb_mem;
 	reg			axi_wlast_mem;
 
+	// 用于分辨原始的地址的后两位
 	reg [1:0]	axi_addr_suffix;
     
 	// 下面的SRAM_axi_信号是指从xbar输出的信号，连接到axi模块的，本来是连接到存储SRAM（即mem）
@@ -269,7 +269,6 @@ module ysyx_24100006(
     wire          	sram_axi_wvalid;
     wire        	sram_axi_wready;
     wire [31:0] 	sram_axi_wdata;
-    wire [7:0]   	sram_axi_bytes;
     // 写响应通道
     wire         	sram_axi_bvalid;
     wire        	sram_axi_bready;
@@ -303,7 +302,6 @@ module ysyx_24100006(
     wire          	clint_axi_wvalid;
     wire        	clint_axi_wready;
     wire [31:0] 	clint_axi_wdata;
-    wire [7:0]   	clint_axi_bytes;
     // 写响应通道
     wire         	clint_axi_bvalid;
     wire        	clint_axi_bready;
@@ -318,7 +316,6 @@ module ysyx_24100006(
 		.axi_awaddr(clint_axi_awaddr),
 		// axi 写入数据和写入使用的掩码
 		.axi_wdata(clint_axi_wdata),
-		.axi_bytes(clint_axi_bytes),
 		// axi控制信号
 		// read data addr
 		.axi_arvalid(clint_axi_arvalid),
@@ -351,7 +348,6 @@ module ysyx_24100006(
 	wire         m_axi_wvalid;
 	wire         m_axi_wready;
 	wire [31:0]  m_axi_wdata;
-	wire [7:0]   m_axi_bytes;
 
 	wire         m_axi_bvalid;
 	wire         m_axi_bready;
@@ -417,7 +413,6 @@ module ysyx_24100006(
 		.mem_axi_wvalid(axi_wvalid_mem),
 		.mem_axi_wready(axi_wready_mem),
 		.mem_axi_wdata(rs2_data_EM),
-		.mem_axi_bytes(RealMemWmask_M),
 		// 写响应通道
 		.mem_axi_bvalid(axi_bvalid_mem),
 		.mem_axi_bready(axi_bready_mem),
@@ -450,7 +445,6 @@ module ysyx_24100006(
 		.sram_axi_wvalid(m_axi_wvalid),
 		.sram_axi_wready(m_axi_wready),
 		.sram_axi_wdata(m_axi_wdata),
-		.sram_axi_bytes(m_axi_bytes),
 		// 写响应通道
 		.sram_axi_bvalid(m_axi_bvalid),
 		.sram_axi_bready(m_axi_bready),
@@ -575,7 +569,6 @@ module ysyx_24100006(
 		.m_axi_wvalid(m_axi_wvalid),
 		.m_axi_wready(m_axi_wready),
 		.m_axi_wdata(m_axi_wdata),
-		.m_axi_bytes(m_axi_bytes),
 		
 		.m_axi_bvalid(m_axi_bvalid),
 		.m_axi_bready(m_axi_bready),
@@ -611,7 +604,6 @@ module ysyx_24100006(
 		.sram_axi_wvalid(sram_axi_wvalid),
 		.sram_axi_wready(sram_axi_wready),
 		.sram_axi_wdata(sram_axi_wdata),
-		.sram_axi_bytes(sram_axi_bytes),
 		
 		.sram_axi_bvalid(sram_axi_bvalid),
 		.sram_axi_bready(sram_axi_bready),
@@ -644,7 +636,6 @@ module ysyx_24100006(
 		.clint_axi_wvalid(clint_axi_wvalid),
 		.clint_axi_wready(clint_axi_wready),
 		.clint_axi_wdata(clint_axi_wdata),
-		.clint_axi_bytes(clint_axi_bytes),
 		
 		.clint_axi_bvalid(clint_axi_bvalid),
 		.clint_axi_bready(clint_axi_bready),
@@ -844,7 +835,6 @@ module ysyx_24100006(
 		.mem_ready(mem_ready),
 
 		.mem_addr(mem_addr_M),
-		.RealMemWmask(RealMemWmask_M),
 		.pc_W(pc_MW),
 		.sext_imm_W(sext_imm_MW),
 		.alu_result_W(alu_result_MW),

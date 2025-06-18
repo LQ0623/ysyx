@@ -31,7 +31,7 @@ f(LSHIFT) f(Z) f(X) f(C) f(V) f(B) f(N) f(M) f(COMMA) f(PERIOD) f(SLASH) f(RSHIF
 f(LCTRL) f(APPLICATION) f(LALT) f(SPACE) f(RALT) f(RCTRL) \
 f(UP) f(DOWN) f(LEFT) f(RIGHT) f(INSERT) f(DELETE) f(HOME) f(END) f(PAGEUP) f(PAGEDOWN)
 
-#define NEMU_KEY_NAME(k) NEMU_KEY_ ## k,
+#define NEMU_KEY_NAME(k) NEMU_KEY_ ## k,    // ##是一个连接符号，用于将宏参数与周围的记号拼接在一起。
 
 enum {
   NEMU_KEY_NONE = 0,

@@ -1,7 +1,7 @@
 #include <riscv/riscv.h>
 
 //uart
-#define UART_REG_RB  0x10000000
+#define UART_REG_RB  0x10000000     // receiver buffer
 #define UART_REG_LC  0x10000003
 #define UART_REG_DL1 0x10000000
 #define UART_REG_DL2 0x10000001
@@ -31,13 +31,24 @@
 #define SPI_DEVIDE  SPI_BASE + 0x14
 #define SPI_SS      SPI_BASE + 0x18
 
+// PS/2
+#define PS2_BASE    0x10011000
+
+// VGA
+#define VGA_BASE    0x21000000
+#define VGA_SIZE    0x00200000
+
+// clint
+#define RTC_ADDR  0x02000000
+#define RTC_SIZE  0x0000ffff
+
 
 #define DEVICE_BASE 	0xa0000000
 #define MMIO_BASE 	    0xa0000000
 
 #define SERIAL_PORT     (DEVICE_BASE + 0x00003f8)
 #define KBD_ADDR        (DEVICE_BASE + 0x0000060)
-#define RTC_ADDR        (DEVICE_BASE + 0x0000048)
+// #define RTC_ADDR        (DEVICE_BASE + 0x0000048)
 #define VGACTL_ADDR     (DEVICE_BASE + 0x0000100)
 #define AUDIO_ADDR      (DEVICE_BASE + 0x0000200)
 #define DISK_ADDR       (DEVICE_BASE + 0x0000300)

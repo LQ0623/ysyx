@@ -4,6 +4,8 @@ AM_SRCS := riscv/ysyxsoc/start.S \
            riscv/ysyxsoc/ioe.c \
            riscv/ysyxsoc/timer.c \
            riscv/ysyxsoc/input.c \
+           riscv/ysyxsoc/serial.c \
+           riscv/ysyxsoc/gpu.c \
            riscv/ysyxsoc/cte.c \
            riscv/ysyxsoc/trap.S \
            platform/dummy/vme.c \

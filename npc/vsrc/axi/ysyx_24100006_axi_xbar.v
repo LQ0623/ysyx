@@ -1,7 +1,7 @@
 module ysyx_24100006_axi_xbar #(
     parameter SRAM_ADDR     = 32'h8000_0000,
     parameter UART_ADDR     = 32'h1000_0000,
-    parameter CLINT_ADDR    = 32'ha000_0048,
+    parameter CLINT_ADDR    = 32'h0200_0000,
     parameter SPI_ADDR      = 32'h1000_1000
 )(
     input         clk,
@@ -17,7 +17,6 @@ module ysyx_24100006_axi_xbar #(
     input         m_axi_wvalid,
     output        m_axi_wready,
     input  [31:0] m_axi_wdata,
-    input  [7:0]  m_axi_bytes,
     
     output        m_axi_bvalid,
     input         m_axi_bready,
@@ -54,7 +53,6 @@ module ysyx_24100006_axi_xbar #(
     output        sram_axi_wvalid,
     input         sram_axi_wready,
     output [31:0] sram_axi_wdata,
-    output [7:0]  sram_axi_bytes,
     
     input         sram_axi_bvalid,
     output        sram_axi_bready,
@@ -87,7 +85,6 @@ module ysyx_24100006_axi_xbar #(
     output        clint_axi_wvalid,
     input         clint_axi_wready,
     output [31:0] clint_axi_wdata,
-    output [7:0]  clint_axi_bytes,
     
     input         clint_axi_bvalid,
     output        clint_axi_bready,
@@ -115,14 +112,13 @@ module ysyx_24100006_axi_xbar #(
     // wire sel_sram   = (m_axi_awaddr >= SRAM_ADDR && m_axi_awaddr < (SRAM_ADDR + 32'h0800_0000)) ||
     //                 (m_axi_araddr >= SRAM_ADDR && m_axi_araddr < (SRAM_ADDR + 32'h0800_0000));       // SRAM的空间大小到在am中有
 
-    // wire sel_clint  = (m_axi_awaddr >= CLINT_ADDR && m_axi_awaddr < (CLINT_ADDR + 32'h0000_0008)) ||
-    //                 (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
+    wire sel_clint  = (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_ffff));      // CLINT
 
     wire sel_uart = (m_axi_araddr >= UART_ADDR && m_axi_araddr < (UART_ADDR + 32'h0000_1000));           // UART
     wire sel_spi  = (m_axi_araddr >= SPI_ADDR && m_axi_araddr < (SPI_ADDR + 32'h0000_1000));           // SPI
 
-    wire sel_sram = 1;
-    wire sel_clint = 0;
+    wire sel_sram = ~sel_clint;
+    // wire sel_clint = 0;
 
     // 写通道路由
     // SRAM
@@ -130,7 +126,6 @@ module ysyx_24100006_axi_xbar #(
     assign sram_axi_awaddr      = sel_sram ? m_axi_awaddr   : 32'h0;
     assign sram_axi_wvalid      = sel_sram ? m_axi_wvalid   : 0;
     assign sram_axi_wdata       = sel_sram ? m_axi_wdata    : 32'h0;
-    assign sram_axi_bytes       = sel_sram ? m_axi_bytes    : 8'h0;
     assign sram_axi_bready      = sel_sram ? m_axi_bready   : 0;
 
     // CLINT
@@ -138,7 +133,6 @@ module ysyx_24100006_axi_xbar #(
     assign clint_axi_awaddr     = sel_clint ? m_axi_awaddr   : 32'h0;
     assign clint_axi_wvalid     = sel_clint ? m_axi_wvalid   : 0;
     assign clint_axi_wdata      = sel_clint ? m_axi_wdata    : 32'h0;
-    assign clint_axi_bytes      = sel_clint ? m_axi_bytes    : 8'h0;
     assign clint_axi_bready     = sel_clint ? m_axi_bready   : 0;
 
     // 读通道路由
@@ -206,6 +200,12 @@ module ysyx_24100006_axi_xbar #(
     // Acess Fault信号
     assign Access_Fault     = (sram_axi_rresp != 2'b00 || clint_axi_rresp != 2'b00) ? 2'b01 : 
                                 ((sram_axi_bresp != 2'b00 || clint_axi_bresp != 2'b00) ? 2'b10 : 2'b00);
+
+    // always @(posedge clk) begin
+    //     if(sel_clint)begin
+    //         $display("addr is %x",m_axi_araddr);
+    //     end
+    // end
 
 endmodule
 

@@ -5,6 +5,9 @@ include VysyxSoCFull.mk
 
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
+#nvboard
+CPPFLAGS += -I$(NVBOARD_HOME)/usr/include
+
 # 是否开启波形生成
 ENABLE_WAVE ?= 0
 ifeq ($(ENABLE_WAVE), 1)
@@ -25,7 +28,7 @@ endif
 
 # 是否记录执行的指令到log文件中
 # 记录执行过的指令的功能不要开(因为这里没有给char-test建文件夹,导致执行过的指令无法写入到npc-log.txt中就会直接输出到终端)
-ENABLE_ITRACE ?= 1
+ENABLE_ITRACE ?= 0
 ifeq ($(ENABLE_ITRACE), 1)
     CPPFLAGS += -DCONFIG_ITRACE
 endif
@@ -55,7 +58,7 @@ ifeq ($(ENABLE_SOC), 1)
     CPPFLAGS += -DCONFIG_SOC
 endif
 
-ENABLE_DEVICE ?= 1
+ENABLE_DEVICE ?= 0
 ifeq ($(ENABLE_DEVICE), 1)
     CPPFLAGS += -DCONFIG_DEVICE
 endif
@@ -85,6 +88,6 @@ $(LIBCAPSTONE):
 endif
 
 # LIBS += -lreadline
-LIBS += -lreadline $(shell pkg-config --libs sdl2)
+LIBS += -lreadline $(shell pkg-config --libs sdl2 SDL2_image SDL2_ttf)  # 跑nvboard，需要加SDL2_image SDL2_ttf两个参数
 
 LINK := g++

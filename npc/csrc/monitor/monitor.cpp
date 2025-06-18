@@ -3,6 +3,9 @@
 #include <getopt.h>
 #include <common.h>
 #include <mtrace.h>
+#include <circuit.h>
+
+
 static char * img_file = NULL;
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
@@ -118,6 +121,10 @@ void init_monitor(int argc, char *argv[]){
     #ifdef CONFIG_DEVICE
       init_device();
     #endif
+
+    // 绑定nvboard的的管脚和nvboard初始化
+    nvboard_bind_all_pins(cpu);
+    nvboard_init();
 
     welcome();
 }

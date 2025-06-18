@@ -2,7 +2,7 @@
     AXI-Lite接口的CLINT功能：本质上就是使用MEM那一套，只是不能读，只能使用$write进行写操作
 */
 module ysyx_24100006_clint #(
-    parameter BASE_ADDR = 32'ha000_0048     // TIMER基地址
+    parameter BASE_ADDR = 32'h0200_0000     // TIMER基地址
 )(
     input               clk,
     input               reset,
@@ -12,7 +12,6 @@ module ysyx_24100006_clint #(
     input [31:0]        axi_awaddr,
     // axi 写入数据和写入使用的掩码
     input [31:0]        axi_wdata,
-    input [7:0]         axi_bytes,
 
     // axi控制信号
     // read data addr

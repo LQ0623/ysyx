@@ -70,7 +70,6 @@ module ysyx_24100006_memu(
 
 	// to MEM
 	output [31:0] 		mem_addr,
-	output [7:0] 		RealMemWmask,
 
 	// to WBU
 	output [31:0] 		pc_W,
@@ -277,7 +276,6 @@ module ysyx_24100006_memu(
     /* 为了对齐地址 */
 	assign mem_addr = locked_addr;	// 对齐到4字节边界
 	assign place = locked_addr - locked_addr & (~32'h3);		// 计算实际地址与字节之间的偏移
-	assign RealMemWmask = Mem_WMask_M << place;	// 真实的写内存的掩码
 	
 
     /**

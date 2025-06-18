@@ -57,5 +57,6 @@ void init_device() {
     init_vga();
   #endif
   // printf("\n\n\n\n\n\n\n\n\ninit device\n\n\n\n\n\n\n\n\n");
+  printf("init device\n");
 
 }

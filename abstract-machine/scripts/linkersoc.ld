@@ -2,7 +2,8 @@ ENTRY(_start)
 PHDRS {
   fsbl PT_LOAD FLAGS(RX); /* First Stage Bootloader */
   ssbl PT_LOAD FLAGS(RX); /* Second Stage Bootloader */
-  text PT_LOAD FLAGS(RX); /* Code and read-only data */
+  text PT_LOAD FLAGS(RX); /* Code */
+  ro   PT_LOAD FLAGS(R);  /* read-only data */
   data PT_LOAD FLAGS(RW); /* Writable data */
 }
 
@@ -52,7 +53,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*)
     _erodata = .;
-  } > sdram AT> flash : text
+  } > sdram AT > flash : ro
 
   /* 数据段（运行在 SDRAM） */
   .data : {
