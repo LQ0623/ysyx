@@ -381,6 +381,7 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 }
 
 // 用于跳过访问UART、RTC等外设的指令
+// TAG:这个函数的作用是没有在NEMU中跳过外设的时候有用，如果用于diff test的模块有了跳过外设的功能，就不需要了
 extern "C" void skip(){
 	is_skip_diff = true;
 	return;

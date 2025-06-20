@@ -38,7 +38,6 @@ module ysyx_24100006_axi_arbiter (
     input               mem_axi_wvalid,
     output              mem_axi_wready,
     input   [31:0]      mem_axi_wdata,
-    input   [7:0]       mem_axi_bytes,
     // 写响应通道
     output              mem_axi_bvalid,
     input               mem_axi_bready,
@@ -74,7 +73,6 @@ module ysyx_24100006_axi_arbiter (
     output              sram_axi_wvalid,
     input               sram_axi_wready,
     output  [31:0]      sram_axi_wdata,
-    output  [7:0]       sram_axi_bytes,
     // 写响应通道
     input               sram_axi_bvalid,
     output              sram_axi_bready,
@@ -258,7 +256,6 @@ module ysyx_24100006_axi_arbiter (
     assign sram_axi_awaddr  =   mem_axi_awaddr; //  写地址可以一直传输,但是只有当valid=1时才能够有效
     // assign sram_axi_awaddr  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;
     assign sram_axi_wdata   =   real_axi_wdata;
-    assign sram_axi_bytes   =   mem_axi_bytes;
 
     // AXI新增信号
     assign sram_axi_awlen   =   mem_axi_awlen;

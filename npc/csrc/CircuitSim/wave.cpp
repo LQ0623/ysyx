@@ -2,6 +2,10 @@
 static VerilatedVcdC* m_trace = nullptr;
 static VerilatedContext* contextp = nullptr;
 
+uint64_t get_sim_time(){
+	return contextp->time();
+}
+
 void init_wave(){
     
 	contextp = new VerilatedContext;

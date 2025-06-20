@@ -17,7 +17,6 @@ module ysyx_24100006_axi_xbar #(
     input         m_axi_wvalid,
     output        m_axi_wready,
     input  [31:0] m_axi_wdata,
-    input  [7:0]  m_axi_bytes,
     
     output        m_axi_bvalid,
     input         m_axi_bready,
@@ -54,7 +53,6 @@ module ysyx_24100006_axi_xbar #(
     output        sram_axi_wvalid,
     input         sram_axi_wready,
     output [31:0] sram_axi_wdata,
-    output [7:0]  sram_axi_bytes,
     
     input         sram_axi_bvalid,
     output        sram_axi_bready,
@@ -87,7 +85,6 @@ module ysyx_24100006_axi_xbar #(
     output        clint_axi_wvalid,
     input         clint_axi_wready,
     output [31:0] clint_axi_wdata,
-    output [7:0]  clint_axi_bytes,
     
     input         clint_axi_bvalid,
     output        clint_axi_bready,
@@ -129,7 +126,6 @@ module ysyx_24100006_axi_xbar #(
     assign sram_axi_awaddr      = sel_sram ? m_axi_awaddr   : 32'h0;
     assign sram_axi_wvalid      = sel_sram ? m_axi_wvalid   : 0;
     assign sram_axi_wdata       = sel_sram ? m_axi_wdata    : 32'h0;
-    assign sram_axi_bytes       = sel_sram ? m_axi_bytes    : 8'h0;
     assign sram_axi_bready      = sel_sram ? m_axi_bready   : 0;
 
     // CLINT
@@ -137,7 +133,6 @@ module ysyx_24100006_axi_xbar #(
     assign clint_axi_awaddr     = sel_clint ? m_axi_awaddr   : 32'h0;
     assign clint_axi_wvalid     = sel_clint ? m_axi_wvalid   : 0;
     assign clint_axi_wdata      = sel_clint ? m_axi_wdata    : 32'h0;
-    assign clint_axi_bytes      = sel_clint ? m_axi_bytes    : 8'h0;
     assign clint_axi_bready     = sel_clint ? m_axi_bready   : 0;
 
     // 读通道路由

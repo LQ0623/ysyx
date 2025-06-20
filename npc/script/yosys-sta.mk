@@ -8,10 +8,11 @@ DESIGN ?= ysyx_24100006
 SDC_FILE ?= $(PROJ_PATH)/vsrc/cpu.sdc
 # RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v")
 RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v" \
-				-not -path "$(PROJ_PATH)/vsrc/MEM/*"	\
+				-not -path "$(PROJ_PATH)/vsrc/MEM/ysyx_24100006_mem.v"	\
+				-not -path "$(PROJ_PATH)/vsrc/MEM/ysyx_24100006_uart.v" \
 				-not -path "$(PROJ_PATH)/vsrc/IF/ysyx_24100006_im.v")
 # RTL_FILES ?= $(PROJ_PATH)/vsrc/EX/ysyx_24100006_alu.v $(PROJ_PATH)/vsrc/template/ysyx_24100006_MuxKey.v
-export CLK_FREQ_MHZ ?= 450
+export CLK_FREQ_MHZ ?= 430
 
 RESULT_DIR = $(PROJ_PATH)/result/$(DESIGN)-$(CLK_FREQ_MHZ)MHz
 SCRIPT_DIR = $(PROJ_PATH)/yosys-sta/scripts
