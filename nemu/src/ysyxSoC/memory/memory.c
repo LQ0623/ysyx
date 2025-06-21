@@ -40,7 +40,7 @@ void init_sdram() {
 }
 
 void init_soc(){
-    // init_mrom();
+    init_mrom();
     init_flash();
     init_sram();
     init_sdram();

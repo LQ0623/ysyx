@@ -35,6 +35,8 @@ uint8_t* guest_to_host(paddr_t paddr) {
   uint8_t *ptr = NULL;
   if(in_pmem(paddr)){
     ptr = pmem + paddr - CONFIG_MBASE;
+  } else if(in_Mrom(paddr)){
+    ptr = mrom + paddr - 0x20000000;
   } else if(in_Flash(paddr)){
     ptr = flash + paddr - 0x30000000;
   }
