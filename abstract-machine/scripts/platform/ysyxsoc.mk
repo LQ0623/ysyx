@@ -17,9 +17,8 @@ LDFLAGS   += --defsym=_pmem_start=0x20000000 --defsym=_entry_offset=0x0
 LDFLAGS   += --defsym=_sram_start=0x0f000000 --defsym=_sram_offset=0x0
 LDFLAGS   += --defsym=_flash_start=0x30000000 --defsym=_flash_offset=0x0
 LDFLAGS   += --defsym=_psram_start=0x80000000 --defsym=_psram_size=0x400000
-LDFLAGS   += --defsym=_sdram_start=0xa0000000 --defsym=_sdram_size=0x20000000
 LDFLAGS   += --gc-sections -e _start 
-LDFLAGS   += --print-map
+# LDFLAGS   += --print-map
 
 # CFLAGS += -fsanitize=address         # 启用 ASan
 # LDFLAGS += -fsanitize=address        # 链接 ASan 库
@@ -30,7 +29,7 @@ NPCFLAGS += -e $(IMAGE).elf	#这是elf文件
 
 NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/nemu-diff/riscv32-nemu-interpreter-so	#加入difftest测试
 #NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/spike-diff/build/riscv32-spike-so
-NPCFLAGS += -b
+# NPCFLAGS += -b
 
 MAINARGS_MAX_LEN = 64
 MAINARGS_PLACEHOLDER = The insert-arg rule in Makefile will insert mainargs here.

@@ -249,7 +249,7 @@ extern "C" void sdram_read(int chip_id, int bank_id, int row_id, int col_id, int
 	// printf(" chip_id = %d, ba = %d, ra = %d, ca = %d\n", chip_id, bank_id, row_id, col_id);
 	
 	#ifdef CONFIG_MTRACE
-		mtrace_log_write(chip_id, 16, 'r', 0);
+		mtrace_log_write(align_addr, 16, 'r', 0);
 	#endif
 
 	return;
@@ -291,7 +291,7 @@ extern "C" void sdram_write(int chip_id, int bank_id, int row_id, int col_id, in
 			break;
 	}
 	#ifdef CONFIG_MTRACE
-		mtrace_log_write(chip_id, wstrb, 'w', wdata);
+		mtrace_log_write(align_addr, wstrb, 'w', wdata);
 	#endif
 	return;
 }

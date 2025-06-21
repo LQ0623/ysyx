@@ -95,8 +95,8 @@ SECTIONS {
   .heap (NOLOAD) : {
     . = ALIGN(0x10);
     _heap_start = .;
-    /* . = ORIGIN(sdram) + LENGTH(sdram) - 0x100; */
-    _heap_end = _heap_start + 0x3FFFFF;
+    . = ORIGIN(sdram) + LENGTH(sdram) - 0x100;
+    _heap_end = .;
   } > sdram
 
   /* 段加载地址（LMA）符号 */
