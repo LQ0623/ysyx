@@ -13,7 +13,7 @@ MEMORY {
   /* psram : ORIGIN = 0x80000000, LENGTH = 512M */
   psram : ORIGIN = 0x80000000, LENGTH = 4M
   sram  : ORIGIN = 0x0F000000, LENGTH = 8K
-  sdram : ORIGIN = 0xa0000000, LENGTH = 64M
+  sdram : ORIGIN = 0xa0000000, LENGTH = 32M
 }
 
 SECTIONS {
@@ -45,7 +45,7 @@ SECTIONS {
     _text = .;
     *(.text*)
     _etext = .;
-  } > sdram AT > flash : text
+  } > psram AT > flash : text
 
   /* 只读数据段（运行在 SDRAM） */
   .rodata : {
@@ -53,7 +53,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*)
     _erodata = .;
-  } > sdram AT > flash : ro
+  } > psram AT > flash : ro
 
   /* 数据段（运行在 SDRAM） */
   .data : {
@@ -61,7 +61,7 @@ SECTIONS {
     *(.data*)
     *(.sdata*)
     _edata = .;
-  } > sdram AT > flash : data
+  } > psram AT > flash : data
 
   /* 判断 RTT 中是否定义了 data_extra 和 bss_extra */
   _data_extra       = DEFINED(_data_extra)      ? _data_extra       : 0;
@@ -76,7 +76,7 @@ SECTIONS {
     *(.sbss*)
     *(.scommon)
     _bss_end = .;
-  } > sdram
+  } > psram
 
   /* 判断 RTT 中是否定义了 data_extra 和 bss_extra */
   _bss_extra        = DEFINED(_bss_extra)       ? _bss_extra        : 0;
@@ -95,9 +95,9 @@ SECTIONS {
   .heap (NOLOAD) : {
     . = ALIGN(0x10);
     _heap_start = .;
-    . = ORIGIN(sdram) + LENGTH(sdram) - 0x100;
+    . = ORIGIN(psram) + LENGTH(psram) - 0x100;
     _heap_end = .;
-  } > sdram
+  } > psram
 
   /* 段加载地址（LMA）符号 */
   _ssbl_lma  = LOADADDR(.text.ssbootloader);
