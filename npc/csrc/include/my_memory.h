@@ -36,6 +36,7 @@ void init_flash();
 void init_psram();
 void init_sdram();
 uint8_t *guest_to_host(uint32_t addr);
+uint8_t *guest_to_host_sdram(uint32_t paddr, int chip_id);
 void isa_reg_display();
 uint32_t isa_reg_str2val(const char *s, bool *success);
 void get_reg();
