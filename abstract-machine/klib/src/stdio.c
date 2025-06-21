@@ -211,15 +211,16 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 int sprintf(char *out, const char *fmt, ...) {
 	//panic("Not implemented");
 
-	char *start = out;
+	// char *start = out;
 	va_list args;
 	// 解析...中的参数
 	va_start(args, fmt);
 	
-	vsprintf(out, fmt, args);
+	int ret = vsprintf(out, fmt, args);
 	
 	va_end(args);
-	return out - start;
+	// return out - start;
+	return ret;
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
