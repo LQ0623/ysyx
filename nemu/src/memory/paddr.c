@@ -73,11 +73,11 @@ word_t paddr_read(paddr_t addr, int len) {
 #if CONFIG_MTRACE
   mtrace_log_write(addr, len, 'r', 0);
 #endif
-  if (in_socMem(addr)) return soc_read(addr, len);
-  if (in_socDevR(addr)){
-    skip = true;
-    return socDev_read(addr, len);
-  }
+  // if (in_socMem(addr)) return soc_read(addr, len);
+  // if (in_socDevR(addr)){
+  //   skip = true;
+  //   return socDev_read(addr, len);
+  // }
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);
@@ -90,12 +90,12 @@ void paddr_write(paddr_t addr, int len, word_t data) {
   mtrace_log_write(addr, len, 'w', data);
 #endif
   
-  if (in_socMem(addr))  { soc_write(addr, len, data); return; }
-  if (in_socDevW(addr)) { 
-    skip = true;
-    socDev_write(addr, len, data); 
-    return;
-  }
+  // if (in_socMem(addr))  { soc_write(addr, len, data); return; }
+  // if (in_socDevW(addr)) { 
+  //   skip = true;
+  //   socDev_write(addr, len, data); 
+  //   return;
+  // }
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);
