@@ -95,7 +95,8 @@ SECTIONS {
   .heap (NOLOAD) : {
     . = ALIGN(0x10);
     _heap_start = .;
-    . = ORIGIN(sdram) + LENGTH(sdram) - 0x100;
+    /* . = ORIGIN(sdram) + LENGTH(sdram) - 0x100; */
+    . += 0x40000;
     _heap_end = .;
   } > sdram
 
