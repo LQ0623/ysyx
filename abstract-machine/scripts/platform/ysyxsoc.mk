@@ -17,8 +17,9 @@ LDFLAGS   += --defsym=_pmem_start=0x20000000 --defsym=_entry_offset=0x0
 LDFLAGS   += --defsym=_sram_start=0x0f000000 --defsym=_sram_offset=0x0
 LDFLAGS   += --defsym=_flash_start=0x30000000 --defsym=_flash_offset=0x0
 LDFLAGS   += --defsym=_psram_start=0x80000000 --defsym=_psram_size=0x400000
+LDFLAGS   += --defsym=_sdram_start=0xa0000000 --defsym=_sdram_size=0x20000000
 LDFLAGS   += --gc-sections -e _start 
-# LDFLAGS   += --print-map
+LDFLAGS   += --print-map
 
 # CFLAGS += -fsanitize=address         # 启用 ASan
 # LDFLAGS += -fsanitize=address        # 链接 ASan 库
@@ -47,5 +48,8 @@ image: image-dep
 
 run: insert-arg
 	$(MAKE) -C $(NPC_HOME) ISA=$(ISA) run ARGS="$(NPCFLAGS)" IMG=$(IMAGE).bin
+
+gdb: insert-arg
+	$(MAKE) -C $(NEMU_HOME) ISA=$(ISA) gdb ARGS="$(NPCFLAGS)" IMG=$(IMAGE).bin
 
 .PHONY: insert-arg
