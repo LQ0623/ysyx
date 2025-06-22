@@ -38,6 +38,6 @@ COLOR_YELLOW 		= \033[33m
 COLOR_NONE  		= \033[0m
 
 clean:
-	-rm -rf $(BUILD_DIR) result top.dot top.png vsrc/*.png
+	-rm -rf $(BUILD_DIR) tools/performance-trace/*.png tools/performance-trace/*.txt result
 
 .PHONY:clean run 

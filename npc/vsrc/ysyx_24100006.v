@@ -882,4 +882,37 @@ module ysyx_24100006(
 	// 	end
 	// end
 
+
+	// TAGS:Performance Counters
+`ifdef VERILATOR_SIM
+import "DPI-C" function void axi_handshake(
+	input bit valid, 
+	input bit ready, 
+	input bit last, 
+	input int operate_type
+);
+import "DPI-C" function void exeu_finish(input bit valid);
+import "DPI-C" function void idu_instr_type(
+	input bit valid,
+	input int opcode
+);
+import "DPI-C" function void ins_start(input bit new_ins_valid);
+import "DPI-C" function void lsu_read_latency(input bit arvalid, input bit rvalid);
+import "DPI-C" function void lsu_write_latency(input bit awvalid, input bit bvalid);
+
+	always @(*) begin
+		axi_handshake(axi_rvalid_if	, axi_rready_if	, axi_rlast_if	, 1);
+		axi_handshake(axi_rvalid_mem, axi_rready_mem, axi_rlast_mem	, 2);
+		axi_handshake(axi_wvalid_mem, axi_wready_mem, axi_wlast_mem	, 3);
+
+		exeu_finish(exe_valid);
+		idu_instr_type(id_valid, {25'b0, instruction[6:0]});
+
+		// 获取当前的指令的开始时间(用axi总线取指有效作为开始)
+		ins_start(axi_arvalid_if);
+
+		lsu_read_latency(axi_arvalid_mem	, axi_rvalid_mem);
+		lsu_write_latency(axi_awvalid_mem	, axi_bvalid_mem);
+	end
+`endif
 endmodule

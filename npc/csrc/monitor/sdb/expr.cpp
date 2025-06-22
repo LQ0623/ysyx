@@ -153,7 +153,13 @@ static bool make_token(char *e) {
  */
 static uint32_t deref(uint32_t addr){
   uint32_t result = 0;
-  uint8_t* raddr = (uint8_t*)guest_to_host(addr);
+  // uint8_t* raddr = (uint8_t*)guest_to_host(addr);
+  uint8_t* raddr;
+  if(addr > 0xa0000000){
+    raddr = (uint8_t*)guest_to_host_sdram(addr, 0);
+  } else {
+    raddr = (uint8_t*)guest_to_host(addr);
+  }
   result = (*raddr)++;
   result += ((*raddr)++)<<8;
   result += (((*raddr)++)<<8) <<8;

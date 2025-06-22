@@ -28,7 +28,7 @@ extern CPU *cpu;
 void nvboard_bind_all_pins(CPU* top);
 
 // 一条指令最多运行的周期,超过就报错
-#define MAX_NUM_CYC 5000
+#define MAX_NUM_CYC 6000
 
 extern word_t inst,pc,dnpc;
 //circuit
@@ -39,4 +39,6 @@ void reset_cpu(int n);
 void init_wave();
 void dump_wave_inc();
 void close_wave();
+// 获取当前的仿真时间，没有算上reset的时间
+extern uint64_t cycle;
 #endif

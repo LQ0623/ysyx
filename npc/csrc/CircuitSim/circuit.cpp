@@ -4,6 +4,7 @@
 #include <ftrace.h>
 #include <device.h>
 #include <../monitor/sdb/sdb.h>
+#include <pcounter.h>
 
 CPU *cpu;
 
@@ -14,10 +15,15 @@ void difftest_step();
 #define MAX_INST_TO_PRINT 10
 #define LOG_BUF_SIZE 256
 uint64_t g_nr_guest_inst = 0;
+
+
+uint64_t cycle = 0;
+double avg_cycle[5] = {0};
+
+
 static bool g_print_step = false;
 word_t pc, snpc, dnpc, inst, prev_pc, PCW, if_valid, read_target_module, wb_ready;
 uint64_t timer_start, timer_end,g_timer;	// 测试运行的时间的
-uint64_t timer,count = 0;
 static uint8_t opcode;
 
 // TAG: 判断一条指令是否卡死使用
@@ -140,10 +146,18 @@ static void trace_and_difftest() {
 		// 	// printf("NPC: %x: %08x\n",pc,inst);
 		// 	difftest_step();
 		// }
-		if(wb_ready == 0){	// 	更改进行diff test的时机
+		// 	更改进行diff test的时机，在wb_ready的时候进行diff test，表示NPC这边已经执行完了
+		if(wb_ready == 0){
 			// printf("NPC: %x: %08x\n",pc,inst);
 			difftest_step();
 		}
+	#endif
+
+	/**
+	 * 5、是否开启performance trace
+	 */
+	#ifdef CONFIG_CSV
+		record_performance_trace(cycle, g_nr_guest_inst);
 	#endif
 }
 
@@ -164,13 +178,14 @@ void cpu_exec(uint64_t n){
 	ins_counter  = 0;
 
 	while(n > 0){
-		// timer = get_time() - timer_start;
-		// if(timer / 1000000 == count){
-		// 	printf("this is %d s\n\n",count++);
-		// }
 
 		prev_pc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__pc_FD;
+		
+		timer_start = get_time();
 		exec_once();
+		timer_end	= get_time();
+		g_timer		+= timer_end - timer_start;
+		
 		snpc = pc + 4;
 		inst = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__sram_axi_rdata;
 		pc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__pc_FD;
@@ -186,7 +201,20 @@ void cpu_exec(uint64_t n){
 		// printf("cpp npc is %#x\t",dnpc);
 		// printf("is_skip:%d\n",is_skip_diff);
 		get_reg();
-		g_nr_guest_inst ++;
+		
+		// 多周期CPU运行的指令的数量应该是if_valid有效一次记录一次
+		if(if_valid == 1){
+			g_nr_guest_inst ++;
+		}
+		cycle++;		// 记录运行的周期数
+
+		// 记录每种指令的运行时间
+		// (可以使用verilator的contextp->time()获取当前的仿真时间减去开始指令时的仿真时间然后除2，这是因为在我的代码中时2ps一个周期)
+		// 上面的方式需要和波形强相关，所以我直接使用当前周期数来当作时间，加2是因为在使用DPI-C的时候，没有计数
+		if(wb_ready == 0){
+			avg_cycle[ins_type] += (cycle - ins_start_time + 2);
+		}
+
 		#ifdef CONFIG_TRACE
 			trace_and_difftest();
 			if(is_change){
@@ -202,7 +230,7 @@ void cpu_exec(uint64_t n){
 			ins_counter++;
 			if(ins_counter >= MAX_NUM_CYC){
 				printf("pc is %08x,inst is %#x\n",pc,inst);
-				panic("The number of instruction execution cycles exceeds the maximum execution cycle");
+				panic("The number of instruction execution cycles is %d, it exceeds the maximum execution cycle", ins_counter);
 			}
 		}else{
 			ins_counter = 0;
@@ -213,21 +241,46 @@ void cpu_exec(uint64_t n){
 
 
 static void statistic() {
-	Log("total guest instructions = %lu\n", g_nr_guest_inst);
+	uint64_t instruction_idu = idu_cal_type + idu_mem_type + idu_jump_type + idu_csr_type;
+	// 下面两个加法是因为最后一个ebreak语句没有被统计进来，所以需要单独的统计
+	avg_cycle[4] += 10;
+	instruction_idu++;
+	
+	uint64_t total_time = avg_cycle[0] + avg_cycle[1] + avg_cycle[2] + avg_cycle[3] + avg_cycle[4] + avg_cycle[5];
+	double jump_pro 	= (double)avg_cycle[0] * 100 / (double)total_time; 	// 跳转操作
+	double store_pro	= (double)avg_cycle[1] * 100 / (double)total_time;	// 读操作
+	double load_pro		= (double)avg_cycle[2] * 100 / (double)total_time; 	// 写操作
+	double cal_pro		= (double)avg_cycle[3] * 100 / (double)total_time; 	// 计算操作
+	double csr_pro		= (double)avg_cycle[4] * 100 / (double)total_time;	// csr操作
+	
+	Log("total guest instructions = %lu", g_nr_guest_inst);
+	Log("CPU IPC is = %lf",(double)g_nr_guest_inst / (double)cycle);
+	Log("CPU CPI is = %lf",(double)cycle / (double)g_nr_guest_inst);
+	Log("IFU Read : %lu", ifu_r_counter);
+	Log("IDU translate instruction is : %ld",instruction_idu);
+	Log("EXU Finish : %lu", exeu_counter);
+	Log("LSU Write : %lu", lsu_w_counter);
+	Log("LSU Read : %lu", lsu_r_counter);
+	Log("IDU Cal : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_cal_type, (double)idu_cal_type  * 100.0 / (double)g_nr_guest_inst, avg_cycle[0], avg_cycle[0] / idu_cal_type);
+	Log("IDU Mem : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_mem_type, (double)idu_mem_type  * 100.0 / (double)g_nr_guest_inst, (avg_cycle[1] + avg_cycle[2]), (avg_cycle[1] + avg_cycle[2]) / idu_mem_type);
+	Log("IDU Jump : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_jump_type, (double)idu_jump_type  * 100.0 / (double)g_nr_guest_inst, avg_cycle[3], avg_cycle[3] / idu_jump_type);
+	Log("IDU Csr : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_csr_type, (double)idu_csr_type  * 100.0 / (double)g_nr_guest_inst, avg_cycle[4], avg_cycle[4] / idu_csr_type);
+	Log("LSU Read access latency : %lu",read_time);
+	Log("LSU Write access latency : %lu",write_time);
+	Log("LSU average memory access latency : %lf",(double)(read_time + write_time) / (double)(lsu_w_counter + lsu_r_counter));
+	Log("proportion Jump | Store | Load | Cal | Csr");
+	Log("   	 %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%%", jump_pro, store_pro, load_pro, cal_pro, csr_pro);
+	Log("host time spent = %lu us",g_timer);
+	Log("total cycle spent = %lu",cycle);
+	#ifdef CONFIG_CSV
+		fprintf(perf_time_fp, "%lu,%.4f,%.4f,%.4f,%.4f\n", cycle, avg_cycle[0], (avg_cycle[1] + avg_cycle[2]), avg_cycle[3], avg_cycle[4] );
+		close_csv();	// 关闭文件流
+	#endif
+	if (g_timer > 0) Log("simulation frequency = %.f inst/s", (double)cycle * 1000000 / (double)g_timer);
+  else Log("Finish running in less than 1 us and can not calculate the simulation frequency");
 }
 
-// TAG:测试开始的时间
-extern "C" void time_start(){
-	timer_start	= get_time();
-}
-
-// TAG:测试结束的时间
-extern "C" void time_end(){
-	timer_end	= get_time();
-}
-
-// timer_counter 是表示用了多少个时钟周期
-extern "C" void npc_trap(int timer_counter){
+extern "C" void npc_trap(){
 	nvboard_quit();
 
 	#ifdef CONFIG_DUMP_WAVE
@@ -241,9 +294,8 @@ extern "C" void npc_trap(int timer_counter){
 	else
 		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %d",code);
 	Log("trap in %#x",pc);
-	g_timer = timer_end - timer_start;
-	Log("host time spent = %lu us",g_timer);
-	Log("total cycle spent = %d",timer_counter);
+	// Log("host time spent = %lu us",g_timer);
+	// Log("total cycle spent = %d",cycle);
 	statistic();
 	exit(0);
 }

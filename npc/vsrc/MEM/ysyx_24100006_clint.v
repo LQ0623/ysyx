@@ -86,11 +86,15 @@ module ysyx_24100006_clint #(
                         // axi_rdata       <= 32'h0;
                         // axi_rresp       <= 2'b00;  
                         if(axi_araddr == BASE_ADDR) begin
+                        `ifdef VERILATOR_SIM
                             skip();
+                        `endif
                             axi_rdata   <= mtime[31:0];
                             axi_rresp   <= 2'b00;
                         end else if(axi_araddr == BASE_ADDR + 4) begin
+                        `ifdef VERILATOR_SIM
                             skip();
+                        `endif
                             axi_rdata   <= mtime[63:32];
                             axi_rresp   <= 2'b00;
                         end else begin

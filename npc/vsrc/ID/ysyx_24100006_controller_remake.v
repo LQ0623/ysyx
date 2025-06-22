@@ -160,10 +160,7 @@
 `define ysyx_24100006_lhu                 3'b101
 
 
-import "DPI-C" function void npc_trap (input int timer_counter);
-// TAG:这里可以删除,只是测个时间
-import "DPI-C" function void time_start();
-import "DPI-C" function void time_end();
+import "DPI-C" function void npc_trap ();
 
 /**
     主要是重构一下controller模块
@@ -403,26 +400,13 @@ module ysyx_24100006_controller_remake(
     assign sram_read_write =    (opcode == `ysyx_24100006_S_type)   ? `ysyx_24100006_mem_store  : 
                                 (opcode == `ysyx_24100006_load)     ? `ysyx_24100006_mem_load   : `ysyx_24100006_mem_idle;
 
-
-    reg [31:0] timer_counter;
-    // 测试一个时钟周期大概是多少的us
-    always @(posedge clk) begin
-        if(reset) begin
-            timer_counter   <= 0;
-        end else begin
-            if(timer_counter == 0) begin
-                time_start();
-            end
-            timer_counter   <= timer_counter + 1'b1;
-        end
-    end
-
+`ifdef VERILATOR_SIM
     always @(*) begin
         if(opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) begin
             // $display("asdasdasdasd");
-            time_end();
-            npc_trap(timer_counter);
+            npc_trap();
         end
     end
+`endif
 
 endmodule
