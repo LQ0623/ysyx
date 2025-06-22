@@ -29,7 +29,7 @@ NPCFLAGS += -e $(IMAGE).elf	#这是elf文件
 
 NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/nemu-diff/riscv32-nemu-interpreter-so	#加入difftest测试
 #NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/spike-diff/build/riscv32-spike-so
-# NPCFLAGS += -b
+NPCFLAGS += -b
 
 MAINARGS_MAX_LEN = 64
 MAINARGS_PLACEHOLDER = The insert-arg rule in Makefile will insert mainargs here.

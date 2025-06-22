@@ -884,6 +884,7 @@ module ysyx_24100006(
 
 
 	// TAGS:Performance Counters
+`ifndef SYNTHESIS
 import "DPI-C" function void axi_handshake(
 	input bit valid, 
 	input bit ready, 
@@ -913,5 +914,5 @@ import "DPI-C" function void lsu_write_latency(input bit awvalid, input bit bval
 		lsu_read_latency(axi_arvalid_mem	, axi_rvalid_mem);
 		lsu_write_latency(axi_awvalid_mem	, axi_bvalid_mem);
 	end
-
+`endif
 endmodule

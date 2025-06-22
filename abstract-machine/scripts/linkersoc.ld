@@ -96,7 +96,7 @@ SECTIONS {
     . = ALIGN(0x10);
     _heap_start = .;
     /* . = ORIGIN(sdram) + LENGTH(sdram) - 0x100; */
-    . += 0x40000;
+    . += 0x40000; /* 堆区给了4M的空间 */
     _heap_end = .;
   } > sdram
 
