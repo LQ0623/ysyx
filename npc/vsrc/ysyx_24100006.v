@@ -884,7 +884,7 @@ module ysyx_24100006(
 
 
 	// TAGS:Performance Counters
-`ifndef SYNTHESIS
+`ifdef SYNTHESIS
 import "DPI-C" function void axi_handshake(
 	input bit valid, 
 	input bit ready, 
