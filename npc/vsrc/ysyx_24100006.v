@@ -290,8 +290,65 @@ module ysyx_24100006(
 	wire [3:0]		sram_axi_wstrb;
 	wire			sram_axi_wlast;
 
-	
-`ifndef YSYXSOC
+`ifdef YSYXSOC
+	// TAG: 时钟相关的部分
+	// CLINT实例化
+	// 读地址通道
+	wire       		clint_axi_arvalid;
+    wire       		clint_axi_arready;
+    wire [31:0]  	clint_axi_araddr;
+    // 读数据通道
+    wire         	clint_axi_rvalid;
+    wire        	clint_axi_rready;
+    wire [1:0]		clint_axi_rresp;
+    wire [31:0]   	clint_axi_rdata;
+    // 写地址通道
+    wire         	clint_axi_awvalid;
+    wire          	clint_axi_awready;
+    wire [31:0]  	clint_axi_awaddr;
+    // 写数据通道
+    wire          	clint_axi_wvalid;
+    wire        	clint_axi_wready;
+    wire [31:0] 	clint_axi_wdata;
+    // 写响应通道
+    wire         	clint_axi_bvalid;
+    wire        	clint_axi_bready;
+    wire [1:0]  	clint_axi_bresp;
+
+	ysyx_24100006_clint clint(
+		.clk(clock),
+		.reset(reset),
+		
+		// axi 写入和读取地址
+		.axi_araddr(clint_axi_araddr),
+		.axi_awaddr(clint_axi_awaddr),
+		// axi 写入数据和写入使用的掩码
+		.axi_wdata(clint_axi_wdata),
+		// axi控制信号
+		// read data addr
+		.axi_arvalid(clint_axi_arvalid),
+		.axi_arready(clint_axi_arready),
+		// read data
+		.axi_rready(clint_axi_rready),
+		.axi_rvalid(clint_axi_rvalid),
+		// write data addr
+		.axi_awvalid(clint_axi_awvalid),
+		.axi_awready(clint_axi_awready),
+		// write data
+		.axi_wvalid(clint_axi_wvalid),
+		.axi_wready(clint_axi_wready),
+		// response
+		.axi_bready(clint_axi_bready),
+		.axi_bvalid(clint_axi_bvalid),
+		.axi_bresp(clint_axi_bresp),
+
+		// axi读取的回应
+		.axi_rresp(clint_axi_rresp),
+		// axi读取的数据
+		.axi_rdata(clint_axi_rdata)
+	);
+
+`else
 // TAG:NPC使用的ram
 	ysyx_24100006_mem u_mem (
         // 系统时钟和复位
@@ -395,10 +452,7 @@ module ysyx_24100006(
 		.axi_rdata(uart_axi_rdata)
 	);
 
-
-`endif
-
-	// TAG: 时钟相关的部分
+// TAG: 时钟相关的部分
 	// CLINT实例化
 	// 读地址通道
 	wire       		clint_axi_arvalid;
@@ -422,7 +476,9 @@ module ysyx_24100006(
     wire        	clint_axi_bready;
     wire [1:0]  	clint_axi_bresp;
 
-	ysyx_24100006_clint clint(
+	ysyx_24100006_clint #(
+		.BASE_ADDR( 32'ha000_0048 )
+	) clint(
 		.clk(clock),
 		.reset(reset),
 		
@@ -454,6 +510,9 @@ module ysyx_24100006(
 		// axi读取的数据
 		.axi_rdata(clint_axi_rdata)
 	);
+
+`endif
+
 
 	// TAG：下面就是加入UART之后需要的，如果接入了其他的UART之后，就可以删除了。就是arbiter暴露给xbar的握手接口
 	wire         m_axi_awvalid;

@@ -372,24 +372,15 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 	uint8_t *iaddr;
 	int i;
 	int j;
-	// for(i = 0,j = 0;i < 4;i++){
-	// 	if(wmask & (1 << i)){
-	// 		iaddr = vaddr + i;
-	// 		*iaddr = (wdata >> (j * 8)) & 0xFF;
-	// 		j++;
-	// 	}
-	// }
 	// 根据 wmask 写入对应的字节
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0,j = 0; i < 4; ++i) {
         if(wmask & (1 << i)){
-			printf("vaddr is %x,iaddr is %x,realaddr is %x, realaddr_i is %x,wdata is %x,wdata_i is %x\n",waddr,waddr + i,vaddr, vaddr+i, wdata, (wdata >> (j * 8)) & 0xFF);
+			// printf("vaddr is %x,iaddr is %x,realaddr is %x, realaddr_i is %x,wdata is %x,wdata_i is %x\n",waddr,waddr + i,vaddr, vaddr+i, wdata, (wdata >> (j * 8)) & 0xFF);
 			iaddr = vaddr + i;
 			*iaddr = (wdata >> (j * 8)) & 0xFF;
 			j++;
 		}
     }
-	// printf("97bc is %x\n",*(uint32_t *)(guest_to_host(0x800097bc)));
-	// printf("97b8 is %x\n",*(uint32_t *)(guest_to_host(0x800097b8)));	// 97c4
 }
 
 // 用于跳过访问UART、RTC等外设的指令
