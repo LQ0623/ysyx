@@ -113,8 +113,6 @@ extern "C" void idu_instr_type(svBit id_valid, int opcode){
 
 extern "C" void ins_start(svBit new_ins_valid){
     if(new_ins_valid){
-        // 没有使用下面进行记录时间的原因是因为上面的需要开启波形记录，所以没有使用
-        // ins_start_time = get_sim_time();
         // 这里的cycle是CPU运行的时钟周期数
         ins_start_time = cycle;
     }

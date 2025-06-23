@@ -12,16 +12,27 @@ module ysyx_24100006_pc(
 	// always @(npc) begin
 	// 	$display("npc is %h\n",npc);
     // end
-
-    // ysyx_24100006_Reg #(32,32'h80000000) pc1(
-	// 	.clk(clk),
-	// 	.rst(reset),
-	// 	.din(npc),
-	// 	.dout(pc),
-	// 	.wen(PCW)
-	// );	
-
 	wire [31:0] real_npc;
+
+`ifndef YSYXSOC
+	ysyx_24100006_MuxKey#(3,2,32) alu_a_data_mux(real_npc,Access_Fault,{
+		2'b00,npc,
+		2'b01,32'b0,
+		2'b10,32'b0
+	});
+
+    ysyx_24100006_Reg #(32,32'h80000000) pc1(
+		.clk(clk),
+		.rst(reset),
+		.din(real_npc),
+		.dout(pc),
+		.wen(PCW)
+	);		
+
+`endif
+
+`ifdef YSYXSOC
+
 	// 选择下一条指令的pc地址
 	ysyx_24100006_MuxKey#(3,2,32) alu_a_data_mux(real_npc,Access_Fault,{
 		2'b00,npc,
@@ -36,4 +47,7 @@ module ysyx_24100006_pc(
 		.dout(pc),
 		.wen(PCW)
 	);	
+
+`endif
+
 endmodule

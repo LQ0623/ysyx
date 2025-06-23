@@ -13,7 +13,7 @@ module ysyx_24100006_uart #(
     input [31:0]        axi_awaddr,
     // axi 写入数据和写入使用的掩码
     input [31:0]        axi_wdata,
-    input [7:0]         axi_bytes,
+    input [3:0]         axi_wstrb,
 
     // axi控制信号
     // read data addr
@@ -93,7 +93,9 @@ module ysyx_24100006_uart #(
                     axi_wready          <= 1'b0;
                     if(axi_awvalid == 1'b1 && axi_awready == 1'b1 && axi_wvalid == 1'b1 && axi_wready == 1'b1) begin
                         // 写入数据
+                    `ifdef VERILATOR_SIM
                         skip();
+                    `endif
                         $write("%c",axi_wdata[7:0]);
                         axi_bresp       <= 2'b00;
                         axi_bvalid      <= 1'b1;

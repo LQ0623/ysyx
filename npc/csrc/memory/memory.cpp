@@ -313,7 +313,7 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
 }
 
 
-extern "C" uint32_t pmem_read(uint32_t paddr){
+extern "C" int pmem_read(int paddr){
 	if(!((paddr >= 0x80000000 && paddr <= 0x87ffffff) || (paddr == RTC_ADDR) || (paddr == RTC_ADDR + 4) || (paddr == KBD_ADDR))) 
 		return 0;
 
@@ -358,7 +358,7 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 	}
 	
 	#ifdef CONFIG_MTRACE
-		mtrace_log_write(waddr, wmask, 'w', wdata);
+		mtrace_log_write(waddr & (~3), wmask, 'w', wdata);
 	#endif
 
 	// device_write == 0 表示当前没有设备写入串口
@@ -367,17 +367,29 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 		return;
 	}
     // printf("data is %x\n",wdata);
+	int align_addr = waddr & (~3);
 	uint8_t *vaddr = guest_to_host(waddr);
 	uint8_t *iaddr;
 	int i;
 	int j;
-	for(i = 0,j = 0;i < 4;i++){
-		if(wmask & (1 << i)){
+	// for(i = 0,j = 0;i < 4;i++){
+	// 	if(wmask & (1 << i)){
+	// 		iaddr = vaddr + i;
+	// 		*iaddr = (wdata >> (j * 8)) & 0xFF;
+	// 		j++;
+	// 	}
+	// }
+	// 根据 wmask 写入对应的字节
+    for (int i = 0; i < 4; ++i) {
+        if(wmask & (1 << i)){
+			printf("vaddr is %x,iaddr is %x,realaddr is %x, realaddr_i is %x,wdata is %x,wdata_i is %x\n",waddr,waddr + i,vaddr, vaddr+i, wdata, (wdata >> (j * 8)) & 0xFF);
 			iaddr = vaddr + i;
 			*iaddr = (wdata >> (j * 8)) & 0xFF;
 			j++;
 		}
-	}
+    }
+	// printf("97bc is %x\n",*(uint32_t *)(guest_to_host(0x800097bc)));
+	// printf("97b8 is %x\n",*(uint32_t *)(guest_to_host(0x800097b8)));	// 97c4
 }
 
 // 用于跳过访问UART、RTC等外设的指令

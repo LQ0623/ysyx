@@ -69,4 +69,14 @@ module ysyx_24100006_CSR #(ADDR_WIDTH = 12, DATA_WIDTH = 32) (
   assign mtvec = rf[1];
   assign mepc  = rf[3];
 
+
+  // DPI-C传出csr寄存器的值
+// `ifdef VERILATOR_SIM
+// // 获取GPR通用寄存器的值
+// import "DPI-C" context function void get_csr(input logic [31:0] csr[]);  // 32位的寄存器
+//   always @(posedge clk) begin
+//     get_csr(rf);
+//   end
+// `endif
+
 endmodule

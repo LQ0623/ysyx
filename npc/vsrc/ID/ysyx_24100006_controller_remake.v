@@ -400,11 +400,13 @@ module ysyx_24100006_controller_remake(
     assign sram_read_write =    (opcode == `ysyx_24100006_S_type)   ? `ysyx_24100006_mem_store  : 
                                 (opcode == `ysyx_24100006_load)     ? `ysyx_24100006_mem_load   : `ysyx_24100006_mem_idle;
 
+`ifdef VERILATOR_SIM
     always @(*) begin
         if(opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) begin
             // $display("asdasdasdasd");
             npc_trap();
         end
     end
+`endif
 
 endmodule

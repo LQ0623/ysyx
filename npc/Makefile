@@ -1,3 +1,5 @@
+# 在命令行没有定义的话，后续使用的ARCH就是riscv32e-npc
+ARCH ?= riscv32e-npc
 TOPNAME ?= ysyxSoCFull
 
 #设置构建文件夹信息
@@ -17,8 +19,10 @@ VERILATOR = $(VERILATOR_ROOT)/bin/verilator
 endif
 
 # ARCH logic
-# ARCH ?= riscv32e-npc
-ARCH ?= riscv32e-ysyxsoc
+ARCHS = $(basename $(notdir $(shell ls $(AM_HOME)/scripts/*.mk)))
+ifeq ($(filter $(ARCHS), $(ARCH)), )
+  $(error Expected $$ARCH in {$(ARCHS)}, Got "$(ARCH)")
+endif
 # Print build info message
 -include $(NPC_HOME)/script/arch/$(ARCH).mk
 
@@ -29,6 +33,10 @@ include $(NVBOARD_HOME)/scripts/nvboard.mk
 #sim
 include $(NPC_HOME)/script/sim.mk
 
+#trace
+# rules for trace
+include $(NPC_HOME)/script/trace.mk
+
 #main makefile in all project
 include ../Makefile
 
@@ -38,6 +46,6 @@ COLOR_YELLOW 		= \033[33m
 COLOR_NONE  		= \033[0m
 
 clean:
-	-rm -rf $(BUILD_DIR) tools/performance-trace/*.png tools/performance-trace/*.txt
+	-rm -rf $(BUILD_DIR) tools/performance-trace/*.png tools/performance-trace/*.txt result
 
 .PHONY:clean run 
