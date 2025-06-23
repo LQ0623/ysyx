@@ -156,7 +156,7 @@ module ysyx_24100006_axi_xbar #(
                     (m_axi_araddr >= SRAM_ADDR && m_axi_araddr < (SRAM_ADDR + 32'h0800_0000));       // SRAM的空间大小到在am中有
 
     wire sel_uart   = ((m_axi_awaddr >= UART_ADDR && m_axi_awaddr < (UART_ADDR + 32'h0000_0008)) ||
-                    (m_axi_araddr >= UART_ADDR && m_axi_araddr < (UART_ADDR + 32'h0000_0008))) && (sel_sram != 1);      // UART
+                    (m_axi_araddr >= UART_ADDR && m_axi_araddr < (UART_ADDR + 32'h0000_0008)));      // UART
 
     wire sel_clint  = (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
 
