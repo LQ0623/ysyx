@@ -203,36 +203,36 @@ module ysyx_24100006_axi_arbiter (
 
 
     // ================== SRAM写仲裁状态机 ==================
-    // parameter   W_IDLE = 0, W_BUSY = 1;
+    parameter   W_IDLE = 0, W_BUSY = 1;
 
-    // reg [1:0] axi_state_w;                // AXI目前的状态
-    // reg [2:0] write_targeted_module;     // 当前是哪一个模块进行读操作
-    // // ================== 写操作 ==================
-    // always @(posedge clk) begin
-    //     if(reset) begin
-    //         axi_state_w             <= IDLE;
-    //         write_targeted_module   <= ARB_IDLE;
-    //     end else begin
-    //         case(axi_state_w)
-    //             W_IDLE: begin     // 空闲状态
-    //                 // 固定优先级
-    //                 // MEMU优先策略
-    //                 if(mem_axi_awvalid == 1'b1) begin
-    //                     axi_state_w             <= W_BUSY;
-    //                     write_targeted_module   <= ARB_MEMU_WRITE;
-    //                 end
-    //             end
+    reg [1:0] axi_state_w;                // AXI目前的状态
+    reg [2:0] write_targeted_module;     // 当前是哪一个模块进行读操作
+    // ================== 写操作 ==================
+    always @(posedge clk) begin
+        if(reset) begin
+            axi_state_w             <= IDLE;
+            write_targeted_module   <= ARB_IDLE;
+        end else begin
+            case(axi_state_w)
+                W_IDLE: begin     // 空闲状态
+                    // 固定优先级
+                    // MEMU优先策略
+                    if(mem_axi_awvalid == 1'b1) begin
+                        axi_state_w             <= W_BUSY;
+                        write_targeted_module   <= ARB_MEMU_WRITE;
+                    end
+                end
 
-    //             W_BUSY: begin     // 总线不是空闲状态
-    //                 // 现在只是针对单次传输，没有突发传输，表示一次读传输完成
-    //                 if(sram_axi_bready == 1'b1 && sram_axi_bvalid == 1'b1) begin
-    //                     axi_state_w             <= W_IDLE;
-    //                     write_targeted_module   <= ARB_IDLE;
-    //                 end
-    //             end
-    //         endcase
-    //     end
-    // end
+                W_BUSY: begin     // 总线不是空闲状态
+                    // 现在只是针对单次传输，没有突发传输，表示一次读传输完成
+                    if(sram_axi_bready == 1'b1 && sram_axi_bvalid == 1'b1) begin
+                        axi_state_w             <= W_IDLE;
+                        write_targeted_module   <= ARB_IDLE;
+                    end
+                end
+            endcase
+        end
+    end
 
     // 写入的实际数据，数据需要移位的
     wire [31:0] real_axi_wdata;
@@ -253,8 +253,11 @@ module ysyx_24100006_axi_arbiter (
     assign sram_axi_awvalid =   mem_axi_awvalid;
     assign sram_axi_wvalid  =   mem_axi_wvalid;
     assign sram_axi_bready  =   mem_axi_bready;
+`ifdef YSYXSOC
     assign sram_axi_awaddr  =   mem_axi_awaddr; //  写地址可以一直传输,但是只有当valid=1时才能够有效
-    // assign sram_axi_awaddr  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;
+`else
+    assign sram_axi_awaddr  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;
+`endif
     assign sram_axi_wdata   =   real_axi_wdata;
 
     // AXI新增信号

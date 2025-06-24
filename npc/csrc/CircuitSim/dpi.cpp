@@ -4,15 +4,15 @@
 extern "C" void get_inst(int inst){
 	inst = inst;
     // if(inst != 0){
-    //     printf("inst is %x\t",inst);
+    //     printf("inst is %x\n",inst);
     // }
 }
 extern "C" void get_pc(int pc){
     prev_pc = pc;
 	pc = pc;
-//     if(pc != 0){
-//         printf("pc is %x\n",pc);
-//     }
+    // if(pc != 0){
+    //     printf("pc is %x\t",pc);
+    // }
 }
 extern "C" void get_npc(int npc){
 	npc = npc;
