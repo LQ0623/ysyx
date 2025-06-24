@@ -42,10 +42,10 @@ void init_difftest(char *ref_so_file, long img_size) {
 
     void (*ref_difftest_init)() = (void(*)())dlsym(handle, "difftest_init");
     assert(ref_difftest_init);
-
+#ifdef CONFIG_SOC
     ref_difftest_skip = (bool(*)())dlsym(handle, "difftest_skip");
     assert(ref_difftest_skip);
-
+#endif
 
     #ifdef CONFIG_TRACE
         Log("Differential testing: %s", ANSI_FMT("ON", ANSI_FG_GREEN));
@@ -99,9 +99,10 @@ void difftest_step() {
     CPU_state ref_r;
     ref_difftest_exec(1);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+#ifdef CONFIG_SOC
     is_skip_diff = ref_difftest_skip();
     // printf("此时的dut的pc为 %#x\tref执行前的 ref_r.pc: %#x\tis_skip_diff 为 %d\n",pc,ref_r.pc,is_skip_diff);
-
+#endif
     // printf("is_skip_diff is %d\n",is_skip_diff);
     if(is_skip_diff == true){
         is_skip_diff = false;

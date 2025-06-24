@@ -1188,22 +1188,22 @@ module ysyx_24100006(
 	// end
 
 	// TAG:一些仿真使用的参数:使用下面的方式需要将csrc/CircuitSim/dpi.cpp的函数取消注释，但是这样访问会拖慢仿真速度
-`ifdef VERILATOR_SIM
-	import "DPI-C" function void get_inst(input int inst);
-	import "DPI-C" function void get_pc(input int pc);
-	import "DPI-C" function void get_npc(input int npc);
-	import "DPI-C" function void get_PCW(input bit PCW);
-	import "DPI-C" function void get_if_valid(input bit new_inst);	// 是否是新指令
-	import "DPI-C" function void get_wb_ready(input bit wb_ready);
-	always @(*) begin
-		get_inst(instruction);
-		get_pc(pc_FD);
-		get_npc(npc_EF);
-		get_PCW(PCW);
-		get_if_valid(axi_rvalid_if);
-		get_wb_ready(wb_ready);
-	end
-`endif
+// `ifdef VERILATOR_SIM
+// 	import "DPI-C" function void get_inst(input int inst);
+// 	import "DPI-C" function void get_pc(input int pc);
+// 	import "DPI-C" function void get_npc(input int npc);
+// 	import "DPI-C" function void get_PCW(input bit PCW);
+// 	import "DPI-C" function void get_if_valid(input bit new_inst);	// 是否是新指令
+// 	import "DPI-C" function void get_wb_ready(input bit wb_ready);
+// 	always @(*) begin
+// 		get_inst(instruction);
+// 		get_pc(pc_FD);
+// 		get_npc(npc_EF);
+// 		get_PCW(PCW);
+// 		get_if_valid(axi_rvalid_if);
+// 		get_wb_ready(wb_ready);
+// 	end
+// `endif
 
 
 	// TAGS:Performance Counters

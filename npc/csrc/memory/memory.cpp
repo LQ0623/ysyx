@@ -316,7 +316,7 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
 extern "C" int pmem_read(int paddr){
 	if(!((paddr >= 0x80000000 && paddr <= 0x87ffffff) || (paddr == RTC_ADDR) || (paddr == RTC_ADDR + 4) || (paddr == KBD_ADDR))) 
 		return 0;
-
+	paddr = paddr & (~3);	// 对齐地址
 	/**
 	 * 如果是设备访问内存，直接不用进行difftest
 	 */
