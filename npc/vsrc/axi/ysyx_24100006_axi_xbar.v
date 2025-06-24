@@ -158,7 +158,8 @@ module ysyx_24100006_axi_xbar #(
     wire sel_uart   = ((m_axi_awaddr >= UART_ADDR && m_axi_awaddr < (UART_ADDR + 32'h0000_0008)) ||
                     (m_axi_araddr >= UART_ADDR && m_axi_araddr < (UART_ADDR + 32'h0000_0008)));      // UART
 
-    wire sel_clint  = (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
+    wire sel_clint  = (m_axi_awaddr >= CLINT_ADDR && m_axi_awaddr < (CLINT_ADDR + 32'h0000_0008)) ||
+                    (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
 
     wire sel_spi    = 1'b0;
     
