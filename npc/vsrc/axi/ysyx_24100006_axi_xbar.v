@@ -161,6 +161,10 @@ module ysyx_24100006_axi_xbar #(
     wire sel_clint  = (m_axi_awaddr >= CLINT_ADDR && m_axi_awaddr < (CLINT_ADDR + 32'h0000_0008)) ||
                     (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
 
+    // wire sel_sram   = 1;
+    // wire sel_uart   = 0;
+    // wire sel_clint  = 0;
+
     wire sel_spi    = 1'b0;
     
 `endif
@@ -260,7 +264,7 @@ module ysyx_24100006_axi_xbar #(
                                 sel_uart ? uart_axi_rvalid : 
                                 sel_clint ? clint_axi_rvalid : 0;
 
-    assign m_axi_rdata      = sel_sram ? sram_axi_rdata :
+    assign m_axi_rdata      = sel_sram ? real_sram_data :
                                 sel_uart ? uart_axi_rdata : 
                                 sel_clint ? clint_axi_rdata : 32'h0;
 

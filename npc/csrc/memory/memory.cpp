@@ -341,13 +341,14 @@ extern "C" int pmem_read(int paddr){
 	uint32_t *inst_paddr = (uint32_t *)guest_to_host(paddr);
 
 	#ifdef CONFIG_MTRACE
-		mtrace_log_write(paddr, 32, 'r', 0);
+		mtrace_log_write(paddr, 32, 'r', *inst_paddr);
 	#endif
 
 	return *inst_paddr;
 }
 
 extern "C" void pmem_write(int waddr, int wdata,char wmask){
+	// printf("addr is %x,wmask is %x,write data is %x\n",waddr,wmask,wdata);
 	if(!((waddr >= 0x80000000 && waddr <= 0x87ffffff) || (waddr == SERIAL_PORT))){
 		return ;
 	}
@@ -358,7 +359,7 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 	}
 	
 	#ifdef CONFIG_MTRACE
-		mtrace_log_write(waddr & (~3), wmask, 'w', wdata);
+		mtrace_log_write(waddr, wmask, 'w', wdata);
 	#endif
 
 	// device_write == 0 表示当前没有设备写入串口
@@ -368,17 +369,16 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 	}
     // printf("data is %x\n",wdata);
 	int align_addr = waddr & (~3);
-	uint8_t *vaddr = guest_to_host(waddr);
+	uint8_t *vaddr = guest_to_host(align_addr);
 	uint8_t *iaddr;
-	int i;
-	int j;
 	// 根据 wmask 写入对应的字节
-    for (int i = 0,j = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i) {
+		printf("");
         if(wmask & (1 << i)){
 			// printf("vaddr is %x,iaddr is %x,realaddr is %x, realaddr_i is %x,wdata is %x,wdata_i is %x\n",waddr,waddr + i,vaddr, vaddr+i, wdata, (wdata >> (j * 8)) & 0xFF);
 			iaddr = vaddr + i;
-			*iaddr = (wdata >> (j * 8)) & 0xFF;
-			j++;
+			*iaddr = (wdata >> (i * 8)) & 0xFF;
+			// printf("align_addr is %x,write data is %x,data is %x\n",align_addr,(wdata >> (j * 8)) & 0xFF,*(uint32_t *)vaddr);
 		}
     }
 }
