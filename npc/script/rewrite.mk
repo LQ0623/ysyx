@@ -1,7 +1,6 @@
-# MAKE_FILE = V$(TOPNAME).mk
-# $(info TOPNAME in rewrite.mk: $(TOPNAME))
-# include $(MAKE_FILE)
-include VysyxSoCFull.mk
+MAKE_FILE = V$(TOPNAME).mk
+$(info TOPNAME in rewrite.mk: $(TOPNAME))
+include $(MAKE_FILE)
 
 CPPFLAGS += -I$(NPC_HOME)/csrc/include
 
@@ -28,7 +27,7 @@ endif
 
 # 是否记录执行的指令到log文件中
 # 记录执行过的指令的功能不要开(因为这里没有给char-test建文件夹,导致执行过的指令无法写入到npc-log.txt中就会直接输出到终端)
-ENABLE_ITRACE ?= 0
+ENABLE_ITRACE ?= 1
 ifeq ($(ENABLE_ITRACE), 1)
     CPPFLAGS += -DCONFIG_ITRACE
 endif
@@ -47,7 +46,7 @@ endif
 
 # 是否开启difftest
 # 现在开着diff test进行轮询串口还是存在问题,可能需要直接skip掉轮询的时候的检测,不然的话UART_REG_LS的值一直变化,nemu不好返回值
-ENABLE_DIFFTEST ?= 1
+ENABLE_DIFFTEST ?= 0
 ifeq ($(ENABLE_DIFFTEST), 1)
     CPPFLAGS += -DCONFIG_DIFFTEST
 endif
@@ -58,25 +57,28 @@ ifeq ($(ENABLE_CSV), 1)
     CPPFLAGS += -DCONFIG_CSV
 endif
 
-# 是否是接入ysyxsoc
-ENABLE_SOC  ?= 1
-ifeq ($(ENABLE_SOC), 1)
+# 使用riscv32e-ysyxsoc的架构仿真
+ifeq ($(ARCH), riscv32e-ysyxsoc)
+# CPP使用的参数：使用使用YSYXSOC
     CPPFLAGS += -DCONFIG_SOC
 endif
 
-ENABLE_DEVICE ?= 0
-ifeq ($(ENABLE_DEVICE), 1)
-    CPPFLAGS += -DCONFIG_DEVICE
-endif
+# 使用riscv32e-npc的架构仿真
+ifeq ($(ARCH), riscv32e-npc)
+    ENABLE_DEVICE ?= 1
+    ifeq ($(ENABLE_DEVICE), 1)
+        CPPFLAGS += -DCONFIG_DEVICE
+    endif
 
-ENBALE_KEYBOARD ?= 1
-ifeq ($(ENBALE_KEYBOARD), 1)
-    CPPFLAGS += -DCONFIG_KEYBOARD
-endif
+    ENBALE_KEYBOARD ?= 1
+    ifeq ($(ENBALE_KEYBOARD), 1)
+        CPPFLAGS += -DCONFIG_KEYBOARD
+    endif
 
-ENBALE_VGA ?= 1
-ifeq ($(ENBALE_VGA), 1)
-    CPPFLAGS += -DCONFIG_VGA
+    ENBALE_VGA ?= 1
+    ifeq ($(ENBALE_VGA), 1)
+        CPPFLAGS += -DCONFIG_VGA
+    endif
 endif
 
 # 开启反汇编

@@ -22,7 +22,7 @@ double avg_cycle[5] = {0};
 
 
 static bool g_print_step = false;
-word_t pc, snpc, dnpc, inst, prev_pc, PCW, if_valid, read_target_module, wb_ready;
+word_t pc, snpc, dnpc, inst, prev_pc, PCW, if_valid, wb_ready;
 uint64_t timer_start, timer_end,g_timer;	// 测试运行的时间的
 static uint8_t opcode;
 
@@ -52,7 +52,9 @@ void reset_cpu(int n) {
 }
 
 void assert_fail_msg() {
+#ifdef CONFIG_SOC
 	nvboard_quit();
+#endif
 	isa_reg_display();
 	statistic();
 }
@@ -142,11 +144,7 @@ static void trace_and_difftest() {
 	 * 4、是否开启diff test测试
 	 */
 	#ifdef CONFIG_DIFFTEST
-		// if(if_valid == 1){
-		// 	// printf("NPC: %x: %08x\n",pc,inst);
-		// 	difftest_step();
-		// }
-		// 	更改进行diff test的时机，在wb_ready的时候进行diff test，表示NPC这边已经执行完了
+		// 	更改进行diff test的时机，之前在if_valid==1的时候diff，现在在wb_ready==0的时候进行diff test，表示NPC这边已经执行完了
 		if(wb_ready == 0){
 			// printf("NPC: %x: %08x\n",pc,inst);
 			difftest_step();
@@ -164,7 +162,9 @@ static void trace_and_difftest() {
 
 /* cpu single cycle in exec */
 static void exec_once(){
+#ifdef CONFIG_SOC
 	nvboard_update();
+#endif
 	single_cycle();
 }
 extern bool is_skip_diff;
@@ -174,12 +174,10 @@ void cpu_exec(uint64_t n){
 	g_print_step = (n < MAX_INST_TO_PRINT);
 	
 	// TAG: 判断一条指令是否卡死使用
-	prev_inst	 = 0;
+	prev_inst	 = -1;
 	ins_counter  = 0;
 
 	while(n > 0){
-
-		prev_pc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__pc_FD;
 		
 		timer_start = get_time();
 		exec_once();
@@ -187,19 +185,6 @@ void cpu_exec(uint64_t n){
 		g_timer		+= timer_end - timer_start;
 		
 		snpc = pc + 4;
-		inst = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__sram_axi_rdata;
-		pc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__pc_FD;
-		dnpc = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__IF__DOT__PC__DOT__real_npc;
-		// PCW = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__PCW;
-		read_target_module = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__arbiter__DOT__read_targeted_module;
-		if_valid = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__sram_axi_rvalid & (read_target_module == 1);	// if_valid为高表示已经取到了指令，使用sram_axi_rvalid判断可能会有取数的指令干扰，所以需要加入read_targeted_module==1辅助判断是否为取指
-		wb_ready = cpu -> rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__wb_ready;
-		// printf("inst is %#x\n",inst);
-		// printf("if_valid is %d\t",if_valid);
-		// printf("PCW is %d\t",PCW);
-		// printf("cpp pc is %#x\t",pc);
-		// printf("cpp npc is %#x\t",dnpc);
-		// printf("is_skip:%d\n",is_skip_diff);
 		get_reg();
 		
 		// 多周期CPU运行的指令的数量应该是if_valid有效一次记录一次
@@ -232,7 +217,7 @@ void cpu_exec(uint64_t n){
 				printf("pc is %08x,inst is %#x\n",pc,inst);
 				panic("The number of instruction execution cycles is %d, it exceeds the maximum execution cycle", ins_counter);
 			}
-		}else{
+		}else if(inst != 0){
 			ins_counter = 0;
 			prev_inst = inst;
 		}
@@ -281,7 +266,9 @@ static void statistic() {
 }
 
 extern "C" void npc_trap(){
+#ifdef CONFIG_SOC
 	nvboard_quit();
+#endif
 
 	#ifdef CONFIG_DUMP_WAVE
 		dump_wave_inc();

@@ -7,7 +7,8 @@ $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 	@$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
-	@make -s -C $(OBJ_DIR) -f $(REWRITE)
+# 加上一个TOPNAME是为了能够在rewrite中能够识别到使用的是哪一个TOPNAME 
+	@make -s -C $(OBJ_DIR) -f $(REWRITE) TOPNAME=$(TOPNAME)
 
 run: $(BIN)	
 	@echo "$(COLOR_YELLOW)[Run CPU]$(COLOR_NONE)"

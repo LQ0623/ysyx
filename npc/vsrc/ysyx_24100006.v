@@ -1,6 +1,8 @@
 module ysyx_24100006(
 	input			clock,
-    input			reset,
+    input			reset
+`ifdef YSYXSOC
+	,
 
 	input 			io_interrupt,
 
@@ -94,7 +96,11 @@ module ysyx_24100006(
     output wire [31:0] io_slave_rdata,    // 数据
     output wire        io_slave_rlast,    // 最后一个数据包
     output wire [3:0]  io_slave_rid       // 事务 ID
+	
+`endif
 );
+
+`ifdef YSYXSOC
 	//-----------------------------
 	// 所有 output 信号强制置零
 	//-----------------------------
@@ -109,6 +115,7 @@ module ysyx_24100006(
 	assign io_slave_rdata     = 32'h0;  // 32-bit
 	assign io_slave_rlast     = 1'b0;   // 1-bit
 	assign io_slave_rid       = 4'h0;   // 4-bit
+`endif
 
 	// 模块的信号
 	// EXEU -> IFU
@@ -283,6 +290,7 @@ module ysyx_24100006(
 	wire [3:0]		sram_axi_wstrb;
 	wire			sram_axi_wlast;
 
+`ifdef YSYXSOC
 	// TAG: 时钟相关的部分
 	// CLINT实例化
 	// 读地址通道
@@ -339,6 +347,171 @@ module ysyx_24100006(
 		// axi读取的数据
 		.axi_rdata(clint_axi_rdata)
 	);
+
+`else
+// TAG:NPC使用的ram
+	ysyx_24100006_mem u_mem (
+        // 系统时钟和复位
+        .clk              (clock),
+        .reset            (reset),
+        
+        // AXI 地址接口
+        .axi_araddr       (sram_axi_araddr),
+        .axi_awaddr       (sram_axi_awaddr),
+        
+        // AXI 数据接口
+        .axi_wdata        (sram_axi_wdata),
+        .axi_wstrb        (sram_axi_wstrb),  // 字节掩码
+        
+        // AXI 控制信号 - 读通道
+        .axi_arvalid      (sram_axi_arvalid),
+        .axi_arready      (sram_axi_arready),  // 从模块输出
+        
+        .axi_rready       (sram_axi_rready),
+        .axi_rvalid       (sram_axi_rvalid),  // 从模块输出
+        .axi_rresp        (sram_axi_rresp),   // 从模块输出
+        .axi_rdata        (sram_axi_rdata),   // 从模块输出
+        
+        // AXI 控制信号 - 写通道
+        .axi_awvalid      (sram_axi_awvalid),
+        .axi_awready      (sram_axi_awready), // 从模块输出
+        
+        .axi_wvalid       (sram_axi_wvalid),
+        .axi_wready       (sram_axi_wready),  // 从模块输出
+        
+        // AXI 控制信号 - 响应通道
+        .axi_bready       (sram_axi_bready),
+        .axi_bvalid       (sram_axi_bvalid),  // 从模块输出
+        .axi_bresp        (sram_axi_bresp),    // 从模块输出
+
+		// 新增信号
+		.axi_arlen		  (sram_axi_arlen),
+		.axi_arsize 	  (sram_axi_arsize),
+		.axi_rlast	 	  (sram_axi_rlast),
+		.axi_awlen	  	  (sram_axi_awlen),
+		.axi_awsize		  (sram_axi_awsize),
+		.axi_wlast		  (sram_axi_wlast)
+    );
+// TAG: 实例化NPC使用的UART
+// 实例化 UART 模块
+
+	// 读地址通道
+	wire       		uart_axi_arvalid;
+    wire       		uart_axi_arready;
+    wire [31:0]  	uart_axi_araddr;
+    // 读数据通道
+    wire         	uart_axi_rvalid;
+    wire        	uart_axi_rready;
+    wire [1:0]		uart_axi_rresp;
+    wire [31:0]   	uart_axi_rdata;
+    // 写地址通道
+    wire         	uart_axi_awvalid;
+    wire          	uart_axi_awready;
+    wire [31:0]  	uart_axi_awaddr;
+    // 写数据通道
+    wire          	uart_axi_wvalid;
+    wire        	uart_axi_wready;
+    wire [31:0] 	uart_axi_wdata;
+    wire [3:0]   	uart_axi_wstrb;
+    // 写响应通道
+    wire         	uart_axi_bvalid;
+    wire        	uart_axi_bready;
+    wire [1:0]  	uart_axi_bresp;
+
+    ysyx_24100006_uart uart(
+		.clk(clock),
+		.reset(reset),
+		
+		// axi 写入和读取地址
+		.axi_araddr(uart_axi_araddr),
+		.axi_awaddr(uart_axi_awaddr),
+		// axi 写入数据和写入使用的掩码
+		.axi_wdata(uart_axi_wdata),
+		.axi_wstrb(uart_axi_wstrb),
+		// axi控制信号
+		// read data addr
+		.axi_arvalid(uart_axi_arvalid),
+		.axi_arready(uart_axi_arready),
+		// read data
+		.axi_rready(uart_axi_rready),
+		.axi_rvalid(uart_axi_rvalid),
+		// write data addr
+		.axi_awvalid(uart_axi_awvalid),
+		.axi_awready(uart_axi_awready),
+		// write data
+		.axi_wvalid(uart_axi_wvalid),
+		.axi_wready(uart_axi_wready),
+		// response
+		.axi_bready(uart_axi_bready),
+		.axi_bvalid(uart_axi_bvalid),
+		.axi_bresp(uart_axi_bresp),
+
+		// axi读取的回应
+		.axi_rresp(uart_axi_rresp),
+		// axi读取的数据
+		.axi_rdata(uart_axi_rdata)
+	);
+
+// TAG: 时钟相关的部分
+	// CLINT实例化
+	// 读地址通道
+	wire       		clint_axi_arvalid;
+    wire       		clint_axi_arready;
+    wire [31:0]  	clint_axi_araddr;
+    // 读数据通道
+    wire         	clint_axi_rvalid;
+    wire        	clint_axi_rready;
+    wire [1:0]		clint_axi_rresp;
+    wire [31:0]   	clint_axi_rdata;
+    // 写地址通道
+    wire         	clint_axi_awvalid;
+    wire          	clint_axi_awready;
+    wire [31:0]  	clint_axi_awaddr;
+    // 写数据通道
+    wire          	clint_axi_wvalid;
+    wire        	clint_axi_wready;
+    wire [31:0] 	clint_axi_wdata;
+    // 写响应通道
+    wire         	clint_axi_bvalid;
+    wire        	clint_axi_bready;
+    wire [1:0]  	clint_axi_bresp;
+
+	ysyx_24100006_clint #(
+		.BASE_ADDR( 32'ha000_0048 )
+	) clint(
+		.clk(clock),
+		.reset(reset),
+		
+		// axi 写入和读取地址
+		.axi_araddr(clint_axi_araddr),
+		.axi_awaddr(clint_axi_awaddr),
+		// axi 写入数据和写入使用的掩码
+		.axi_wdata(clint_axi_wdata),
+		// axi控制信号
+		// read data addr
+		.axi_arvalid(clint_axi_arvalid),
+		.axi_arready(clint_axi_arready),
+		// read data
+		.axi_rready(clint_axi_rready),
+		.axi_rvalid(clint_axi_rvalid),
+		// write data addr
+		.axi_awvalid(clint_axi_awvalid),
+		.axi_awready(clint_axi_awready),
+		// write data
+		.axi_wvalid(clint_axi_wvalid),
+		.axi_wready(clint_axi_wready),
+		// response
+		.axi_bready(clint_axi_bready),
+		.axi_bvalid(clint_axi_bvalid),
+		.axi_bresp(clint_axi_bresp),
+
+		// axi读取的回应
+		.axi_rresp(clint_axi_rresp),
+		// axi读取的数据
+		.axi_rdata(clint_axi_rdata)
+	);
+
+`endif
 
 	// TAG：下面就是加入UART之后需要的，如果接入了其他的UART之后，就可以删除了。就是arbiter暴露给xbar的握手接口
 	wire         m_axi_awvalid;
@@ -460,6 +633,8 @@ module ysyx_24100006(
 		.sram_axi_wlast(m_axi_wlast)
 	);
 
+`ifdef YSYXSOC
+	// YSYXSOC使用的axi模块和xbar模块
 	ysyx_24100006_axi #(
 		.AXI_DATA_WIDTH    (32),
 		.AXI_ADDR_WIDTH    (32),
@@ -654,6 +829,134 @@ module ysyx_24100006(
 		// Access Fault异常
 		.Access_Fault(Access_Fault)
 	);
+
+`else
+	// 为NPC定义的xbar
+	ysyx_24100006_axi_xbar xbar (
+		// 时钟和复位
+		.clk(clock),
+		.reset(reset),
+		.mem_ready(mem_ready),
+		
+		// 主设备接口 (写通道)
+		.m_axi_awvalid(m_axi_awvalid),
+		.m_axi_awready(m_axi_awready),
+		.m_axi_awaddr(m_axi_awaddr),
+		
+		.m_axi_wvalid(m_axi_wvalid),
+		.m_axi_wready(m_axi_wready),
+		.m_axi_wdata(m_axi_wdata),
+		
+		.m_axi_bvalid(m_axi_bvalid),
+		.m_axi_bready(m_axi_bready),
+		.m_axi_bresp(m_axi_bresp),
+
+		// 主设备接口 (读通道)
+		.m_axi_arvalid(m_axi_arvalid),
+		.m_axi_arready(m_axi_arready),
+		.m_axi_araddr(m_axi_araddr),
+		
+		.m_axi_rvalid(m_axi_rvalid),
+		.m_axi_rready(m_axi_rready),
+		.m_axi_rdata(m_axi_rdata),
+		.m_axi_rresp(m_axi_rresp),
+
+		// AXI新增信号
+		.m_axi_arlen(m_axi_arlen),
+		.m_axi_arsize(m_axi_arsize),
+		.m_axi_rlast(m_axi_rlast),
+		.m_axi_awlen(m_axi_awlen),
+		.m_axi_awsize(m_axi_awsize),
+		.m_axi_wstrb(m_axi_wstrb),
+		.m_axi_wlast(m_axi_wlast),
+
+		.m_addr_suffix(axi_addr_suffix),
+		
+
+		// SRAM 从设备接口 (写通道)
+		.sram_axi_awvalid(sram_axi_awvalid),
+		.sram_axi_awready(sram_axi_awready),
+		.sram_axi_awaddr(sram_axi_awaddr),
+		
+		.sram_axi_wvalid(sram_axi_wvalid),
+		.sram_axi_wready(sram_axi_wready),
+		.sram_axi_wdata(sram_axi_wdata),
+		
+		.sram_axi_bvalid(sram_axi_bvalid),
+		.sram_axi_bready(sram_axi_bready),
+		.sram_axi_bresp(sram_axi_bresp),
+
+		// SRAM 从设备接口 (读通道)
+		.sram_axi_arvalid(sram_axi_arvalid),
+		.sram_axi_arready(sram_axi_arready),
+		.sram_axi_araddr(sram_axi_araddr),
+		
+		.sram_axi_rvalid(sram_axi_rvalid),
+		.sram_axi_rready(sram_axi_rready),
+		.sram_axi_rdata(sram_axi_rdata),
+		.sram_axi_rresp(sram_axi_rresp),
+
+		// AXI新增信号
+		.sram_axi_arlen(sram_axi_arlen),
+		.sram_axi_arsize(sram_axi_arsize),
+		.sram_axi_rlast(sram_axi_rlast),
+		.sram_axi_awlen(sram_axi_awlen),
+		.sram_axi_awsize(sram_axi_awsize),
+		.sram_axi_wstrb(sram_axi_wstrb),
+		.sram_axi_wlast(sram_axi_wlast),
+
+		// UART 从设备接口 (写通道)
+		.uart_axi_awvalid(uart_axi_awvalid),
+		.uart_axi_awready(uart_axi_awready),
+		.uart_axi_awaddr(uart_axi_awaddr),
+		
+		.uart_axi_wvalid(uart_axi_wvalid),
+		.uart_axi_wready(uart_axi_wready),
+		.uart_axi_wdata(uart_axi_wdata),
+		.uart_axi_wstrb(uart_axi_wstrb),
+		
+		.uart_axi_bvalid(uart_axi_bvalid),
+		.uart_axi_bready(uart_axi_bready),
+		.uart_axi_bresp(uart_axi_bresp),
+
+		// UART 从设备接口 (读通道)
+		.uart_axi_arvalid(uart_axi_arvalid),
+		.uart_axi_arready(uart_axi_arready),
+		.uart_axi_araddr(uart_axi_araddr),
+		
+		.uart_axi_rvalid(uart_axi_rvalid),
+		.uart_axi_rready(uart_axi_rready),
+		.uart_axi_rdata(uart_axi_rdata),
+		.uart_axi_rresp(uart_axi_rresp),
+
+		// CLINT 从设备接口 (写通道)
+		.clint_axi_awvalid(clint_axi_awvalid),
+		.clint_axi_awready(clint_axi_awready),
+		.clint_axi_awaddr(clint_axi_awaddr),
+		
+		.clint_axi_wvalid(clint_axi_wvalid),
+		.clint_axi_wready(clint_axi_wready),
+		.clint_axi_wdata(clint_axi_wdata),
+		
+		.clint_axi_bvalid(clint_axi_bvalid),
+		.clint_axi_bready(clint_axi_bready),
+		.clint_axi_bresp(clint_axi_bresp),
+
+		// CLINT 从设备接口 (读通道)
+		.clint_axi_arvalid(clint_axi_arvalid),
+		.clint_axi_arready(clint_axi_arready),
+		.clint_axi_araddr(clint_axi_araddr),
+		
+		.clint_axi_rvalid(clint_axi_rvalid),
+		.clint_axi_rready(clint_axi_rready),
+		.clint_axi_rdata(clint_axi_rdata),
+		.clint_axi_rresp(clint_axi_rresp),
+
+		// Access Fault异常
+		.Access_Fault(Access_Fault)
+	);
+
+`endif
 
 	ysyx_24100006_ifu IF(
 		.clk(clock),
@@ -881,6 +1184,24 @@ module ysyx_24100006(
 	// 		$display(" %x %x %x",Jump_DE,pc_FD,instruction);
 	// 	end
 	// end
+
+	// TAG:一些仿真使用的参数:使用下面的方式需要将csrc/CircuitSim/dpi.cpp的函数取消注释，但是这样访问会拖慢仿真速度
+`ifdef VERILATOR_SIM
+	import "DPI-C" function void get_inst(input int inst);
+	import "DPI-C" function void get_pc(input int pc);
+	import "DPI-C" function void get_npc(input int npc);
+	import "DPI-C" function void get_PCW(input bit PCW);
+	import "DPI-C" function void get_if_valid(input bit new_inst);	// 是否是新指令
+	import "DPI-C" function void get_wb_ready(input bit wb_ready);
+	always @(*) begin
+		get_inst(instruction);
+		get_pc(pc_FD);
+		get_npc(npc_EF);
+		get_PCW(PCW);
+		get_if_valid(if_valid);
+		get_wb_ready(wb_ready);
+	end
+`endif
 
 
 	// TAGS:Performance Counters

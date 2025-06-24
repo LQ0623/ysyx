@@ -24,6 +24,8 @@ VERILATOR_CFLAGS += --timescale "1ns/1ns" --no-timing
 VERILATOR_CFLAGS += $(VERILATOR_INC)
 # 这是为了避免DPI-C在综合的时候被选中了
 VERILATOR_CFLAGS += -DVERILATOR_SIM
+# verilog使用的参数：是否使用YSYXSOC
+VERILATOR_CFLAGS += -DYSYXSOC
 
 #source code
 VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")

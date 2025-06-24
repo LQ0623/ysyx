@@ -313,10 +313,10 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
 }
 
 
-extern "C" uint32_t pmem_read(uint32_t paddr){
+extern "C" int pmem_read(int paddr){
 	if(!((paddr >= 0x80000000 && paddr <= 0x87ffffff) || (paddr == RTC_ADDR) || (paddr == RTC_ADDR + 4) || (paddr == KBD_ADDR))) 
 		return 0;
-
+	paddr = paddr & (~3);	// 对齐地址
 	/**
 	 * 如果是设备访问内存，直接不用进行difftest
 	 */
@@ -341,13 +341,14 @@ extern "C" uint32_t pmem_read(uint32_t paddr){
 	uint32_t *inst_paddr = (uint32_t *)guest_to_host(paddr);
 
 	#ifdef CONFIG_MTRACE
-		mtrace_log_write(paddr, 32, 'r', 0);
+		mtrace_log_write(paddr, 32, 'r', *inst_paddr);
 	#endif
 
 	return *inst_paddr;
 }
 
 extern "C" void pmem_write(int waddr, int wdata,char wmask){
+	// printf("addr is %x,wmask is %x,write data is %x\n",waddr,wmask,wdata);
 	if(!((waddr >= 0x80000000 && waddr <= 0x87ffffff) || (waddr == SERIAL_PORT))){
 		return ;
 	}
@@ -367,17 +368,18 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 		return;
 	}
     // printf("data is %x\n",wdata);
-	uint8_t *vaddr = guest_to_host(waddr);
+	int align_addr = waddr & (~3);
+	uint8_t *vaddr = guest_to_host(align_addr);
 	uint8_t *iaddr;
-	int i;
-	int j;
-	for(i = 0,j = 0;i < 4;i++){
-		if(wmask & (1 << i)){
+	// 根据 wmask 写入对应的字节
+    for (int i = 0; i < 4; ++i) {
+        if(wmask & (1 << i)){
+			// printf("vaddr is %x,iaddr is %x,realaddr is %x, realaddr_i is %x,wdata is %x,wdata_i is %x\n",waddr,waddr + i,vaddr, vaddr+i, wdata, (wdata >> (j * 8)) & 0xFF);
 			iaddr = vaddr + i;
-			*iaddr = (wdata >> (j * 8)) & 0xFF;
-			j++;
+			*iaddr = (wdata >> (i * 8)) & 0xFF;
+			// printf("align_addr is %x,write data is %x,data is %x\n",align_addr,(wdata >> (j * 8)) & 0xFF,*(uint32_t *)vaddr);
 		}
-	}
+    }
 }
 
 // 用于跳过访问UART、RTC等外设的指令

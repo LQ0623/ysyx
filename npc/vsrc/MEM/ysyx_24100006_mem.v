@@ -10,7 +10,7 @@ module ysyx_24100006_mem(
     input [31:0]        axi_awaddr,
     // axi 写入数据和写入使用的掩码
     input [31:0]        axi_wdata,
-    input [7:0]         axi_bytes,
+    input [3:0]         axi_wstrb,
 
     // axi控制信号
     // read data addr
@@ -32,7 +32,15 @@ module ysyx_24100006_mem(
 
     // axi 读取的回应
     output  reg [1:0]   axi_rresp,
-    output  reg [31:0]  axi_rdata
+    output  reg [31:0]  axi_rdata,
+
+    // 新增信号
+    input   [7:0]       axi_arlen,
+    input   [2:0]       axi_arsize,
+    output  reg         axi_rlast,
+    input   [7:0]       axi_awlen,
+    input   [2:0]       axi_awsize,
+    input               axi_wlast
     
 );
 
@@ -58,6 +66,7 @@ module ysyx_24100006_mem(
             axi_wready      <= 1'b0;
             axi_rvalid      <= 1'b0;
             axi_bvalid      <= 1'b0;
+            axi_rlast       <= 1'b0;
             axi_rdata       <= 32'h00000000;
         end else begin
             case(state)
@@ -76,12 +85,14 @@ module ysyx_24100006_mem(
                     if(axi_arvalid == 1'b1 && axi_arready == 1'b1) begin
                         axi_rvalid      <= 1'b1;
                         axi_rdata       <= pmem_read(axi_araddr);
+                        axi_rlast       <= 1'b1;
                         axi_rresp       <= 2'b00;
                         state           <= S_READ_DATA;
                     end
                 end
                 S_READ_DATA: begin
                     if(axi_rready == 1'b1 && axi_rvalid == 1'b1) begin
+                        axi_rlast       <= 1'b0;
                         axi_rvalid      <= 1'b0;
                         state           <= S_IDLE;
                     end
@@ -92,7 +103,7 @@ module ysyx_24100006_mem(
                     axi_wready          <= 1'b0;
                     if(axi_awvalid == 1'b1 && axi_awready == 1'b1 && axi_wvalid == 1'b1 && axi_wready == 1'b1) begin
                         // 写入数据
-                        pmem_write(axi_awaddr,axi_wdata,axi_bytes);
+                        pmem_write(axi_awaddr,axi_wdata,{4'b0, axi_wstrb});
                         axi_bvalid      <= 1'b1;
                         axi_bresp       <= 2'b00;
                         state           <= S_WRITE_RESP;

@@ -45,7 +45,7 @@ static long load_img() {
   fflush(stdout);
 
   fseek(fp, 0, SEEK_SET);
-  int ret = fread(guest_to_host(FLASH_BASE), size, 1, fp);
+  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp);
   assert(ret == 1);
 
   fclose(fp);
@@ -89,7 +89,7 @@ void init_monitor(int argc, char *argv[]){
 
     init_log(log_file);
 
-    // init_mem(0x7fffffff);
+    init_mem(0x7fffffff);
 
     // init_mrom();
 
@@ -121,10 +121,10 @@ void init_monitor(int argc, char *argv[]){
     #ifdef CONFIG_DEVICE
       init_device();
     #endif
-
+#ifdef CONFIG_SOC
     // 绑定nvboard的的管脚和nvboard初始化
     nvboard_bind_all_pins(cpu);
     nvboard_init();
-
+#endif
     welcome();
 }

@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <circuit.h>
 #ifdef CONFIG_SOC
-#define RESET_VECTOR 0x20000000
+#define RESET_VECTOR 0x30000000
 #else
 #define RESET_VECTOR 0x80000000
 #endif
