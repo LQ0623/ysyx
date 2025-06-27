@@ -33,7 +33,7 @@ void nvboard_bind_all_pins(CPU* top);
 #define MAX_NUM_CYC 20000
 
 extern word_t inst,pc,dnpc;
-extern word_t inst, prev_pc, PCW, if_valid, read_target_module, wb_ready;
+extern word_t inst, prev_pc, PCW, if_valid, wb_ready;
 //circuit
 void single_cycle();
 void cpu_exec(uint64_t n);

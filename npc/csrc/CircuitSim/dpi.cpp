@@ -1,30 +1,31 @@
 #include <common.h>
 #include <circuit.h>
 
-extern "C" void get_inst(int inst){
-	inst = inst;
+extern "C" void get_inst(int instruction){
+	inst = instruction;
     // if(inst != 0){
     //     printf("inst is %x\n",inst);
     // }
 }
-extern "C" void get_pc(int pc){
-    prev_pc = pc;
-	pc = pc;
+extern "C" void get_pc(int pc_sim){
+    prev_pc = pc_sim;
+	pc = pc_sim;
     // if(pc != 0){
     //     printf("pc is %x\t",pc);
     // }
 }
-extern "C" void get_npc(int npc){
-	npc = npc;
+extern "C" void get_npc(int npc_sim){
+	dnpc = npc_sim;
 }
-extern "C" void get_PCW(svBit PCW){
-	PCW = PCW;
+extern "C" void get_PCW(svBit PCW_sim){
+	PCW = PCW_sim;
 }
-extern "C" void get_if_valid(svBit if_valid){
-	if_valid = if_valid;
+extern "C" void get_if_valid(svBit if_valid_sim){
+    // printf("if_valid_dpi is %d\n",if_valid_sim);
+	if_valid = if_valid_sim;
 }
-extern "C" void get_wb_ready(svBit wb_ready){
-	wb_ready = wb_ready;
+extern "C" void get_wb_ready(svBit wb_ready_sim){
+	wb_ready = wb_ready_sim;
 }
 
 // extern "C" void get_gpr(const svOpenArrayHandle rf){

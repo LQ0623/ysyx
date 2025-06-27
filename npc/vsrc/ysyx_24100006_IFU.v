@@ -73,6 +73,8 @@ module ysyx_24100006_ifu(
 			axi_awvalid		<= 1'b0;
 			axi_wvalid		<= 1'b0;
 			axi_bready		<= 1'b0;
+			axi_rready		<= 1'b0;
+			pc_F			<= 32'b0;
 
 			axi_arlen		<= 8'b0;
 			axi_arsize		<= 3'b010;	// 一次传输四个字节

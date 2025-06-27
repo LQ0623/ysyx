@@ -513,6 +513,38 @@ module ysyx_24100006(
 
 `endif
 
+	// Icache
+	wire			axi_arvalid_icache;
+	wire			axi_arready_icache;
+	wire [31:0]		axi_araddr_icache;
+	wire			axi_rvalid_icache;
+	wire			axi_rready_icache;
+	wire [31:0]		axi_rdata_icache;
+	Icache u_icache (
+        .clk            (clock), 			 	 // 系统时钟
+        .rst            (reset),						// 系统复位
+        
+        // CPU -> Icache接口
+        .cpu_arvalid_i  (axi_arvalid_if),	 	 // CPU地址有效
+        .cpu_arready_o  (axi_arready_if), 	 	 // Icache地址就绪
+        .cpu_araddr_i   (pc_FD), 						// 取指地址
+        
+        // Icache -> CPU接口
+        .cpu_rvalid_o   (axi_rvalid_if),	 	 // 指令数据有效
+        .cpu_rready_i   (axi_rready_if),	 	 // CPU接收就绪
+        .cpu_rdata_o    (instruction),					// 返回的指令数据
+        
+        // Icache -> AXI接口
+        .axi_arvalid_o  (axi_arvalid_icache),   // 到AXI的地址有效
+        .axi_arready_i  (axi_arready_icache),   // AXI地址就绪
+        .axi_araddr_o   (axi_araddr_icache),		   // AXI取指地址
+        
+        // AXI -> Icache接口
+        .axi_rvalid_i   (axi_rvalid_icache),    // AXI数据有效
+        .axi_rready_o   (axi_rready_icache),    // Icache接收就绪
+        .axi_rdata_i    (axi_rdata_icache)			   // AXI返回的数据
+    );
+
 
 	// TAG：下面就是加入UART之后需要的，如果接入了其他的UART之后，就可以删除了。就是arbiter暴露给xbar的握手接口
 	wire         m_axi_awvalid;
@@ -553,17 +585,18 @@ module ysyx_24100006(
 	ysyx_24100006_axi_arbiter arbiter(
 		.clk(clock),
 		.reset(reset),
-
+		// TAG：没有使用的信号都暂时没有接入
 		// ================== IFU接口 ==================
 		// 读地址通道
-		.ifu_axi_arvalid(axi_arvalid_if),
-		.ifu_axi_arready(axi_arready_if),
-		.ifu_axi_araddr(pc_FD),
+		.ifu_axi_arvalid(axi_arvalid_icache),
+		.ifu_axi_arready(axi_arready_icache),
+		.ifu_axi_araddr(axi_araddr_icache),
 		// 读数据通道
-		.ifu_axi_rvalid(axi_rvalid_if),
-		.ifu_axi_rready(axi_rready_if),
+		.ifu_axi_rvalid(axi_rvalid_icache),
+		.ifu_axi_rready(axi_rready_icache),
 		.ifu_axi_rresp(axi_rresp_if),
-		.ifu_axi_rdata(instruction),
+		// TAG: 这里的instruction的名字可能需要换，因为是接入到了Icache，instruction应该接入到Icache那里
+		.ifu_axi_rdata(axi_rdata_icache),
 		// AXI新增信号
 		.ifu_axi_arlen(axi_arlen_if),
 		.ifu_axi_arsize(axi_arsize_if),
@@ -959,7 +992,6 @@ module ysyx_24100006(
 
 `endif
 
-
 	ysyx_24100006_ifu IF(
 		.clk(clock),
 		.reset(reset),
@@ -1188,22 +1220,22 @@ module ysyx_24100006(
 	// end
 
 	// TAG:一些仿真使用的参数:使用下面的方式需要将csrc/CircuitSim/dpi.cpp的函数取消注释，但是这样访问会拖慢仿真速度
-// `ifdef VERILATOR_SIM
-// 	import "DPI-C" function void get_inst(input int inst);
-// 	import "DPI-C" function void get_pc(input int pc);
-// 	import "DPI-C" function void get_npc(input int npc);
-// 	import "DPI-C" function void get_PCW(input bit PCW);
-// 	import "DPI-C" function void get_if_valid(input bit new_inst);	// 是否是新指令
-// 	import "DPI-C" function void get_wb_ready(input bit wb_ready);
-// 	always @(*) begin
-// 		get_inst(instruction);
-// 		get_pc(pc_FD);
-// 		get_npc(npc_EF);
-// 		get_PCW(PCW);
-// 		get_if_valid(axi_rvalid_if);
-// 		get_wb_ready(wb_ready);
-// 	end
-// `endif
+`ifdef VERILATOR_SIM
+	import "DPI-C" function void get_inst(input int inst);
+	import "DPI-C" function void get_pc(input int pc);
+	import "DPI-C" function void get_npc(input int npc);
+	import "DPI-C" function void get_PCW(input bit PCW);
+	import "DPI-C" function void get_if_valid(input bit new_inst);	// 是否是新指令
+	import "DPI-C" function void get_wb_ready(input bit wb_ready);
+	always @(*) begin
+		get_inst(instruction);
+		get_pc(pc_FD);
+		get_npc(npc_EF);
+		get_PCW(PCW);
+		get_if_valid(exe_valid);
+		get_wb_ready(wb_ready);
+	end
+`endif
 
 
 	// TAGS:Performance Counters

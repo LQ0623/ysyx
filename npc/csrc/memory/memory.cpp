@@ -373,7 +373,6 @@ extern "C" void pmem_write(int waddr, int wdata,char wmask){
 	uint8_t *iaddr;
 	// 根据 wmask 写入对应的字节
     for (int i = 0; i < 4; ++i) {
-		printf("");
         if(wmask & (1 << i)){
 			// printf("vaddr is %x,iaddr is %x,realaddr is %x, realaddr_i is %x,wdata is %x,wdata_i is %x\n",waddr,waddr + i,vaddr, vaddr+i, wdata, (wdata >> (j * 8)) & 0xFF);
 			iaddr = vaddr + i;
