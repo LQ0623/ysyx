@@ -42,10 +42,10 @@ void init_difftest(char *ref_so_file, long img_size) {
 
     void (*ref_difftest_init)() = (void(*)())dlsym(handle, "difftest_init");
     assert(ref_difftest_init);
-#ifdef CONFIG_SOC
+
     ref_difftest_skip = (bool(*)())dlsym(handle, "difftest_skip");
     assert(ref_difftest_skip);
-#endif
+    
 
     #ifdef CONFIG_TRACE
         Log("Differential testing: %s", ANSI_FMT("ON", ANSI_FG_GREEN));
