@@ -198,8 +198,9 @@ module ysyx_24100006_axi_arbiter (
     end
 
     // 最终输出连接
-    assign ifu_axi_rdata = ifu_rdata_reg;
-    assign mem_axi_rdata = mem_rdata_reg;
+    // 这么写是为了第一时间获取到数据，后续没有读入的时候还能保持数据
+    assign ifu_axi_rdata = (read_targeted_module == ARB_IFU_READ && sram_axi_rvalid) ? sram_axi_rdata : ifu_rdata_reg;
+    assign mem_axi_rdata = (read_targeted_module == ARB_MEMU_READ && sram_axi_rvalid) ? sram_axi_rdata : mem_rdata_reg;
 
 
     // ================== SRAM写仲裁状态机 ==================

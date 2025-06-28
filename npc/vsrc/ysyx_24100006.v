@@ -513,6 +513,41 @@ module ysyx_24100006(
 
 `endif
 
+	// Icache
+	wire			axi_arvalid_icache;
+	wire			axi_arready_icache;
+	wire [31:0]		axi_araddr_icache;
+	wire			axi_rvalid_icache;
+	wire			axi_rready_icache;
+	wire [31:0]		axi_rdata_icache;
+	wire			icache_hit;
+	Icache u_icache (
+        .clk            (clock), 			 	 // 系统时钟
+        .rst            (reset),						// 系统复位
+        
+        // CPU -> Icache接口
+        .cpu_arvalid_i  (axi_arvalid_if),	 	 // CPU地址有效
+        .cpu_arready_o  (axi_arready_if), 	 	 // Icache地址就绪
+        .cpu_araddr_i   (pc_FD), 						// 取指地址
+        
+        // Icache -> CPU接口
+        .cpu_rvalid_o   (axi_rvalid_if),	 	 // 指令数据有效
+        .cpu_rready_i   (axi_rready_if),	 	 // CPU接收就绪
+        .cpu_rdata_o    (instruction),					// 返回的指令数据
+        
+        // Icache -> AXI接口
+        .axi_arvalid_o  (axi_arvalid_icache),   // 到AXI的地址有效
+        .axi_arready_i  (axi_arready_icache),   // AXI地址就绪
+        .axi_araddr_o   (axi_araddr_icache),		   // AXI取指地址
+        
+        // AXI -> Icache接口
+        .axi_rvalid_i   (axi_rvalid_icache),    // AXI数据有效
+        .axi_rready_o   (axi_rready_icache),    // Icache接收就绪
+        .axi_rdata_i    (axi_rdata_icache),			   // AXI返回的数据
+		.hit			(icache_hit)
+    );
+
+
 	// TAG：下面就是加入UART之后需要的，如果接入了其他的UART之后，就可以删除了。就是arbiter暴露给xbar的握手接口
 	wire         m_axi_awvalid;
 	wire         m_axi_awready;
@@ -552,17 +587,18 @@ module ysyx_24100006(
 	ysyx_24100006_axi_arbiter arbiter(
 		.clk(clock),
 		.reset(reset),
-
+		// TAG：没有使用的信号都暂时没有接入
 		// ================== IFU接口 ==================
 		// 读地址通道
-		.ifu_axi_arvalid(axi_arvalid_if),
-		.ifu_axi_arready(axi_arready_if),
-		.ifu_axi_araddr(pc_FD),
+		.ifu_axi_arvalid(axi_arvalid_icache),
+		.ifu_axi_arready(axi_arready_icache),
+		.ifu_axi_araddr(axi_araddr_icache),
 		// 读数据通道
-		.ifu_axi_rvalid(axi_rvalid_if),
-		.ifu_axi_rready(axi_rready_if),
+		.ifu_axi_rvalid(axi_rvalid_icache),
+		.ifu_axi_rready(axi_rready_icache),
 		.ifu_axi_rresp(axi_rresp_if),
-		.ifu_axi_rdata(instruction),
+		// TAG: 这里的instruction的名字可能需要换，因为是接入到了Icache，instruction应该接入到Icache那里
+		.ifu_axi_rdata(axi_rdata_icache),
 		// AXI新增信号
 		.ifu_axi_arlen(axi_arlen_if),
 		.ifu_axi_arsize(axi_arsize_if),
@@ -1220,9 +1256,11 @@ import "DPI-C" function void idu_instr_type(
 import "DPI-C" function void ins_start(input bit new_ins_valid);
 import "DPI-C" function void lsu_read_latency(input bit arvalid, input bit rvalid);
 import "DPI-C" function void lsu_write_latency(input bit awvalid, input bit bvalid);
+import "DPI-C" function void cache_hit(input bit hit);
+import "DPI-C" function void cache_access_time(input bit arvalid,input bit rvalid);
 
 	always @(*) begin
-		axi_handshake(axi_rvalid_if	, axi_rready_if	, axi_rlast_if	, 1);
+		axi_handshake(axi_rvalid_if	, axi_rready_if	, 1'b1	, 1);
 		axi_handshake(axi_rvalid_mem, axi_rready_mem, axi_rlast_mem	, 2);
 		axi_handshake(axi_wvalid_mem, axi_wready_mem, axi_wlast_mem	, 3);
 
@@ -1234,6 +1272,11 @@ import "DPI-C" function void lsu_write_latency(input bit awvalid, input bit bval
 
 		lsu_read_latency(axi_arvalid_mem	, axi_rvalid_mem);
 		lsu_write_latency(axi_awvalid_mem	, axi_bvalid_mem);
+		
+		// 判断cahce是否命中
+		cache_hit(icache_hit);
+		// 计算cache命中的总时间
+		cache_access_time(axi_arvalid_if, axi_rvalid_if);
 	end
 `endif
 endmodule

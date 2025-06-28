@@ -42,10 +42,10 @@ void init_difftest(char *ref_so_file, long img_size) {
 
     void (*ref_difftest_init)() = (void(*)())dlsym(handle, "difftest_init");
     assert(ref_difftest_init);
-#ifdef CONFIG_SOC
+
     ref_difftest_skip = (bool(*)())dlsym(handle, "difftest_skip");
     assert(ref_difftest_skip);
-#endif
+    
 
     #ifdef CONFIG_TRACE
         Log("Differential testing: %s", ANSI_FMT("ON", ANSI_FG_GREEN));
@@ -57,10 +57,10 @@ void init_difftest(char *ref_so_file, long img_size) {
     #endif
 
     ref_difftest_init();
-    ref_difftest_memcpy(FLASH_BASE, (void *)guest_to_host(FLASH_BASE), img_size, DIFFTEST_TO_REF);
+    ref_difftest_memcpy(RESET_VECTOR, (void *)guest_to_host(RESET_VECTOR), img_size, DIFFTEST_TO_REF);
     //get dut reg into CPU_state struct
     CPU_state dut_r;
-    dut_r.pc = FLASH_BASE;
+    dut_r.pc = RESET_VECTOR;
     for(int i = 0;i < REGNUM;i++)
         dut_r.gpr[i] = gpr[i];
     for(int i = 0;i < 4;i++){

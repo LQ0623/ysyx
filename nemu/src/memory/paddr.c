@@ -80,6 +80,8 @@ word_t paddr_read(paddr_t addr, int len) {
   //   return socDev_read(addr, len);
   // }
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
+  // nemu当参考端的时候，没有device的支持
+  IFDEF(CONFIG_REF_DEVICE, skip=true;return 0;)
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);
   return 0;
@@ -98,6 +100,8 @@ void paddr_write(paddr_t addr, int len, word_t data) {
   //   return;
   // }
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
+  // nemu当参考端的时候，没有device的支持
+  IFDEF(CONFIG_REF_DEVICE, skip=true;return ;)
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);
 }

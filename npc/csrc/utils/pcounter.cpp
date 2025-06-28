@@ -26,10 +26,13 @@ uint64_t write_start    = 0;
 // 写用的总时间
 uint64_t write_time     = 0;
 
-// load指令执行总时间
-
-
-// store指令执行总时间
+// cache 命中的总次数
+int new_ins             = 1;
+uint64_t cache_hit_cnt  = 0;
+// cache 开始访问的时间
+uint64_t cache_access_start = 0;
+// cache 命中用的总时间，没有命中的使用读取所用的总时间就可以了
+uint64_t cache_access_time_all  = 0;
 
 // 用于绘图展示
 FILE *perf_fp = NULL;
@@ -136,6 +139,26 @@ extern "C" void lsu_write_latency(svBit awvalid, svBit bvalid){
 
     if(bvalid){
         write_time += (cycle - write_start + 2);    // 加2是因为在使用DPI-C的时候，没有计数
+    }
+}
+
+extern "C" void cache_hit(svBit hit){
+    if(if_valid){
+        new_ins = 1;
+    }
+    if(new_ins && hit){
+        cache_hit_cnt++;
+        new_ins = 0;
+    }
+}
+
+extern "C" void cache_access_time(svBit arvalid,svBit rvalid){
+    if(arvalid){
+        cache_access_start = cycle;
+    }
+
+    if(rvalid){
+        cache_access_time_all = (cycle - cache_access_start + 2);
     }
 }
 

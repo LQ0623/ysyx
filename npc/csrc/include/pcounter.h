@@ -29,6 +29,13 @@ extern uint64_t write_start;
 // 写用的总时间
 extern uint64_t write_time;
 
+// cache命中的总次数
+extern uint64_t cache_hit_cnt;
+// cache 开始访问的时间
+extern uint64_t cache_access_start;
+// cache 命中用的总时间，没有命中的使用读取所用的总时间就可以了
+extern uint64_t cache_access_time_all;
+
 extern FILE *perf_time_fp;
 
 void record_performance_trace(uint64_t cycle, uint64_t instCnt);

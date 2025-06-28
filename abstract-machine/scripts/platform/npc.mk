@@ -17,8 +17,8 @@ LDFLAGS   += --gc-sections -e _start
 NPCFLAGS += -l $(shell dirname $(IMAGE).bin)/npc_log.txt
 NPCFLAGS += -e $(IMAGE).elf	#这是elf文件
 
-#NPCFLAGS += -d $(NPC_HOME)/tools/nemu-diff/riscv32-nemu-interpreter-so	#加入difftest测试
-NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/spike-diff/build/riscv32-spike-so
+NPCFLAGS += -d $(NPC_HOME)/tools/nemu-diff/riscv32-nemu-npc-interpreter-so	#加入difftest测试
+# NPCFLAGS += -d /home/lq/ysyx-workbench/npc/tools/spike-diff/build/riscv32-spike-so
 NPCFLAGS += -b
 
 MAINARGS_MAX_LEN = 64
