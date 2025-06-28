@@ -20,7 +20,10 @@ module Icache#(
 
     input               axi_rvalid_i,
     output reg          axi_rready_o,
-    input  reg [31:0]   axi_rdata_i
+    input  reg [31:0]   axi_rdata_i,
+
+
+    output reg          hit // 是否Cache命中
 );
 
 
@@ -44,7 +47,6 @@ module Icache#(
     wire [TAG_WIDTH-1:0]    tag;            // 地址Tag
 
     reg  [31:0]             req_addr;       // 当前请求地址
-    reg                     hit;            // 是否命中缓存
     reg  [31:0]             resp_data;      // 缓存数据
     wire                    cache_update;   // 是否更新缓存
     reg                     bypass;         // 是否绕过缓存标志
@@ -174,9 +176,9 @@ module Icache#(
                     // 向CPU发出响应
                     cpu_rvalid_o        <= 1'b1;
                     cpu_rdata_o         <= resp_data;
+                    hit                 <= 1'b0;
 
                     if(cpu_rvalid_o == 1'b1 && cpu_rready_i == 1'b1)begin
-                        hit             <= 1'b0;
                         cpu_rvalid_o    <= 1'b0;
                         state           <= IDLE;
                     end

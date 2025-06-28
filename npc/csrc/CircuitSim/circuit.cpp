@@ -237,6 +237,14 @@ static void statistic() {
 	double load_pro		= (double)avg_cycle[2] * 100 / (double)total_time; 	// 写操作
 	double cal_pro		= (double)avg_cycle[3] * 100 / (double)total_time; 	// 计算操作
 	double csr_pro		= (double)avg_cycle[4] * 100 / (double)total_time;	// csr操作
+	// 访问cache命中的次数
+	double cache_hit_ratio 		= (double)cache_hit_cnt / (double)ifu_r_counter;
+	// 单次的cache访问时间
+	double cache_access_time	= (double)cache_access_time_all / (double)cache_hit_cnt;
+	// 单次的sdram访问时间
+	double mem_access_time		= (double)read_time / (double)lsu_r_counter;
+	// AMAT
+	double AMAT					= cache_access_time + (1-cache_hit_ratio) * mem_access_time;
 	
 	Log("total guest instructions = %lu", g_nr_guest_inst);
 	Log("CPU IPC is = %lf",(double)g_nr_guest_inst / (double)cycle);
@@ -253,6 +261,8 @@ static void statistic() {
 	Log("LSU Read access latency : %lu",read_time);
 	Log("LSU Write access latency : %lu",write_time);
 	Log("LSU average memory access latency : %lf",(double)(read_time + write_time) / (double)(lsu_w_counter + lsu_r_counter));
+	Log("Cache hit ratio is %2.4lf",cache_hit_ratio);
+	Log("AMAT is %lf",AMAT);
 	Log("proportion Jump | Store | Load | Cal | Csr");
 	Log("   	 %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%%", jump_pro, store_pro, load_pro, cal_pro, csr_pro);
 	Log("host time spent = %lu us",g_timer);
@@ -281,8 +291,6 @@ extern "C" void npc_trap(){
 	else
 		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %d",code);
 	Log("trap in %#x",pc);
-	// Log("host time spent = %lu us",g_timer);
-	// Log("total cycle spent = %d",cycle);
 	statistic();
 	exit(0);
 }

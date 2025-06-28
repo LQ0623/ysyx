@@ -520,6 +520,7 @@ module ysyx_24100006(
 	wire			axi_rvalid_icache;
 	wire			axi_rready_icache;
 	wire [31:0]		axi_rdata_icache;
+	wire			icache_hit;
 	Icache u_icache (
         .clk            (clock), 			 	 // 系统时钟
         .rst            (reset),						// 系统复位
@@ -542,7 +543,8 @@ module ysyx_24100006(
         // AXI -> Icache接口
         .axi_rvalid_i   (axi_rvalid_icache),    // AXI数据有效
         .axi_rready_o   (axi_rready_icache),    // Icache接收就绪
-        .axi_rdata_i    (axi_rdata_icache)			   // AXI返回的数据
+        .axi_rdata_i    (axi_rdata_icache),			   // AXI返回的数据
+		.hit			(icache_hit)
     );
 
 
@@ -1232,7 +1234,7 @@ module ysyx_24100006(
 		get_pc(pc_FD);
 		get_npc(npc_EF);
 		get_PCW(PCW);
-		get_if_valid(exe_valid);
+		get_if_valid(if_valid);
 		get_wb_ready(wb_ready);
 	end
 `endif
@@ -1254,9 +1256,11 @@ import "DPI-C" function void idu_instr_type(
 import "DPI-C" function void ins_start(input bit new_ins_valid);
 import "DPI-C" function void lsu_read_latency(input bit arvalid, input bit rvalid);
 import "DPI-C" function void lsu_write_latency(input bit awvalid, input bit bvalid);
+import "DPI-C" function void cache_hit(input bit hit);
+import "DPI-C" function void cache_access_time(input bit arvalid,input bit rvalid);
 
 	always @(*) begin
-		axi_handshake(axi_rvalid_if	, axi_rready_if	, axi_rlast_if	, 1);
+		axi_handshake(axi_rvalid_if	, axi_rready_if	, 1'b1	, 1);
 		axi_handshake(axi_rvalid_mem, axi_rready_mem, axi_rlast_mem	, 2);
 		axi_handshake(axi_wvalid_mem, axi_wready_mem, axi_wlast_mem	, 3);
 
@@ -1268,6 +1272,11 @@ import "DPI-C" function void lsu_write_latency(input bit awvalid, input bit bval
 
 		lsu_read_latency(axi_arvalid_mem	, axi_rvalid_mem);
 		lsu_write_latency(axi_awvalid_mem	, axi_bvalid_mem);
+		
+		// 判断cahce是否命中
+		cache_hit(icache_hit);
+		// 计算cache命中的总时间
+		cache_access_time(axi_arvalid_if, axi_rvalid_if);
 	end
 `endif
 endmodule
