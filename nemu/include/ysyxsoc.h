@@ -17,6 +17,8 @@ void soc_write(paddr_t addr, int len, word_t data);
 
 word_t socDev_read(paddr_t addr,int len);
 void socDev_write(paddr_t addr, int len, word_t data);
+// 写icachetrace
+void write_icacheitrace(paddr_t addr);
 
 
 #endif

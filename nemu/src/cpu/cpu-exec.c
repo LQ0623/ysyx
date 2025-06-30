@@ -19,6 +19,7 @@
 #include <locale.h>
 #include "../monitor/sdb/sdb.h"
 #include <cpu/iringbuf.h>
+#include <ysyxsoc.h>
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -56,6 +57,15 @@ static void exec_once(Decode *s, vaddr_t pc) {
 #endif
 
   cpu.pc = s->dnpc;
+
+// 实现icachetrace
+#ifndef CONFIG_TARGET_SHARE
+#ifdef CONFIG_ITRACE
+  write_icacheitrace(s->pc);
+#endif
+#endif
+
+
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
   p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);

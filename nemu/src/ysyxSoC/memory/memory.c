@@ -6,6 +6,11 @@ static uint8_t *sram = NULL;
 uint8_t *psram = NULL;
 uint8_t *sdram = NULL;
 
+// trace的参数
+static FILE *itrace_fp = NULL;
+static char * itrace_file = "build/itrace.log";
+void init_icacheitrace();
+
 void init_mrom(){
     mrom = malloc(0xfff);
     assert(mrom);
@@ -44,6 +49,11 @@ void init_soc(){
     init_flash();
     init_sram();
     init_sdram();
+    // 如果需要nemu作为ref端，则不需要添加icachetrace
+#ifndef CONFIG_TARGET_SHARE
+    init_icacheitrace();
+    Log("cache trace init");  
+#endif
     Log("soc init");
 }
 
@@ -148,7 +158,7 @@ word_t uart_io_read(paddr_t addr, int len){
 void uart_io_write(paddr_t addr, int len, word_t data){
     assert(len ==1);
     if(addr == UART_REG_RB){
-        // putchar(data);
+        putchar(data);
     }
 }
 
@@ -188,4 +198,14 @@ void socDev_write(paddr_t addr, int len, word_t data){
     } else if(in_gpio(addr) || in_vga(addr) || in_ps2(addr)){
         return;
     } else assert(0);
+}
+
+void init_icacheitrace(){
+    itrace_fp = fopen(itrace_file, "w");
+    Log("icache trace file %s", itrace_file);
+    assert(itrace_fp);
+}
+
+void write_icacheitrace(paddr_t addr){
+    fprintf(itrace_fp, "%u\n", addr);
 }
