@@ -40,14 +40,15 @@ int Cache::has_empty(CacheSet_t set){
 // 输出打印信息
 void Cache::statistic(){
     double miss_penalty;
-    if(block_size == 4) miss_penalty = 28.782574;
-    else if(block_size == 8) miss_penalty = 36.106663;
-    else if(block_size == 16) miss_penalty = 52.820628;
+    // 目前不是突发的读,而是直接四次独立的传输,所以缺失代价时间会很大
+    if(block_size == 4) miss_penalty = 28.255029165258244;      // 真实的
+    else if(block_size == 8) miss_penalty = 54.510058331;       // 猜的
+    else if(block_size == 16) miss_penalty = 107.750425757;     //  真实的
     else miss_penalty = 0;
     printf("Cache par = set(%d) way(%d) bsz(%d)\n", sets, ways, block_size);
     printf("Req count : %lu\n", report.req_cnt);
     printf("Hit count : %lu\n", report.hit);
     printf("Miss count : %lu\n", report.miss);
-    // printf("TMT : %lf\n", report.miss * miss_penalty);
+    printf("TMT : %lf\n", report.miss * miss_penalty);
     printf("Hit rate : %lf\n", (double)report.hit / (double)report.req_cnt);
 }

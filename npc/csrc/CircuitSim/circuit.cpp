@@ -262,6 +262,8 @@ static void statistic() {
 	Log("LSU Write access latency : %lu",write_time);
 	Log("LSU average memory access latency : %lf",(double)(read_time + write_time) / (double)(lsu_w_counter + lsu_r_counter));
 	Log("Cache hit ratio is %2.4lf",cache_hit_ratio);
+	Log("cache access time all is %lu, cache hit cnt is %lu",cache_access_time_all,cache_hit_cnt);
+	Log("single cache access time is %lf, single sdram access time is %lf",cache_access_time,mem_access_time);
 	Log("AMAT is %lf",AMAT);
 	Log("proportion Jump | Store | Load | Cal | Csr");
 	Log("   	 %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%%", jump_pro, store_pro, load_pro, cal_pro, csr_pro);

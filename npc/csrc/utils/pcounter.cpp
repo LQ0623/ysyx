@@ -142,8 +142,8 @@ extern "C" void lsu_write_latency(svBit awvalid, svBit bvalid){
     }
 }
 
-extern "C" void cache_hit(svBit hit){
-    if(if_valid){
+extern "C" void cache_hit(svBit valid,svBit hit){
+    if(valid){
         new_ins = 1;
     }
     if(new_ins && hit){
@@ -158,7 +158,7 @@ extern "C" void cache_access_time(svBit arvalid,svBit rvalid){
     }
 
     if(rvalid){
-        cache_access_time_all = (cycle - cache_access_start + 2);
+        cache_access_time_all += (cycle - cache_access_start + 2);
     }
 }
 

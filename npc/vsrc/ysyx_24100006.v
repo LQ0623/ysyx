@@ -1256,7 +1256,7 @@ import "DPI-C" function void idu_instr_type(
 import "DPI-C" function void ins_start(input bit new_ins_valid);
 import "DPI-C" function void lsu_read_latency(input bit arvalid, input bit rvalid);
 import "DPI-C" function void lsu_write_latency(input bit awvalid, input bit bvalid);
-import "DPI-C" function void cache_hit(input bit hit);
+import "DPI-C" function void cache_hit(input bit valid, input bit hit);
 import "DPI-C" function void cache_access_time(input bit arvalid,input bit rvalid);
 
 	always @(*) begin
@@ -1274,7 +1274,7 @@ import "DPI-C" function void cache_access_time(input bit arvalid,input bit rvali
 		lsu_write_latency(axi_awvalid_mem	, axi_bvalid_mem);
 		
 		// 判断cahce是否命中
-		cache_hit(icache_hit);
+		cache_hit(if_valid ,icache_hit);
 		// 计算cache命中的总时间
 		cache_access_time(axi_arvalid_if, axi_rvalid_if);
 	end
