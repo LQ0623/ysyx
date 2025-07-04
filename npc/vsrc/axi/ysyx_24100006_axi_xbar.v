@@ -121,6 +121,7 @@ module ysyx_24100006_axi_xbar #(
     output        clint_axi_rready,
     input  [31:0] clint_axi_rdata,
     input  [1:0]  clint_axi_rresp,
+    input         clint_axi_rlast,
 
     // 实现让NPC抛出Access Fault异常
     // 根据rresp和bresp进行错误判断
@@ -237,6 +238,10 @@ module ysyx_24100006_axi_xbar #(
 
     assign m_axi_rresp      = sel_sram ? sram_axi_rresp :
                                 sel_clint ? clint_axi_rresp : 2'b00;
+
+    // 新增AXI信号
+    assign m_axi_rlast      = sel_sram ? sram_axi_rlast : 
+                                sel_clint ? clint_axi_rlast : 1'b0;
 `else
 
     // 响应合并
@@ -272,10 +277,13 @@ module ysyx_24100006_axi_xbar #(
                                 sel_uart ? uart_axi_rresp : 
                                 sel_clint ? clint_axi_rresp : 2'b00;
 
+    // 新增AXI信号
+    assign m_axi_rlast      = sel_sram ? sram_axi_rlast : 
+                                sel_uart ? 1'b1 :                   // uart的读取永远都是最后一位的数据，因为uart不能读取
+                                sel_clint ? clint_axi_rlast : 1'b0;
+
 `endif
 
-    // 新增AXI信号
-    assign m_axi_rlast      = sram_axi_rlast;
     assign sram_axi_arlen   = m_axi_arlen;
     // 读SRAM是地址对齐的，所以需要直接读取4字节，然后在选择；
     // 但是读取UART的时候，只能读取一个字节，所以需要改变大小，不然就会强制读取对齐边界的地址的值

@@ -17,11 +17,15 @@ module Icache#(
     output reg          axi_arvalid_o,
     input  reg          axi_arready_i,
     output reg [31:0]   axi_araddr_o,
+    output reg [7:0]    axi_arlen_o,    // 新增：突发长度
+    output reg [2:0]    axi_arsize_o,   // 新增：突发大小
+    output reg [1:0]    axi_arburst_o,  // 新增：突发类型
 
     input               axi_rvalid_i,
     output reg          axi_rready_o,
     input [31:0]        axi_rdata_i,
-
+    
+    input               axi_rlast_i,    // 新增：突发传输结束
 
     output reg          hit // 是否Cache命中
 );
@@ -43,19 +47,19 @@ module Icache#(
     reg                   valid[0:NUM_BLOCKS-1];    // 有效位
 
     // ======================= 内部信号 =======================
-    wire [OFFSET_WIDTH-1:0] offset;         // 地址偏移
-    wire [INDEX_WIDTH-1:0]  index;          // 地址索引
-    wire [TAG_WIDTH-1:0]    tag;            // 地址Tag
+    wire [OFFSET_WIDTH-1:0] offset;             // 地址偏移
+    wire [INDEX_WIDTH-1:0]  index;              // 地址索引
+    wire [TAG_WIDTH-1:0]    tag;                // 地址Tag
 
-    reg  [31:0]             req_addr;       // 当前请求地址
-    reg  [31:0]             resp_data;      // 缓存数据
-    wire                    cache_update;   // 是否更新缓存
-    reg                     bypass;         // 是否绕过缓存标志
+    reg  [31:0]             req_addr;           // 当前请求地址
+    reg  [31:0]             resp_data;          // 缓存数据
+    wire                    cache_update;       // 是否更新缓存
+    reg                     bypass;             // 是否绕过缓存标志
 
-    reg [1:0]               fill_count;         // 缓存块填充计数器 (0-3)
-    reg [31:0]              fill_base_addr;     // 当前填充的基地址
-    reg [3:0]               fill_index;         // 当前填充的缓存索引
     wire                    fill_end;           // 填充是否结束
+
+    reg [1:0]               burst_count;        // 突发传输计数器
+    reg [31:0]              burst_base_addr;    // 突发传输基地址
 
     // ====================== 地址解析 ========================
     assign offset = req_addr[OFFSET_WIDTH-1:0];
@@ -89,9 +93,6 @@ module Icache#(
             resp_data       <= 32'b0;
             bypass          <= 1'b0;
             hit             <= 1'b0;
-            fill_count      <= 2'b0;
-            fill_base_addr  <= 32'b0;
-            fill_index      <= 4'b0;
 
             // axi协议
             cpu_arready_o   <= 1'b0;
@@ -130,7 +131,6 @@ module Icache#(
                     if (valid[index] && (tags[index] == tag)) begin
                         // 命中: 从缓存读取数据
                         hit             <= 1'b1;
-                        // resp_data       <= data[index];
 
                         // 根据偏移量选择缓存块中的指令
                         case (offset[3:2])
@@ -143,12 +143,9 @@ module Icache#(
                         state           <= SEND_RESP;       // 命中
                     end else begin
                         // 未命中: 发起内存读请求
-                        // axi_arvalid_o   <= 1'b1;
-                        // axi_araddr_o    <= req_addr;
-
-                        fill_count      <= 2'b0;
-                        fill_base_addr  <= {req_addr[31:4], 4'b0}; // 对齐到16B边界
-                        fill_index      <= index;
+                        // 缓存未命中，准备突发传输
+                        burst_base_addr <= {req_addr[31:4], 4'b0}; // 对齐到16字节边界
+                        burst_count     <= 2'b0;
                         
                         hit             <= 1'b0;
                         state           <= MEM_READ_ADDR;
@@ -156,63 +153,57 @@ module Icache#(
                 end
 
                 MEM_READ_ADDR: begin
+
+                    // 设置突发传输参数
                     axi_arvalid_o       <= 1'b1;
-                    axi_araddr_o        <= fill_base_addr + {28'b0,fill_count,2'b0}; // 每次4B
+                    axi_araddr_o        <= burst_base_addr;
+                    axi_arlen_o         <= 8'b0011; // 突发长度4 (len=3)
+                    axi_arsize_o        <= 3'b010;  // 每次传输4字节 (32位)
+                    axi_arburst_o       <= 2'b01;   // 递增突发
 
                     if(axi_arready_i == 1'b1 && axi_arvalid_o == 1'b1)begin
                         axi_arvalid_o   <= 1'b0;
+                        axi_rready_o    <= 1'b1;
                         state           <= MEM_READ_DATA;
                     end
                 end
 
                 MEM_READ_DATA: begin
-                    axi_rready_o        <= 1'b1;
+                    // axi_rready_o        <= 1'b1;
 
                     if (axi_rready_o == 1'b1 && axi_rvalid_i == 1'b1) begin
-                        
-                        axi_rready_o <= 1'b0;
-                        fill_count <= fill_count + 1;
-                        
-                        if (fill_count == 2'b11) begin                    
-                            // 返回请求的指令
-                            case (offset[3:2])
-                                2'b00: resp_data    <= cache_data[fill_index][31:0];
-                                2'b01: resp_data    <= cache_data[fill_index][63:32];
-                                2'b10: resp_data    <= cache_data[fill_index][95:64];
-                                2'b11: resp_data    <= cache_data[fill_index][127:96];
-                            endcase
-                            
+
+                        // 更新突发计数器
+                        burst_count <= burst_count + 1;
+                        // 突发传输结束
+                        if (axi_rlast_i) begin
+                            axi_rready_o <= 1'b0;
                             state   <= FILL_BLOCK;
-                            // state <= SEND_RESP;
-                        end else begin
-                            // 继续填充缓存块
-                            state <= MEM_READ_ADDR;
                         end
                     end
 
-                    // if(axi_rready_o == 1'b1 && axi_rvalid_i == 1'b1)begin
-                    //     axi_rready_o    <= 1'b0;
-                    //     resp_data       <= axi_rdata_i;
-                    //     state           <= SEND_RESP;
-                    // end
                 end
 
                 // 需要等待缓存块填写完毕,然后才能读
                 FILL_BLOCK: begin
                     // 返回请求的指令
                     case (offset[3:2])
-                        2'b00: resp_data    <= cache_data[fill_index][31:0];
-                        2'b01: resp_data    <= cache_data[fill_index][63:32];
-                        2'b10: resp_data    <= cache_data[fill_index][95:64];
-                        2'b11: resp_data    <= cache_data[fill_index][127:96];
+                        2'b00: resp_data    <= cache_data[index][31:0];
+                        2'b01: resp_data    <= cache_data[index][63:32];
+                        2'b10: resp_data    <= cache_data[index][95:64];
+                        2'b11: resp_data    <= cache_data[index][127:96];
                     endcase
                     state <= SEND_RESP;
                 end
 
                 BYPASS_READ_ADDR: begin
                     // 直接发起内存读请求（绕过缓存）
-                    axi_arvalid_o       <= 1'b1;
-                    axi_araddr_o        <= req_addr;
+                    // 直接发起内存读请求（绕过缓存）
+                    axi_arvalid_o <= 1'b1;
+                    axi_araddr_o  <= req_addr;
+                    axi_arlen_o   <= 8'b0000; // 突发长度1
+                    axi_arsize_o  <= 3'b010;   // 4字节传输
+                    axi_arburst_o <= 2'b01;    // 递增突发
                     
                     // 地址通道握手成功
                     if (axi_arvalid_o == 1'b1 && axi_arready_i == 1'b1) begin
@@ -266,32 +257,32 @@ module Icache#(
 
 // ===================== 缓存更新逻辑 =====================
     assign cache_update = (axi_rready_o == 1'b1 && axi_rvalid_i == 1'b1);
-    assign fill_end = (fill_count == 2'b11);
+    assign fill_end = (axi_rlast_i == 1'b1);
     always @(posedge clk) begin
         integer i;
         if (rst) begin
             // 复位缓存
             for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
-                valid[i] <= 1'b0;
-                tags[i] <= {TAG_WIDTH{1'b0}};
-                cache_data[i] <= 128'b0;
+                valid[i]        <= 1'b0;
+                tags[i]         <= {TAG_WIDTH{1'b0}};
+                cache_data[i]   <= 128'b0;
             end
         end else begin
             // 主存读取完成 - 更新缓存
             if (cache_update == 1'b1 && bypass == 1'b0) begin
                 // 存储接收到的数据到临时缓存块
-                case (fill_count)
-                    2'b00: cache_data[fill_index][31:0]   <= axi_rdata_i;
-                    2'b01: cache_data[fill_index][63:32]  <= axi_rdata_i;
-                    2'b10: cache_data[fill_index][95:64]  <= axi_rdata_i;
-                    2'b11: cache_data[fill_index][127:96] <= axi_rdata_i;
+                case (burst_count)
+                    2'b00: cache_data[index][31:0]   <= axi_rdata_i;
+                    2'b01: cache_data[index][63:32]  <= axi_rdata_i;
+                    2'b10: cache_data[index][95:64]  <= axi_rdata_i;
+                    2'b11: cache_data[index][127:96] <= axi_rdata_i;
                 endcase
             end
 
             if(fill_end == 1'b1)begin
                 // 完成整个缓存块的填充
-                tags[fill_index] <= tag;
-                valid[fill_index] <= 1'b1;
+                tags[index]     <= tag;
+                valid[index]    <= 1'b1;
             end
         end
     end

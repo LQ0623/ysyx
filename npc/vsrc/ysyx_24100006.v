@@ -302,6 +302,7 @@ module ysyx_24100006(
     wire        	clint_axi_rready;
     wire [1:0]		clint_axi_rresp;
     wire [31:0]   	clint_axi_rdata;
+	wire			clint_axi_rlast;
     // 写地址通道
     wire         	clint_axi_awvalid;
     wire          	clint_axi_awready;
@@ -345,7 +346,8 @@ module ysyx_24100006(
 		// axi读取的回应
 		.axi_rresp(clint_axi_rresp),
 		// axi读取的数据
-		.axi_rdata(clint_axi_rdata)
+		.axi_rdata(clint_axi_rdata),
+		.axi_rlast(clint_axi_rlast)
 	);
 
 `else
@@ -463,6 +465,7 @@ module ysyx_24100006(
     wire        	clint_axi_rready;
     wire [1:0]		clint_axi_rresp;
     wire [31:0]   	clint_axi_rdata;
+	wire			clint_axi_rlast;
     // 写地址通道
     wire         	clint_axi_awvalid;
     wire          	clint_axi_awready;
@@ -508,7 +511,8 @@ module ysyx_24100006(
 		// axi读取的回应
 		.axi_rresp(clint_axi_rresp),
 		// axi读取的数据
-		.axi_rdata(clint_axi_rdata)
+		.axi_rdata(clint_axi_rdata),
+		.axi_rlast(clint_axi_rlast)
 	);
 
 `endif
@@ -520,6 +524,10 @@ module ysyx_24100006(
 	wire			axi_rvalid_icache;
 	wire			axi_rready_icache;
 	wire [31:0]		axi_rdata_icache;
+	wire [7:0]		axi_arlen_icache;
+	wire [2:0]		axi_arsize_icache;
+	wire [1:0]		axi_arburst_icache;
+	wire 			axi_rlast_icache;
 	wire			icache_hit;
 	Icache u_icache (
         .clk            (clock), 			 	 // 系统时钟
@@ -539,11 +547,15 @@ module ysyx_24100006(
         .axi_arvalid_o  (axi_arvalid_icache),   // 到AXI的地址有效
         .axi_arready_i  (axi_arready_icache),   // AXI地址就绪
         .axi_araddr_o   (axi_araddr_icache),		   // AXI取指地址
+		.axi_arlen_o	(axi_arlen_icache),
+		.axi_arsize_o	(axi_arsize_icache),
+		.axi_arburst_o	(axi_arburst_icache),
         
         // AXI -> Icache接口
         .axi_rvalid_i   (axi_rvalid_icache),    // AXI数据有效
         .axi_rready_o   (axi_rready_icache),    // Icache接收就绪
         .axi_rdata_i    (axi_rdata_icache),			   // AXI返回的数据
+		.axi_rlast_i	(axi_rlast_icache),
 		.hit			(icache_hit)
     );
 
@@ -600,9 +612,9 @@ module ysyx_24100006(
 		// TAG: 这里的instruction的名字可能需要换，因为是接入到了Icache，instruction应该接入到Icache那里
 		.ifu_axi_rdata(axi_rdata_icache),
 		// AXI新增信号
-		.ifu_axi_arlen(axi_arlen_if),
-		.ifu_axi_arsize(axi_arsize_if),
-		.ifu_axi_rlast(axi_rlast_if),
+		.ifu_axi_arlen(axi_arlen_icache),
+		.ifu_axi_arsize(axi_arsize_icache),
+		.ifu_axi_rlast(axi_rlast_icache),
 
 		// ================== MEMU接口 ==================
 		// 读地址通道
@@ -861,6 +873,7 @@ module ysyx_24100006(
 		.clint_axi_rready(clint_axi_rready),
 		.clint_axi_rdata(clint_axi_rdata),
 		.clint_axi_rresp(clint_axi_rresp),
+		.clint_axi_rlast(clint_axi_rlast),
 
 		// Access Fault异常
 		.Access_Fault(Access_Fault)
@@ -987,6 +1000,7 @@ module ysyx_24100006(
 		.clint_axi_rready(clint_axi_rready),
 		.clint_axi_rdata(clint_axi_rdata),
 		.clint_axi_rresp(clint_axi_rresp),
+		.clint_axi_rlast(clint_axi_rlast),
 
 		// Access Fault异常
 		.Access_Fault(Access_Fault)

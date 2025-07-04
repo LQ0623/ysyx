@@ -33,7 +33,9 @@ module ysyx_24100006_clint #(
 
     // axi 读取的回应
     output  reg [1:0]   axi_rresp,
-    output  reg [31:0]  axi_rdata
+    output  reg [31:0]  axi_rdata,
+
+    output  reg         axi_rlast
     
 );
     import "DPI-C" function void skip();
@@ -67,9 +69,11 @@ module ysyx_24100006_clint #(
             axi_rvalid      <= 1'b0;
             axi_bvalid      <= 1'b0;
             axi_rdata       <= 32'h00000000;
+            axi_rlast       <= 1'b0;
         end else begin
             case(state)
                 S_IDLE: begin
+                    axi_rlast           <= 1'b0;
                     if(axi_arvalid == 1'b1) begin
                         axi_arready     <= 1'b1;
                         state           <= S_READ_ADDR;
@@ -83,6 +87,7 @@ module ysyx_24100006_clint #(
                     axi_arready         <= 1'b0;
                     if(axi_arvalid == 1'b1 && axi_arready == 1'b1) begin
                         axi_rvalid      <= 1'b1;
+                        axi_rlast       <= 1'b1;
                         // axi_rdata       <= 32'h0;
                         // axi_rresp       <= 2'b00;  
                         if(axi_araddr == BASE_ADDR) begin

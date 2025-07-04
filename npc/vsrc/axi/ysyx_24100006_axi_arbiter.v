@@ -121,8 +121,9 @@ module ysyx_24100006_axi_arbiter (
                 end
 
                 BUSY: begin     // 总线不是空闲状态
-                    // 现在只是针对单次传输，没有突发传输，表示一次读传输完成
-                    if(sram_axi_rready == 1'b1 && sram_axi_rvalid == 1'b1) begin
+                    // TAG:现在只是针对单次传输，没有突发传输，表示一次读传输完成
+                    // TAG:加入sram_axi_rlast之后，表示这个是最后一个读数据
+                    if(sram_axi_rready == 1'b1 && sram_axi_rvalid == 1'b1 && sram_axi_rlast == 1'b1) begin
                         axi_state               <= IDLE;
                         read_targeted_module    <= ARB_IDLE;
                     end
