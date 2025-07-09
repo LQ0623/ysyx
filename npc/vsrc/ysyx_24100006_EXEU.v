@@ -4,6 +4,9 @@
 module ysyx_24100006_exeu(
 	input clk,
     input reset,
+	// from icache
+	input icache_flush_done,	// icache是否刷新完毕
+
 	// from IDU
 	input [31:0] pc_E,
     input [31:0] sext_imm_E,
@@ -14,6 +17,8 @@ module ysyx_24100006_exeu(
 	input [31:0] mepc,
 
 	// control signal from IDU
+	input is_fence_i,	// 是否刷新icache
+
 	input irq_E,
 	input [7:0] irq_no_E,
     input [3:0] aluop,
@@ -61,24 +66,36 @@ module ysyx_24100006_exeu(
 );
 
 	// 握手机制
-	parameter S_IDLE = 0, S_EXECUTE = 1;
-	reg state;
+	parameter S_IDLE = 0, S_EXECUTE = 1, S_END = 2;
+	reg [1:0] state;
 
 	always @(posedge clk) begin
 		if(reset)begin
-			exe_ready <= 1'b1;
-            exe_valid <= 1'b0;
+			exe_ready 	<= 1'b1;
+            exe_valid 	<= 1'b0;
 			state	 	<=	S_IDLE;
 		end else begin
 			case (state)
 				S_IDLE: begin
 					if(id_valid && exe_ready) begin
 						exe_ready	<= 1'b0;
-						exe_valid	<= 1'b1;
-						state		<= S_EXECUTE;
+						if(is_fence_i == 1'b1)begin
+							state		<= S_EXECUTE;
+						end else begin
+							exe_valid	<= 1'b1;
+							state		<= S_END;
+						end
 					end
 				end
+
 				S_EXECUTE: begin
+					if(icache_flush_done == 1'b1)begin
+						exe_valid	<= 1'b1;
+						state		<= S_END;
+					end
+				end
+
+				S_END: begin
 					if(exe_valid && mem_ready) begin
 						exe_valid	<= 1'b0;
 						exe_ready	<= 1'b1;

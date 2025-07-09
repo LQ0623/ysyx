@@ -126,11 +126,13 @@ module ysyx_24100006(
 	wire [31:0] instruction;   // 读出的指令
 	wire PCW;
 	// IDU -> EXEU
+	wire icache_flush_done_CE;	// icache是否刷新完cache块
 	wire [31:0] pc_DE;
 	wire [31:0] sext_imm_DE;
 	wire [31:0] rs1_data_DE;
 	wire [31:0] rs2_data_DE;
 	wire [31:0] rdata_csr_DE;
+	wire is_fence_i_DE;			// 是否刷新icache
 	wire irq_DF;
 	wire irq_DE;
 	wire [7:0] irq_no_DE;
@@ -530,23 +532,25 @@ module ysyx_24100006(
 	wire 			axi_rlast_icache;
 	wire			icache_hit;
 	Icache u_icache (
-        .clk            (clock), 			 	 // 系统时钟
-        .rst            (reset),						// 系统复位
+        .clk            (clock), 				// 系统时钟
+        .rst            (reset),				// 系统复位
         
+		.fence_i_i		(is_fence_i_DE),		// 是否刷新icache的cache块
+
         // CPU -> Icache接口
-        .cpu_arvalid_i  (axi_arvalid_if),	 	 // CPU地址有效
-        .cpu_arready_o  (axi_arready_if), 	 	 // Icache地址就绪
-        .cpu_araddr_i   (pc_FD), 						// 取指地址
+        .cpu_arvalid_i  (axi_arvalid_if),	 	// CPU地址有效
+        .cpu_arready_o  (axi_arready_if), 		// Icache地址就绪
+        .cpu_araddr_i   (pc_FD), 				// 取指地址
         
         // Icache -> CPU接口
-        .cpu_rvalid_o   (axi_rvalid_if),	 	 // 指令数据有效
-        .cpu_rready_i   (axi_rready_if),	 	 // CPU接收就绪
-        .cpu_rdata_o    (instruction),					// 返回的指令数据
+        .cpu_rvalid_o   (axi_rvalid_if),	 	// 指令数据有效
+        .cpu_rready_i   (axi_rready_if),	 	// CPU接收就绪
+        .cpu_rdata_o    (instruction),			// 返回的指令数据
         
         // Icache -> AXI接口
         .axi_arvalid_o  (axi_arvalid_icache),   // 到AXI的地址有效
         .axi_arready_i  (axi_arready_icache),   // AXI地址就绪
-        .axi_araddr_o   (axi_araddr_icache),		   // AXI取指地址
+        .axi_araddr_o   (axi_araddr_icache),	// AXI取指地址
 		.axi_arlen_o	(axi_arlen_icache),
 		.axi_arsize_o	(axi_arsize_icache),
 		.axi_arburst_o	(axi_arburst_icache),
@@ -554,9 +558,10 @@ module ysyx_24100006(
         // AXI -> Icache接口
         .axi_rvalid_i   (axi_rvalid_icache),    // AXI数据有效
         .axi_rready_o   (axi_rready_icache),    // Icache接收就绪
-        .axi_rdata_i    (axi_rdata_icache),			   // AXI返回的数据
+        .axi_rdata_i    (axi_rdata_icache),		// AXI返回的数据
 		.axi_rlast_i	(axi_rlast_icache),
-		.hit			(icache_hit)
+		.hit			(icache_hit),
+		.icache_flush_done(icache_flush_done_CE)
     );
 
 
@@ -1066,6 +1071,7 @@ module ysyx_24100006(
 		.rs1_data(rs1_data_DE),
 		.rs2_data(rs2_data_DE),
 		.rdata_csr(rdata_csr_DE),
+		.is_fence_i(is_fence_i_DE),
 		.irq_F(irq_DF),
 		.irq_E(irq_DE),
 		.irq_no(irq_no_DE),
@@ -1089,6 +1095,7 @@ module ysyx_24100006(
 	ysyx_24100006_exeu EXE(
 		.clk(clock),
 		.reset(reset),
+		.icache_flush_done(icache_flush_done_CE),
 		.pc_E(pc_DE),
 		.sext_imm_E(sext_imm_DE),
 		.rs1_data_E(rs1_data_DE),
@@ -1096,6 +1103,7 @@ module ysyx_24100006(
 		.rdata_csr_E(rdata_csr_DE),
 		.mtvec(mtvec_DE),
 		.mepc(mepc_DE),
+		.is_fence_i(is_fence_i_DE),
 		.irq_E(irq_DE),
 		.irq_no_E(irq_no_DE),
 		.aluop(aluop_DE),

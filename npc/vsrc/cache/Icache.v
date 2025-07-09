@@ -4,6 +4,8 @@ module Icache#(
 )(
     input               clk,        // 时钟
     input               rst,        // 复位
+    input               fence_i_i,  // 是否刷新icache
+
 //cpu <---> icache
     input               cpu_arvalid_i,
     output reg          cpu_arready_o,
@@ -27,7 +29,8 @@ module Icache#(
     
     input               axi_rlast_i,    // 新增：突发传输结束
 
-    output reg          hit // 是否Cache命中
+    output reg          hit, // 是否Cache命中
+    output              icache_flush_done   // Cache是否已经无效所有的cache块
 );
 
 
@@ -61,6 +64,11 @@ module Icache#(
     reg [1:0]               burst_count;        // 突发传输计数器
     reg [31:0]              burst_base_addr;    // 突发传输基地址
 
+    // 刷新控制信号
+    reg                     flush_req;      // 刷新请求
+    reg                     flushing;       // 正在刷新状态
+    reg [INDEX_WIDTH-1:0]   flush_index;    // 当前刷新索引
+
     // ====================== 地址解析 ========================
     assign offset = req_addr[OFFSET_WIDTH-1:0];
     assign index  = req_addr[OFFSET_WIDTH+INDEX_WIDTH-1:OFFSET_WIDTH];
@@ -71,15 +79,16 @@ module Icache#(
     assign is_sram_addr = (cpu_araddr_i >= SRAM_BASE_ADDR) && (cpu_araddr_i < (SRAM_BASE_ADDR + SRAM_SIZE));
 
     // 状态定义
-    localparam IDLE              = 3'b000;  // 空闲状态
-    localparam CHECK_CACHE       = 3'b001;  // 检查缓存
-    localparam MEM_READ_ADDR     = 3'b010;  // 内存读地址阶段
-    localparam MEM_READ_DATA     = 3'b011;  // 内存读数据阶段
-    localparam FILL_BLOCK        = 3'b100;  // 填充缓存块
-    localparam BYPASS_READ_ADDR  = 3'b101;  // 绕过缓存的读地址阶段
-    localparam BYPASS_READ_DATA  = 3'b110;  // 绕过缓存的读数据阶段
-    localparam SEND_RESP         = 3'b111;  // 发送响应
-    reg [2:0]   state;
+    localparam IDLE              = 4'b0000;     // 空闲状态
+    localparam CHECK_CACHE       = 4'b0001;     // 检查缓存
+    localparam MEM_READ_ADDR     = 4'b0010;     // 内存读地址阶段
+    localparam MEM_READ_DATA     = 4'b0011;     // 内存读数据阶段
+    localparam FILL_BLOCK        = 4'b0100;     // 填充缓存块
+    localparam BYPASS_READ_ADDR  = 4'b0101;     // 绕过缓存的读地址阶段
+    localparam BYPASS_READ_DATA  = 4'b0110;     // 绕过缓存的读数据阶段
+    localparam SEND_RESP         = 4'b0111;     // 发送响应
+    localparam FLUSH_CACHE       = 4'b1000;     // 刷新icache
+    reg [3:0]   state;
 
     // TAG:性能计数器使用
 `ifdef VERILATOR_SIM
@@ -87,8 +96,27 @@ module Icache#(
     reg                     cache_fill_end;
 `endif
 
+
+    // ===================== 刷新控制 =====================
+    assign icache_flush_done = (flushing == 1'b1 && ({1'b0, flush_index} == NUM_BLOCKS-1));
+    // 检测fence.i指令
+    always @(posedge clk) begin
+        if (rst) begin
+            flush_req       <= 1'b0;
+        end else begin
+            // fence.i指令到来时设置刷新请求
+            if (fence_i_i) begin
+                flush_req   <= 1'b1;
+            end 
+            // 刷新完成时清除刷新请求
+            else if (flushing == 1'b1 && ({1'b0, flush_index} == NUM_BLOCKS-1)) begin
+                flush_req   <= 1'b0;
+            end
+        end
+    end
+
     // 状态机
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         if (rst) begin
             state           <= IDLE;
 
@@ -107,14 +135,39 @@ module Icache#(
             axi_araddr_o    <= 32'b0;
             axi_rready_o    <= 1'b0;
 
+            // icache刷新使用
+            flushing        <= 1'b0;
+            flush_index     <= 0;
+
         `ifdef VERILATOR_SIM
             cache_fill_start<= 1'b0;
             cache_fill_end  <= 1'b0;
         `endif
         end else begin
+
+            // 刷新操作优先级最高
+            if (flush_req && !flushing) begin
+                flushing    <= 1'b1;
+                flush_index <= 0;
+                state       <= FLUSH_CACHE;
+            end
+
             case (state)
+                // 新增：缓存刷新状态
+                FLUSH_CACHE: begin
+                    
+                    // 移动到下一个索引
+                    if ({1'b0, flush_index} < NUM_BLOCKS - 1) begin
+                        flush_index     <= flush_index + 1;
+                    end else begin
+                        // 刷新完成
+                        flushing        <= 1'b0;
+                        state           <= IDLE;
+                    end
+                end
+
                 IDLE: begin
-                    if (cpu_arvalid_i) begin
+                    if (cpu_arvalid_i && !flush_req) begin
                         cpu_arready_o       <= 1'b1;            // 准备接收新请求
                         cpu_rvalid_o        <= 1'b0;            // 确保响应无效
 
@@ -296,6 +349,9 @@ module Icache#(
                 tags[i]         <= {TAG_WIDTH{1'b0}};
                 cache_data[i]   <= 128'b0;
             end
+        end else if(state == FLUSH_CACHE)begin
+            // 逐个无效化缓存项
+            valid[flush_index]  <= 1'b0;
         end else begin
             // 主存读取完成 - 更新缓存
             if (cache_update == 1'b1 && bypass == 1'b0) begin
