@@ -34,6 +34,13 @@ uint64_t cache_access_start = 0;
 // cache 命中用的总时间，没有命中的使用读取所用的总时间就可以了
 uint64_t cache_access_time_all  = 0;
 
+// cache miss的总次数
+uint64_t cache_miss_cnt = 0;
+// cache miss了之后访问sdram的开始时间
+uint64_t cache_miss_start = 0;
+// cache miss后fill用的总时间
+uint64_t cache_miss_time_all = 0;
+
 // 用于绘图展示
 FILE *perf_fp = NULL;
 FILE *perf_time_fp = NULL;
@@ -159,6 +166,17 @@ extern "C" void cache_access_time(svBit arvalid,svBit rvalid){
 
     if(rvalid){
         cache_access_time_all += (cycle - cache_access_start + 2);
+    }
+}
+
+extern "C" void cache_miss_time(svBit cache_fill_start, svBit cache_fill_end){
+    if(cache_fill_start){
+        cache_miss_start = cycle;
+        cache_miss_cnt   += 1;
+    }
+
+    if(cache_fill_end){
+        cache_miss_time_all += (cycle - cache_miss_start + 2);
     }
 }
 

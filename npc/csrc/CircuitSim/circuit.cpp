@@ -243,6 +243,8 @@ static void statistic() {
 	double cache_access_time	= (double)cache_access_time_all / (double)cache_hit_cnt;
 	// 单次的sdram访问时间
 	double mem_access_time		= (double)read_time / (double)lsu_r_counter;
+	// 单次cache miss的总时间
+	double cache_miss_time		= (double)cache_miss_time_all / (double)cache_miss_cnt;
 	// AMAT
 	double AMAT					= cache_access_time + (1-cache_hit_ratio) * mem_access_time;
 	
@@ -264,6 +266,8 @@ static void statistic() {
 	Log("Cache hit ratio is %2.4lf",cache_hit_ratio);
 	Log("cache access time all is %lu, cache hit cnt is %lu",cache_access_time_all,cache_hit_cnt);
 	Log("single cache access time is %lf, single sdram access time is %lf",cache_access_time,mem_access_time);
+	Log("cache miss time all is %lu, cache miss cnt is %lu",cache_miss_time_all,cache_miss_cnt);
+	Log("single cache miss time is %lf", cache_miss_time);
 	Log("AMAT is %lf",AMAT);
 	Log("proportion Jump | Store | Load | Cal | Csr");
 	Log("   	 %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%%", jump_pro, store_pro, load_pro, cal_pro, csr_pro);

@@ -71,17 +71,21 @@ module Icache#(
     assign is_sram_addr = (cpu_araddr_i >= SRAM_BASE_ADDR) && (cpu_araddr_i < (SRAM_BASE_ADDR + SRAM_SIZE));
 
     // 状态定义
-    typedef enum logic [2:0] {
-        IDLE,               // 空闲状态
-        CHECK_CACHE,        // 检查缓存
-        MEM_READ_ADDR,      // 内存读地址阶段
-        MEM_READ_DATA,      // 内存读数据阶段
-        FILL_BLOCK,         // 填充缓存块
-        BYPASS_READ_ADDR,   // 绕过缓存的读地址阶段
-        BYPASS_READ_DATA,   // 绕过缓存的读数据阶段
-        SEND_RESP           // 发送响应
-    } state_t;
-    state_t state;
+    localparam IDLE              = 3'b000;  // 空闲状态
+    localparam CHECK_CACHE       = 3'b001;  // 检查缓存
+    localparam MEM_READ_ADDR     = 3'b010;  // 内存读地址阶段
+    localparam MEM_READ_DATA     = 3'b011;  // 内存读数据阶段
+    localparam FILL_BLOCK        = 3'b100;  // 填充缓存块
+    localparam BYPASS_READ_ADDR  = 3'b101;  // 绕过缓存的读地址阶段
+    localparam BYPASS_READ_DATA  = 3'b110;  // 绕过缓存的读数据阶段
+    localparam SEND_RESP         = 3'b111;  // 发送响应
+    reg [2:0]   state;
+
+    // TAG:性能计数器使用
+`ifdef VERILATOR_SIM
+    reg                     cache_fill_start;
+    reg                     cache_fill_end;
+`endif
 
     // 状态机
     always @(posedge clk or posedge rst) begin
@@ -102,6 +106,11 @@ module Icache#(
             axi_arvalid_o   <= 1'b0;
             axi_araddr_o    <= 32'b0;
             axi_rready_o    <= 1'b0;
+
+        `ifdef VERILATOR_SIM
+            cache_fill_start<= 1'b0;
+            cache_fill_end  <= 1'b0;
+        `endif
         end else begin
             case (state)
                 IDLE: begin
@@ -149,10 +158,18 @@ module Icache#(
                         
                         hit             <= 1'b0;
                         state           <= MEM_READ_ADDR;
+
+                    `ifdef VERILATOR_SIM
+                        cache_fill_start<= 1'b1;
+                    `endif
                     end
                 end
 
                 MEM_READ_ADDR: begin
+
+                `ifdef VERILATOR_SIM
+                    cache_fill_start<= 1'b0;
+                `endif
 
                     // 设置突发传输参数
                     axi_arvalid_o       <= 1'b1;
@@ -174,11 +191,16 @@ module Icache#(
                     if (axi_rready_o == 1'b1 && axi_rvalid_i == 1'b1) begin
 
                         // 更新突发计数器
-                        burst_count <= burst_count + 1;
+                        burst_count     <= burst_count + 1;
                         // 突发传输结束
                         if (axi_rlast_i) begin
-                            axi_rready_o <= 1'b0;
-                            state   <= FILL_BLOCK;
+
+                        `ifdef VERILATOR_SIM
+                            cache_fill_end<= 1'b1;
+                        `endif
+
+                            axi_rready_o<= 1'b0;
+                            state       <= FILL_BLOCK;
                         end
                     end
 
@@ -186,6 +208,10 @@ module Icache#(
 
                 // 需要等待缓存块填写完毕,然后才能读
                 FILL_BLOCK: begin
+                    `ifdef VERILATOR_SIM
+                        cache_fill_end<= 1'b0;
+                    `endif
+
                     // 返回请求的指令
                     case (offset[3:2])
                         2'b00: resp_data    <= cache_data[index][31:0];
@@ -258,8 +284,11 @@ module Icache#(
 // ===================== 缓存更新逻辑 =====================
     assign cache_update = (axi_rready_o == 1'b1 && axi_rvalid_i == 1'b1);
     assign fill_end = (axi_rlast_i == 1'b1);
+
+    // i的定义需要放在外面，不能放在always里面，不然不能综合
+    integer i;
     always @(posedge clk) begin
-        integer i;
+
         if (rst) begin
             // 复位缓存
             for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
@@ -287,6 +316,18 @@ module Icache#(
         end
     end
 
+
+// TAGS:Performance Counters
+`ifdef VERILATOR_SIM
+    import "DPI-C" function void cache_miss_time(
+        input bit start_fill,
+        input bit end_fill
+    );
+
+    always @(*) begin
+        cache_miss_time(cache_fill_start, cache_fill_end);
+    end
+`endif
 
 endmodule
 

@@ -1,7 +1,7 @@
 module ysyx_24100006(
 	input			clock,
     input			reset
-`ifdef YSYXSOC
+`ifndef NPC
 	,
 
 	input 			io_interrupt,
@@ -100,7 +100,7 @@ module ysyx_24100006(
 `endif
 );
 
-`ifdef YSYXSOC
+`ifndef NPC
 	//-----------------------------
 	// 所有 output 信号强制置零
 	//-----------------------------
@@ -290,7 +290,7 @@ module ysyx_24100006(
 	wire [3:0]		sram_axi_wstrb;
 	wire			sram_axi_wlast;
 
-`ifdef YSYXSOC
+`ifndef NPC
 	// TAG: 时钟相关的部分
 	// CLINT实例化
 	// 读地址通道
@@ -681,7 +681,7 @@ module ysyx_24100006(
 		.sram_axi_wlast(m_axi_wlast)
 	);
 
-`ifdef YSYXSOC
+`ifndef NPC
 	// YSYXSOC使用的axi模块和xbar模块
 	ysyx_24100006_axi #(
 		.AXI_DATA_WIDTH    (32),

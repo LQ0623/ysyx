@@ -7,6 +7,8 @@ VERILATOR_CFLAGS += -MMD -cc -O3 --x-assign fast --x-initial fast --noassert -au
 VERILATOR_CFLAGS += --trace
 VERILATOR_CFLAGS += --timescale "1ns/1ns" --no-timing
 VERILATOR_CFLAGS += -DVERILATOR_SIM
+# verilog使用的参数：是否使用NPC，这里是为了综合才只能使用NPC，因为在综合的时候没有这个参数，所以就不会走这个分支
+VERILATOR_CFLAGS += -DNPC
 
 #source code
 VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")

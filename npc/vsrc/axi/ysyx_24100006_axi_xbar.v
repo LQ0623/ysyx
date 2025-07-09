@@ -75,7 +75,7 @@ module ysyx_24100006_axi_xbar #(
 	output 	[3:0]	sram_axi_wstrb,
 	output 			sram_axi_wlast,
 
-`ifndef YSYXSOC
+`ifdef NPC
     // UART从设备
     output        uart_axi_awvalid,
     input         uart_axi_awready,
@@ -133,7 +133,7 @@ module ysyx_24100006_axi_xbar #(
 );
 
 // 地址定义
-`ifdef YSYXSOC
+`ifndef NPC
     parameter UART_ADDR     = 32'h1000_0000;
     parameter CLINT_ADDR    = 32'h0200_0000;
 `else
@@ -142,7 +142,7 @@ module ysyx_24100006_axi_xbar #(
 `endif
 
     // 地址解码
-`ifdef YSYXSOC
+`ifndef NPC
 
     wire sel_clint  = (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_ffff));      // CLINT
 
@@ -178,7 +178,7 @@ module ysyx_24100006_axi_xbar #(
     assign sram_axi_wdata       = sel_sram ? m_axi_wdata    : 32'h0;
     assign sram_axi_bready      = sel_sram ? m_axi_bready   : 0;
 
-`ifndef YSYXSOC
+`ifdef NPC
     // UART
     assign uart_axi_awvalid     = sel_uart ? m_axi_awvalid  : 0;
     assign uart_axi_awaddr      = sel_uart ? m_axi_awaddr   : 32'h0;
@@ -201,7 +201,7 @@ module ysyx_24100006_axi_xbar #(
     assign sram_axi_araddr      = sel_sram ? m_axi_araddr   : 32'h0;
     assign sram_axi_rready      = sel_sram ? m_axi_rready   : 0;
 
-`ifndef YSYXSOC
+`ifdef NPC
     // UART
     assign uart_axi_arvalid     = sel_uart ? m_axi_arvalid  : 0;
     assign uart_axi_araddr      = sel_uart ? m_axi_araddr   : 32'h0;
@@ -213,7 +213,7 @@ module ysyx_24100006_axi_xbar #(
     assign clint_axi_araddr     = sel_clint ? m_axi_araddr   : 32'h0;
     assign clint_axi_rready     = sel_clint ? m_axi_rready   : 0;
 
-`ifdef YSYXSOC
+`ifndef NPC
     // 响应合并
     assign m_axi_awready    =   sel_sram ? sram_axi_awready :
                                 sel_clint ? clint_axi_awready : 0;

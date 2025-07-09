@@ -41,9 +41,9 @@ int Cache::has_empty(CacheSet_t set){
 void Cache::statistic(){
     double miss_penalty;
     // 目前不是突发的读,而是直接四次独立的传输,所以缺失代价时间会很大
-    if(block_size == 4) miss_penalty = 28.255029165258244;      // 真实的
-    else if(block_size == 8) miss_penalty = 54.510058331;       // 猜的
-    else if(block_size == 16) miss_penalty = 107.750425757;     //  真实的
+    if(block_size == 4) miss_penalty = 19.775591;           // 真实的
+    else if(block_size == 8) miss_penalty = 27.434193;      // 真实的
+    else if(block_size == 16) miss_penalty = 42.020867;     // 真实的
     else miss_penalty = 0;
     printf("Cache par = set(%d) way(%d) bsz(%d)\n", sets, ways, block_size);
     printf("Req count : %lu\n", report.req_cnt);

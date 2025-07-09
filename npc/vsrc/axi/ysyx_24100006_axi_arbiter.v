@@ -255,7 +255,7 @@ module ysyx_24100006_axi_arbiter (
     assign sram_axi_awvalid =   mem_axi_awvalid;
     assign sram_axi_wvalid  =   mem_axi_wvalid;
     assign sram_axi_bready  =   mem_axi_bready;
-`ifdef YSYXSOC
+`ifndef NPC
     assign sram_axi_awaddr  =   mem_axi_awaddr; //  写地址可以一直传输,但是只有当valid=1时才能够有效
 `else
     assign sram_axi_awaddr  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;
