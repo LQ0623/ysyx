@@ -15,7 +15,7 @@ fi
 PARAM_FILE="./script/params_sets_ways.txt"
 
 # BLOCK_SIZE 可变
-BLOCK_SIZES=(4 8 12 16)
+BLOCK_SIZES=(4 8 16)
 
 # POLICIES
 POLICIES=("fifo" "lru")
@@ -33,13 +33,23 @@ while read line; do
   read set way <<< "$line"
 
   for block_size in "${BLOCK_SIZES[@]}"; do
+
+    # 计算缓存大小 (set * way * block_size)
+    cache_size=$((set * way * block_size))
+    
+    # 如果缓存大小超过阈值 (16 * 8 = 128)，则跳过
+    if [ $cache_size -gt 128 ]; then
+      echo "# Skipping: set=${set} way=${way} block_size=${block_size} (cache_size=${cache_size} > 128)"
+      continue
+    fi
+
     for policy in "${POLICIES[@]}"; do
       out_file="$OUTPUT_DIR/cache_sim_sets${set}_ways${way}_block${block_size}_policy_${policy}.log"
       echo "# Running: $CACHESIM $TRACE_FILE $set $way $block_size $policy"
       "$CACHESIM" "$TRACE_FILE" "$set" "$way" "$block_size" "$policy" > "$out_file" &
 
-      # 控制最大并发数为4
-      if (( $(jobs -r | wc -l) >= 4 )); then
+      # 控制最大并发数为6
+      if (( $(jobs -r | wc -l) >= 6 )); then
         wait -n
       fi
     done

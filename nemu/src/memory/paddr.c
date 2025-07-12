@@ -74,6 +74,7 @@ word_t paddr_read(paddr_t addr, int len) {
   mtrace_log_write(addr, len, 'r', 0);
 #endif
   // TAG:如果要运行NEMU,需要先注释soc的读写,因为有地址和nemu的冲突了
+  // TAG:如果要作为NPC的ref，那么需要注释掉下面的soc有关的内容
   if (in_socMem(addr)) return soc_read(addr, len);
   if (in_socDevR(addr)){
     skip = true;
@@ -93,6 +94,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
   mtrace_log_write(addr, len, 'w', data);
 #endif
   // TAG:如果要运行NEMU,需要先注释soc的读写,因为有地址和nemu的冲突了
+  // TAG:如果要作为NPC的ref，那么需要注释掉下面的soc有关的内容
   if (in_socMem(addr))  { soc_write(addr, len, data); return; }
   if (in_socDevW(addr)) { 
     skip = true;

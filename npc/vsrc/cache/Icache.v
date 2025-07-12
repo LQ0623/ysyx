@@ -1,3 +1,4 @@
+// icache 参数为 set = 2, way = 1,block_size = 16
 module Icache#(
     parameter SRAM_BASE_ADDR    = 32'h0f00_0000,
     parameter SRAM_SIZE         = 32'h00ff_ffff
@@ -17,7 +18,7 @@ module Icache#(
         
 // icache <---> cpu
     output reg          axi_arvalid_o,
-    input  reg          axi_arready_i,
+    input               axi_arready_i,
     output reg [31:0]   axi_araddr_o,
     output reg [7:0]    axi_arlen_o,    // 新增：突发长度
     output reg [2:0]    axi_arsize_o,   // 新增：突发大小
@@ -36,8 +37,8 @@ module Icache#(
 
     // 缓存参数
     parameter BLOCK_SIZE    = 16;           // cache块大小 (bytes),四个字节
-    parameter NUM_BLOCKS    = 16;           // cache块数量
-    parameter INDEX_WIDTH   = 4;            // 索引位宽 (log2(NUM_BLOCKS))
+    parameter NUM_BLOCKS    = 2;            // cache块数量
+    parameter INDEX_WIDTH   = 1;            // 索引位宽 (log2(NUM_BLOCKS))
     parameter OFFSET_WIDTH  = 4;            // 偏移位宽 (log2(BLOCK_SIZE))
     parameter TAG_WIDTH     = 32 - INDEX_WIDTH - OFFSET_WIDTH; // Tag位宽
 
@@ -339,35 +340,64 @@ module Icache#(
     assign fill_end = (axi_rlast_i == 1'b1);
 
     // i的定义需要放在外面，不能放在always里面，不然不能综合
+    // integer i;
+    // always @(posedge clk) begin
+
+    //     if (rst) begin
+    //         // 复位缓存
+    //         for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
+    //             valid[i]        <= 1'b0;
+    //             tags[i]         <= {TAG_WIDTH{1'b0}};
+    //             cache_data[i]   <= 128'b0;
+    //         end
+    //     end else if(state == FLUSH_CACHE)begin
+    //         // 逐个无效化缓存项
+    //         valid[flush_index]  <= 1'b0;
+    //     end else begin
+    //         // 主存读取完成 - 更新缓存
+    //         if (cache_update == 1'b1 && bypass == 1'b0) begin
+    //             // 存储接收到的数据到临时缓存块
+    //             case (burst_count)
+    //                 2'b00: cache_data[index][31:0]   <= axi_rdata_i;
+    //                 2'b01: cache_data[index][63:32]  <= axi_rdata_i;
+    //                 2'b10: cache_data[index][95:64]  <= axi_rdata_i;
+    //                 2'b11: cache_data[index][127:96] <= axi_rdata_i;
+    //             endcase
+    //         end
+
+    //         if(fill_end == 1'b1)begin
+    //             // 完成整个缓存块的填充
+    //             tags[index]     <= tag;
+    //             valid[index]    <= 1'b1;
+    //         end
+    //     end
+    // end
+
     integer i;
     always @(posedge clk) begin
-
         if (rst) begin
-            // 复位缓存
-            for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
-                valid[i]        <= 1'b0;
-                tags[i]         <= {TAG_WIDTH{1'b0}};
-                cache_data[i]   <= 128'b0;
+            // 优化1: 简化复位逻辑
+            valid[0]    <= 1'b0;
+            valid[1]    <= 1'b0;
+            
+            // 优化2: 移除不必要的复位初始化
+            // tags和cache_data不需要复位，节省大量寄存器资源
+        end 
+        else if (state == FLUSH_CACHE) begin
+            // 优化3: 直接无效化指定项
+            valid[flush_index] <= 1'b0;
+        end 
+        else begin
+            // 优化4: 合并条件判断
+            if (cache_update && !bypass) begin
+                // 优化5: 使用索引移位替代case语句
+                cache_data[index][burst_count*32 +:32] <= axi_rdata_i;
             end
-        end else if(state == FLUSH_CACHE)begin
-            // 逐个无效化缓存项
-            valid[flush_index]  <= 1'b0;
-        end else begin
-            // 主存读取完成 - 更新缓存
-            if (cache_update == 1'b1 && bypass == 1'b0) begin
-                // 存储接收到的数据到临时缓存块
-                case (burst_count)
-                    2'b00: cache_data[index][31:0]   <= axi_rdata_i;
-                    2'b01: cache_data[index][63:32]  <= axi_rdata_i;
-                    2'b10: cache_data[index][95:64]  <= axi_rdata_i;
-                    2'b11: cache_data[index][127:96] <= axi_rdata_i;
-                endcase
-            end
-
-            if(fill_end == 1'b1)begin
-                // 完成整个缓存块的填充
-                tags[index]     <= tag;
-                valid[index]    <= 1'b1;
+            
+            // 优化6: 合并相关更新逻辑
+            if (fill_end) begin
+                tags[index]  <= tag;
+                valid[index] <= 1'b1;
             end
         end
     end

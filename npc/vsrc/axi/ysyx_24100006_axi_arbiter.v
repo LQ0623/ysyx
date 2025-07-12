@@ -205,6 +205,7 @@ module ysyx_24100006_axi_arbiter (
 
 
     // ================== SRAM写仲裁状态机 ==================
+`ifdef NPC
     parameter   W_IDLE = 0, W_BUSY = 1;
 
     reg [1:0] axi_state_w;                // AXI目前的状态
@@ -235,6 +236,7 @@ module ysyx_24100006_axi_arbiter (
             endcase
         end
     end
+`endif
 
     // 写入的实际数据，数据需要移位的
     wire [31:0] real_axi_wdata;

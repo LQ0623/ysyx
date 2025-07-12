@@ -17,9 +17,9 @@
 #include <cpu/cpu.h>
 #include <difftest-def.h>
 #include <memory/paddr.h>
-#define NR_GPR 32
+#define NR_GPR 16
 struct diff_context_t {
-  word_t gpr[32];
+  word_t gpr[16];
   word_t pc;
   word_t csr[4];
 };
