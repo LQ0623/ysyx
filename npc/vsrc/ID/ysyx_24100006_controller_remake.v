@@ -175,6 +175,7 @@ module ysyx_24100006_controller_remake(
     input [6:0]funct7,
     input [11:0]funct12,
 
+    input id_valid,
     input wb_ready,    // 代替掉集中式状态机中的state == WB
     input mem_valid,
 
@@ -208,7 +209,9 @@ module ysyx_24100006_controller_remake(
     /* 写内存是多少字节 */
     output  [7:0] Mem_WMask,
     /* 控制MEMU的状态机是走读取数据还是写入数据的分支 */
-    output [1:0] sram_read_write
+    output [1:0] sram_read_write,
+    /* 是否刷新icache */
+    output  is_fence_i
 );
 
 
@@ -399,6 +402,8 @@ module ysyx_24100006_controller_remake(
 
     assign sram_read_write =    (opcode == `ysyx_24100006_S_type)   ? `ysyx_24100006_mem_store  : 
                                 (opcode == `ysyx_24100006_load)     ? `ysyx_24100006_mem_load   : `ysyx_24100006_mem_idle;
+
+    assign is_fence_i = (id_valid == 1'b1) ? (opcode == 7'b0001111 && funct3 == 3'b001) : 1'b0;
 
 `ifdef VERILATOR_SIM
     always @(*) begin

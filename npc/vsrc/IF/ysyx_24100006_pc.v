@@ -14,7 +14,7 @@ module ysyx_24100006_pc(
     // end
 	wire [31:0] real_npc;
 
-`ifndef YSYXSOC
+`ifdef NPC
 	ysyx_24100006_MuxKey#(3,2,32) alu_a_data_mux(real_npc,Access_Fault,{
 		2'b00,npc,
 		2'b01,32'b0,
@@ -31,7 +31,7 @@ module ysyx_24100006_pc(
 
 `endif
 
-`ifdef YSYXSOC
+`ifndef NPC
 
 	// 选择下一条指令的pc地址
 	ysyx_24100006_MuxKey#(3,2,32) alu_a_data_mux(real_npc,Access_Fault,{

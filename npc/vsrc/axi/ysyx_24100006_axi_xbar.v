@@ -75,7 +75,7 @@ module ysyx_24100006_axi_xbar #(
 	output 	[3:0]	sram_axi_wstrb,
 	output 			sram_axi_wlast,
 
-`ifndef YSYXSOC
+`ifdef NPC
     // UART从设备
     output        uart_axi_awvalid,
     input         uart_axi_awready,
@@ -121,6 +121,7 @@ module ysyx_24100006_axi_xbar #(
     output        clint_axi_rready,
     input  [31:0] clint_axi_rdata,
     input  [1:0]  clint_axi_rresp,
+    input         clint_axi_rlast,
 
     // 实现让NPC抛出Access Fault异常
     // 根据rresp和bresp进行错误判断
@@ -132,7 +133,7 @@ module ysyx_24100006_axi_xbar #(
 );
 
 // 地址定义
-`ifdef YSYXSOC
+`ifndef NPC
     parameter UART_ADDR     = 32'h1000_0000;
     parameter CLINT_ADDR    = 32'h0200_0000;
 `else
@@ -141,7 +142,7 @@ module ysyx_24100006_axi_xbar #(
 `endif
 
     // 地址解码
-`ifdef YSYXSOC
+`ifndef NPC
 
     wire sel_clint  = (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_ffff));      // CLINT
 
@@ -177,7 +178,7 @@ module ysyx_24100006_axi_xbar #(
     assign sram_axi_wdata       = sel_sram ? m_axi_wdata    : 32'h0;
     assign sram_axi_bready      = sel_sram ? m_axi_bready   : 0;
 
-`ifndef YSYXSOC
+`ifdef NPC
     // UART
     assign uart_axi_awvalid     = sel_uart ? m_axi_awvalid  : 0;
     assign uart_axi_awaddr      = sel_uart ? m_axi_awaddr   : 32'h0;
@@ -200,7 +201,7 @@ module ysyx_24100006_axi_xbar #(
     assign sram_axi_araddr      = sel_sram ? m_axi_araddr   : 32'h0;
     assign sram_axi_rready      = sel_sram ? m_axi_rready   : 0;
 
-`ifndef YSYXSOC
+`ifdef NPC
     // UART
     assign uart_axi_arvalid     = sel_uart ? m_axi_arvalid  : 0;
     assign uart_axi_araddr      = sel_uart ? m_axi_araddr   : 32'h0;
@@ -212,7 +213,7 @@ module ysyx_24100006_axi_xbar #(
     assign clint_axi_araddr     = sel_clint ? m_axi_araddr   : 32'h0;
     assign clint_axi_rready     = sel_clint ? m_axi_rready   : 0;
 
-`ifdef YSYXSOC
+`ifndef NPC
     // 响应合并
     assign m_axi_awready    =   sel_sram ? sram_axi_awready :
                                 sel_clint ? clint_axi_awready : 0;
@@ -237,6 +238,10 @@ module ysyx_24100006_axi_xbar #(
 
     assign m_axi_rresp      = sel_sram ? sram_axi_rresp :
                                 sel_clint ? clint_axi_rresp : 2'b00;
+
+    // 新增AXI信号
+    assign m_axi_rlast      = sel_sram ? sram_axi_rlast : 
+                                sel_clint ? clint_axi_rlast : 1'b0;
 `else
 
     // 响应合并
@@ -272,10 +277,13 @@ module ysyx_24100006_axi_xbar #(
                                 sel_uart ? uart_axi_rresp : 
                                 sel_clint ? clint_axi_rresp : 2'b00;
 
+    // 新增AXI信号
+    assign m_axi_rlast      = sel_sram ? sram_axi_rlast : 
+                                sel_uart ? 1'b1 :                   // uart的读取永远都是最后一位的数据，因为uart不能读取
+                                sel_clint ? clint_axi_rlast : 1'b0;
+
 `endif
 
-    // 新增AXI信号
-    assign m_axi_rlast      = sram_axi_rlast;
     assign sram_axi_arlen   = m_axi_arlen;
     // 读SRAM是地址对齐的，所以需要直接读取4字节，然后在选择；
     // 但是读取UART的时候，只能读取一个字节，所以需要改变大小，不然就会强制读取对齐边界的地址的值

@@ -121,8 +121,9 @@ module ysyx_24100006_axi_arbiter (
                 end
 
                 BUSY: begin     // 总线不是空闲状态
-                    // 现在只是针对单次传输，没有突发传输，表示一次读传输完成
-                    if(sram_axi_rready == 1'b1 && sram_axi_rvalid == 1'b1) begin
+                    // TAG:现在只是针对单次传输，没有突发传输，表示一次读传输完成
+                    // TAG:加入sram_axi_rlast之后，表示这个是最后一个读数据
+                    if(sram_axi_rready == 1'b1 && sram_axi_rvalid == 1'b1 && sram_axi_rlast == 1'b1) begin
                         axi_state               <= IDLE;
                         read_targeted_module    <= ARB_IDLE;
                     end
@@ -204,6 +205,7 @@ module ysyx_24100006_axi_arbiter (
 
 
     // ================== SRAM写仲裁状态机 ==================
+`ifdef NPC
     parameter   W_IDLE = 0, W_BUSY = 1;
 
     reg [1:0] axi_state_w;                // AXI目前的状态
@@ -234,6 +236,7 @@ module ysyx_24100006_axi_arbiter (
             endcase
         end
     end
+`endif
 
     // 写入的实际数据，数据需要移位的
     wire [31:0] real_axi_wdata;
@@ -254,7 +257,7 @@ module ysyx_24100006_axi_arbiter (
     assign sram_axi_awvalid =   mem_axi_awvalid;
     assign sram_axi_wvalid  =   mem_axi_wvalid;
     assign sram_axi_bready  =   mem_axi_bready;
-`ifdef YSYXSOC
+`ifndef NPC
     assign sram_axi_awaddr  =   mem_axi_awaddr; //  写地址可以一直传输,但是只有当valid=1时才能够有效
 `else
     assign sram_axi_awaddr  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;

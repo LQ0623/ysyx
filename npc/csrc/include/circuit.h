@@ -30,7 +30,7 @@ void nvboard_bind_all_pins(CPU* top);
 #endif
 
 // 一条指令最多运行的周期,超过就报错
-#define MAX_NUM_CYC 20000
+#define MAX_NUM_CYC 50000
 
 extern word_t inst,pc,dnpc;
 extern word_t inst, prev_pc, PCW, if_valid, wb_ready;

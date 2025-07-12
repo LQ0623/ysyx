@@ -36,6 +36,13 @@ extern uint64_t cache_access_start;
 // cache 命中用的总时间，没有命中的使用读取所用的总时间就可以了
 extern uint64_t cache_access_time_all;
 
+// cache miss的总次数
+extern uint64_t cache_miss_cnt;
+// cache miss了之后访问sdram的开始时间
+extern uint64_t cache_miss_start;
+// cache miss后fill用的总时间
+extern uint64_t cache_miss_time_all;
+
 extern FILE *perf_time_fp;
 
 void record_performance_trace(uint64_t cycle, uint64_t instCnt);

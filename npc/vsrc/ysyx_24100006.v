@@ -1,7 +1,7 @@
 module ysyx_24100006(
 	input			clock,
     input			reset
-`ifdef YSYXSOC
+`ifndef NPC
 	,
 
 	input 			io_interrupt,
@@ -100,7 +100,7 @@ module ysyx_24100006(
 `endif
 );
 
-`ifdef YSYXSOC
+`ifndef NPC
 	//-----------------------------
 	// 所有 output 信号强制置零
 	//-----------------------------
@@ -126,11 +126,13 @@ module ysyx_24100006(
 	wire [31:0] instruction;   // 读出的指令
 	wire PCW;
 	// IDU -> EXEU
+	wire icache_flush_done_CE;	// icache是否刷新完cache块
 	wire [31:0] pc_DE;
 	wire [31:0] sext_imm_DE;
 	wire [31:0] rs1_data_DE;
 	wire [31:0] rs2_data_DE;
 	wire [31:0] rdata_csr_DE;
+	wire is_fence_i_DE;			// 是否刷新icache
 	wire irq_DF;
 	wire irq_DE;
 	wire [7:0] irq_no_DE;
@@ -290,7 +292,7 @@ module ysyx_24100006(
 	wire [3:0]		sram_axi_wstrb;
 	wire			sram_axi_wlast;
 
-`ifdef YSYXSOC
+`ifndef NPC
 	// TAG: 时钟相关的部分
 	// CLINT实例化
 	// 读地址通道
@@ -302,6 +304,7 @@ module ysyx_24100006(
     wire        	clint_axi_rready;
     wire [1:0]		clint_axi_rresp;
     wire [31:0]   	clint_axi_rdata;
+	wire			clint_axi_rlast;
     // 写地址通道
     wire         	clint_axi_awvalid;
     wire          	clint_axi_awready;
@@ -345,7 +348,8 @@ module ysyx_24100006(
 		// axi读取的回应
 		.axi_rresp(clint_axi_rresp),
 		// axi读取的数据
-		.axi_rdata(clint_axi_rdata)
+		.axi_rdata(clint_axi_rdata),
+		.axi_rlast(clint_axi_rlast)
 	);
 
 `else
@@ -463,6 +467,7 @@ module ysyx_24100006(
     wire        	clint_axi_rready;
     wire [1:0]		clint_axi_rresp;
     wire [31:0]   	clint_axi_rdata;
+	wire			clint_axi_rlast;
     // 写地址通道
     wire         	clint_axi_awvalid;
     wire          	clint_axi_awready;
@@ -508,7 +513,8 @@ module ysyx_24100006(
 		// axi读取的回应
 		.axi_rresp(clint_axi_rresp),
 		// axi读取的数据
-		.axi_rdata(clint_axi_rdata)
+		.axi_rdata(clint_axi_rdata),
+		.axi_rlast(clint_axi_rlast)
 	);
 
 `endif
@@ -520,31 +526,42 @@ module ysyx_24100006(
 	wire			axi_rvalid_icache;
 	wire			axi_rready_icache;
 	wire [31:0]		axi_rdata_icache;
+	wire [7:0]		axi_arlen_icache;
+	wire [2:0]		axi_arsize_icache;
+	wire [1:0]		axi_arburst_icache;
+	wire 			axi_rlast_icache;
 	wire			icache_hit;
 	Icache u_icache (
-        .clk            (clock), 			 	 // 系统时钟
-        .rst            (reset),						// 系统复位
+        .clk            (clock), 				// 系统时钟
+        .rst            (reset),				// 系统复位
         
+		.fence_i_i		(is_fence_i_DE),		// 是否刷新icache的cache块
+
         // CPU -> Icache接口
-        .cpu_arvalid_i  (axi_arvalid_if),	 	 // CPU地址有效
-        .cpu_arready_o  (axi_arready_if), 	 	 // Icache地址就绪
-        .cpu_araddr_i   (pc_FD), 						// 取指地址
+        .cpu_arvalid_i  (axi_arvalid_if),	 	// CPU地址有效
+        .cpu_arready_o  (axi_arready_if), 		// Icache地址就绪
+        .cpu_araddr_i   (pc_FD), 				// 取指地址
         
         // Icache -> CPU接口
-        .cpu_rvalid_o   (axi_rvalid_if),	 	 // 指令数据有效
-        .cpu_rready_i   (axi_rready_if),	 	 // CPU接收就绪
-        .cpu_rdata_o    (instruction),					// 返回的指令数据
+        .cpu_rvalid_o   (axi_rvalid_if),	 	// 指令数据有效
+        .cpu_rready_i   (axi_rready_if),	 	// CPU接收就绪
+        .cpu_rdata_o    (instruction),			// 返回的指令数据
         
         // Icache -> AXI接口
         .axi_arvalid_o  (axi_arvalid_icache),   // 到AXI的地址有效
         .axi_arready_i  (axi_arready_icache),   // AXI地址就绪
-        .axi_araddr_o   (axi_araddr_icache),		   // AXI取指地址
+        .axi_araddr_o   (axi_araddr_icache),	// AXI取指地址
+		.axi_arlen_o	(axi_arlen_icache),
+		.axi_arsize_o	(axi_arsize_icache),
+		.axi_arburst_o	(axi_arburst_icache),
         
         // AXI -> Icache接口
         .axi_rvalid_i   (axi_rvalid_icache),    // AXI数据有效
         .axi_rready_o   (axi_rready_icache),    // Icache接收就绪
-        .axi_rdata_i    (axi_rdata_icache),			   // AXI返回的数据
-		.hit			(icache_hit)
+        .axi_rdata_i    (axi_rdata_icache),		// AXI返回的数据
+		.axi_rlast_i	(axi_rlast_icache),
+		.hit			(icache_hit),
+		.icache_flush_done(icache_flush_done_CE)
     );
 
 
@@ -600,9 +617,9 @@ module ysyx_24100006(
 		// TAG: 这里的instruction的名字可能需要换，因为是接入到了Icache，instruction应该接入到Icache那里
 		.ifu_axi_rdata(axi_rdata_icache),
 		// AXI新增信号
-		.ifu_axi_arlen(axi_arlen_if),
-		.ifu_axi_arsize(axi_arsize_if),
-		.ifu_axi_rlast(axi_rlast_if),
+		.ifu_axi_arlen(axi_arlen_icache),
+		.ifu_axi_arsize(axi_arsize_icache),
+		.ifu_axi_rlast(axi_rlast_icache),
 
 		// ================== MEMU接口 ==================
 		// 读地址通道
@@ -669,7 +686,7 @@ module ysyx_24100006(
 		.sram_axi_wlast(m_axi_wlast)
 	);
 
-`ifdef YSYXSOC
+`ifndef NPC
 	// YSYXSOC使用的axi模块和xbar模块
 	ysyx_24100006_axi #(
 		.AXI_DATA_WIDTH    (32),
@@ -861,6 +878,7 @@ module ysyx_24100006(
 		.clint_axi_rready(clint_axi_rready),
 		.clint_axi_rdata(clint_axi_rdata),
 		.clint_axi_rresp(clint_axi_rresp),
+		.clint_axi_rlast(clint_axi_rlast),
 
 		// Access Fault异常
 		.Access_Fault(Access_Fault)
@@ -987,6 +1005,7 @@ module ysyx_24100006(
 		.clint_axi_rready(clint_axi_rready),
 		.clint_axi_rdata(clint_axi_rdata),
 		.clint_axi_rresp(clint_axi_rresp),
+		.clint_axi_rlast(clint_axi_rlast),
 
 		// Access Fault异常
 		.Access_Fault(Access_Fault)
@@ -1052,6 +1071,7 @@ module ysyx_24100006(
 		.rs1_data(rs1_data_DE),
 		.rs2_data(rs2_data_DE),
 		.rdata_csr(rdata_csr_DE),
+		.is_fence_i(is_fence_i_DE),
 		.irq_F(irq_DF),
 		.irq_E(irq_DE),
 		.irq_no(irq_no_DE),
@@ -1075,6 +1095,7 @@ module ysyx_24100006(
 	ysyx_24100006_exeu EXE(
 		.clk(clock),
 		.reset(reset),
+		.icache_flush_done(icache_flush_done_CE),
 		.pc_E(pc_DE),
 		.sext_imm_E(sext_imm_DE),
 		.rs1_data_E(rs1_data_DE),
@@ -1082,6 +1103,7 @@ module ysyx_24100006(
 		.rdata_csr_E(rdata_csr_DE),
 		.mtvec(mtvec_DE),
 		.mepc(mepc_DE),
+		.is_fence_i(is_fence_i_DE),
 		.irq_E(irq_DE),
 		.irq_no_E(irq_no_DE),
 		.aluop(aluop_DE),
@@ -1256,7 +1278,7 @@ import "DPI-C" function void idu_instr_type(
 import "DPI-C" function void ins_start(input bit new_ins_valid);
 import "DPI-C" function void lsu_read_latency(input bit arvalid, input bit rvalid);
 import "DPI-C" function void lsu_write_latency(input bit awvalid, input bit bvalid);
-import "DPI-C" function void cache_hit(input bit hit);
+import "DPI-C" function void cache_hit(input bit valid, input bit hit);
 import "DPI-C" function void cache_access_time(input bit arvalid,input bit rvalid);
 
 	always @(*) begin
@@ -1274,7 +1296,7 @@ import "DPI-C" function void cache_access_time(input bit arvalid,input bit rvali
 		lsu_write_latency(axi_awvalid_mem	, axi_bvalid_mem);
 		
 		// 判断cahce是否命中
-		cache_hit(icache_hit);
+		cache_hit(if_valid ,icache_hit);
 		// 计算cache命中的总时间
 		cache_access_time(axi_arvalid_if, axi_rvalid_if);
 	end

@@ -40,6 +40,7 @@ module ysyx_24100006_idu(
 	output [31:0] rdata_csr,
 
 	// control signal
+	output is_fence_i, // 是否刷新icache
 	output irq_F,	// IF使用的irq信号
 	output irq_E,
 	// 异常号
@@ -108,6 +109,7 @@ module ysyx_24100006_idu(
 	ysyx_24100006_controller_remake controller(
 		.clk(clk),
 		.reset(reset),
+		.id_valid(id_valid),
 		.wb_ready(wb_ready),
 		.mem_valid(mem_valid),
 		.opcode(instruction[6:0]),
@@ -129,7 +131,8 @@ module ysyx_24100006_idu(
 		.Mem_RMask(Mem_RMask),
 		.Mem_Write(Mem_Write),
 		.Mem_WMask(Mem_WMask),
-		.sram_read_write(sram_read_write)
+		.sram_read_write(sram_read_write),
+		.is_fence_i(is_fence_i)
 	);
 
 	assign irq_F = irq;
@@ -143,10 +146,10 @@ module ysyx_24100006_idu(
 	ysyx_24100006_GPR GPR(
 		.clk(clk),
 		.wdata(wdata_gpr_W),
-		.waddr(instruction[11:7]),
+		.waddr(instruction[10:7]),
 		.wen(Gpr_Write_W),
-		.rs1(instruction[19:15]),
-		.rs2(instruction[24:20]),
+		.rs1(instruction[18:15]),
+		.rs2(instruction[23:20]),
 		.rs1_data(rs1_data_temp),
 		.rs2_data(rs2_data_temp)
 	);
