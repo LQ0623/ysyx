@@ -57,10 +57,10 @@ module ysyx_24100006_axi_xbar #(
     input  [1:0]  sram_axi_bresp,
 
     output        sram_axi_arvalid,
-    output        sram_axi_arready,
+    input         sram_axi_arready,
     output [31:0] sram_axi_araddr,
     
-    output        sram_axi_rvalid,
+    input         sram_axi_rvalid,
     output        sram_axi_rready,
     input  [31:0] sram_axi_rdata,
     input  [1:0]  sram_axi_rresp,
@@ -114,10 +114,10 @@ module ysyx_24100006_axi_xbar #(
     input  [1:0]  clint_axi_bresp,
 
     output        clint_axi_arvalid,
-    output        clint_axi_arready,
+    input         clint_axi_arready,
     output [31:0] clint_axi_araddr,
     
-    output        clint_axi_rvalid,
+    input         clint_axi_rvalid,
     output        clint_axi_rready,
     input  [31:0] clint_axi_rdata,
     input  [1:0]  clint_axi_rresp,

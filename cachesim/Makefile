@@ -17,9 +17,9 @@ CACHESIM_BIN = $(BUILD_DIR)/cachesim
 COMPRESS_BIN = $(BUILD_DIR)/compress_trace
 
 # 默认参数值（可被命令行覆盖）
-SETS ?= 16
+SETS ?= 2
 WAYS ?= 1
-BLOCK_SIZE ?= 4
+BLOCK_SIZE ?= 16
 POLICY ?= fifo
 
 # 默认目标

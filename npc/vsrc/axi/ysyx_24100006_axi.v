@@ -48,7 +48,7 @@ module ysyx_24100006_axi #(
     input   [AXI_SIZE_WIDTH - 1:0]  axi_arsize_i,  // 读突发大小
     input   [AXI_SIZE_WIDTH - 1:0]  axi_awsize_i,  // 写突发大小
     output                          axi_rlast_o,    // 读最后一个传输
-    output                          axi_wlast_o,    // 写最后一个传输
+    input                           axi_wlast_o,    // 写最后一个传输
 
     //-----------------------------
     // AXI4 主设备接口 (物理总线侧)
