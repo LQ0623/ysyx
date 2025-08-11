@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 
         try {
             // 转换十六进制字符串为整数
-            unsigned long val = std::stoul(line);
+            unsigned long val = std::stoul(line, nullptr, 16);
             current_pc = static_cast<uint32_t>(val);
         } catch (const std::exception& e) {
             std::cerr << "Error parsing line " << line_count << ": " << line << " - " << e.what() << std::endl;

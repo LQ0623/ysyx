@@ -155,6 +155,7 @@ module ysyx_24100006_axi_arbiter (
     assign mem_axi_awready  =   sram_axi_awready;
     assign mem_axi_wready   =   sram_axi_wready;
     assign mem_axi_bvalid   =   sram_axi_bvalid;
+    assign mem_axi_bresp    =   sram_axi_bresp;
 
     // SRAM 读通道
     assign sram_axi_arvalid =   (read_targeted_module == ARB_MEMU_READ) ? mem_axi_arvalid : 

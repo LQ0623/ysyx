@@ -39,7 +39,7 @@ ifeq ($(ENABLE_FTRACE), 1)
 endif
 
 # 是否开启mtrace
-ENABLE_MTRACE ?= 0
+ENABLE_MTRACE ?= 1
 ifeq ($(ENABLE_MTRACE), 1)
     CPPFLAGS += -DCONFIG_MTRACE
 endif
