@@ -111,12 +111,12 @@ module ysyx_24100006_axi_arbiter (
                 IDLE: begin     // 空闲状态
                     // 固定优先级
                     // MEMU优先策略
-                    if(mem_axi_arvalid == 1'b1) begin
-                        axi_state               <= BUSY;
-                        read_targeted_module    <= ARB_MEMU_READ;
-                    end else if(ifu_axi_arvalid == 1'b1) begin
+                    if(ifu_axi_arvalid == 1'b1) begin               // 优先处理IFU
                         axi_state               <= BUSY;
                         read_targeted_module    <= ARB_IFU_READ;
+                    end else if(mem_axi_arvalid == 1'b1) begin      // 其次处理MEMU
+                        axi_state               <= BUSY;
+                        read_targeted_module    <= ARB_MEMU_READ;
                     end
                 end
 

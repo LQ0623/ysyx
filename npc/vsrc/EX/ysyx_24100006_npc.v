@@ -89,7 +89,6 @@
     计算下一条指令
 */
 module ysyx_24100006_npc(
-    input clk,
     input[31:0]     pc,
     input[31:0]     mtvec,
     input[31:0]     mepc,

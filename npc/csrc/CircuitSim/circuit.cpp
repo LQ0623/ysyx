@@ -144,8 +144,8 @@ static void trace_and_difftest() {
 	 * 4、是否开启diff test测试
 	 */
 	#ifdef CONFIG_DIFFTEST
-		// 	更改进行diff test的时机，之前在if_valid==1的时候diff，现在在wb_ready==0的时候进行diff test，表示NPC这边已经执行完了
-		if(wb_ready == 0){
+		// 	更改进行diff test的时机，之前在if_valid==1的时候diff，现在在wb_ready==1的时候进行diff test，表示NPC这边已经执行完了
+		if(wb_ready == 1){
 			// printf("NPC: %x: %08x\n",pc,inst);
 			difftest_step();
 		}
@@ -221,6 +221,8 @@ void cpu_exec(uint64_t n){
 			ins_counter = 0;
 			prev_inst = inst;
 		}
+		// printf("pc:0x%x\n",pc);
+		// isa_reg_display();
 	}
 }
 
@@ -295,7 +297,7 @@ extern "C" void npc_trap(){
 	if(code == 0)
 		Log("\033[1;32mHIT GOOD TRAP\033[0m");
 	else
-		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %d",code);
+		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %x",code);
 	Log("trap in %#x",pc);
 	statistic();
 	exit(0);
