@@ -160,24 +160,21 @@
 `define ysyx_24100006_lhu                 3'b101
 
 
-import "DPI-C" function void npc_trap ();
+// import "DPI-C" function void npc_trap ();
 
 /**
     主要是重构一下controller模块
 */
 module ysyx_24100006_controller_remake(
 
-    input clk,
-    input reset,
-
     input [6:0]opcode,
     input [2:0]funct3,
     input [6:0]funct7,
     input [11:0]funct12,
 
-    input id_valid,
-    input wb_ready,    // 代替掉集中式状态机中的state == WB
-    input mem_valid,
+    output  rs1_ren,
+    output  rs2_ren,
+    output  is_ebreak,
 
     /* 是否发生中断 */
     output  irq,
@@ -200,19 +197,43 @@ module ysyx_24100006_controller_remake(
     /* 源操作数的种类 */
     output  AluSrcA,
     output  AluSrcB,
-    /* 是否读内存 */
-    output  Mem_Read,
     /* 读内存是读多少字节，以及如何扩展 */
     output  [2:0] Mem_RMask,
-    /* 是否写内存 */
-    output  Mem_Write,
     /* 写内存是多少字节 */
     output  [7:0] Mem_WMask,
-    /* 控制MEMU的状态机是走读取数据还是写入数据的分支 */
+    /* 判断MEMU的是读取数据、写入数据还是不操作内存 */
     output [1:0] sram_read_write,
     /* 是否刷新icache */
     output  is_fence_i
 );
+
+
+    // rs1 是否被使用
+    // - LUI/JAL 不用 rs1；AUIPC/JALR/Load/Store/Branch/I-type/R-type 用 rs1
+    // - SYSTEM: CSR 指令分两类：funct3[2]==1 为 zimm，不读 rs1；否则读 rs1
+    // - ecall/ebreak/mret 不读 rs1
+    wire is_system   = (opcode == `ysyx_24100006_SYSTEM);
+    wire is_csr      = is_system && (funct3 != `ysyx_24100006_inv) && (funct12 != `ysyx_24100006_ecall) && (funct12 != `ysyx_24100006_ebreak) && (funct12 != `ysyx_24100006_mret);
+    wire csr_use_zimm= is_csr && funct3[2];  // CSRxxI 形式
+    wire is_ecall    = is_system && (funct12 == `ysyx_24100006_ecall);
+    assign is_ebreak = is_system && (funct12 == `ysyx_24100006_ebreak);
+    wire is_mret     = is_system && (funct12 == `ysyx_24100006_mret);
+
+    assign rs1_ren =
+        ((opcode == `ysyx_24100006_I_type)  ||
+        (opcode == `ysyx_24100006_R_type)  ||
+        (opcode == `ysyx_24100006_S_type)  ||
+        (opcode == `ysyx_24100006_load)    ||
+        (opcode == `ysyx_24100006_B_type)  ||
+        (opcode == `ysyx_24100006_jalr)    ||
+        (opcode == `ysyx_24100006_auipc)   ||   // rs1 来自 PC，但对 “RAW from rd” 判定无影响；这里保持 true/false 均可。为了规整，置 0 也可以。
+        (is_csr && !csr_use_zimm)) && !(opcode == `ysyx_24100006_lui) && !(opcode == `ysyx_24100006_jal) && !is_ecall && !is_ebreak && !is_mret;
+
+    // rs2 是否被使用：R-type/Store/Branch 使用，其他大多数不使用
+    assign rs2_ren =
+        (opcode == `ysyx_24100006_R_type) ||
+        (opcode == `ysyx_24100006_S_type) ||
+        (opcode == `ysyx_24100006_B_type);
 
 
     //TAG 这样写有一个问题，ebreak如何跳转到结束，加了，但是不确定正确
@@ -270,9 +291,9 @@ module ysyx_24100006_controller_remake(
 
     // 通用寄存器写使能
     // 之前使用的wb_ready==1'b0，这个会导致写入的数据错误，所以使用mem_valid==1'b1进行写入
-    assign Gpr_Write = (mem_valid == 1'b1) ? 
+    assign Gpr_Write = 
         /* SYSTEM指令 */
-        ((opcode == `ysyx_24100006_SYSTEM) ? (
+        (opcode == `ysyx_24100006_SYSTEM) ? (
             (funct3 == `ysyx_24100006_csrrw || funct3 == `ysyx_24100006_csrrs) ? `ysyx_24100006_GPRW : 
             // (funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) ? npc_trap() : 
             `ysyx_24100006_GPRNW
@@ -284,7 +305,7 @@ module ysyx_24100006_controller_remake(
         opcode == `ysyx_24100006_jalr ||
         opcode == `ysyx_24100006_I_type ||
         opcode == `ysyx_24100006_R_type ||
-        opcode == `ysyx_24100006_load) ? `ysyx_24100006_GPRW : `ysyx_24100006_GPRNW) : `ysyx_24100006_GPRNW;
+        opcode == `ysyx_24100006_load) ? `ysyx_24100006_GPRW : `ysyx_24100006_GPRNW;
 
     // 通用寄存器写回数据选择
     assign Gpr_Write_RD = 
@@ -310,11 +331,11 @@ module ysyx_24100006_controller_remake(
         3'b0;
 
     // 系统寄存器写使能
-    assign Csr_Write = (mem_valid == 1'b1) ?
-        ((opcode == `ysyx_24100006_SYSTEM) ? 
+    assign Csr_Write = 
+        (opcode == `ysyx_24100006_SYSTEM) ? 
             ((funct3 == `ysyx_24100006_csrrw || funct3 == `ysyx_24100006_csrrs) ? `ysyx_24100006_CSRW : 
             (funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_CSRW : 
-            `ysyx_24100006_CSRNW) : `ysyx_24100006_CSRNW) : `ysyx_24100006_CSRNW;
+            `ysyx_24100006_CSRNW) : `ysyx_24100006_CSRNW;
 
     // CSR写回数据选择
     assign Csr_Write_RD = 
@@ -372,11 +393,6 @@ module ysyx_24100006_controller_remake(
         /* R-type/B-type使用寄存器 */
         `ysyx_24100006_B_RT;
 
-    // 内存读使能
-    assign Mem_Read = 
-        (opcode == `ysyx_24100006_load) ? `ysyx_24100006_MEMR : 
-        `ysyx_24100006_MEMNR;
-
     // 内存读模式选择
     assign Mem_RMask = 
         (opcode == `ysyx_24100006_load) ? (
@@ -386,11 +402,6 @@ module ysyx_24100006_controller_remake(
             (funct3 == `ysyx_24100006_lh) ? `ysyx_24100006_RHWord : 
             (funct3 == `ysyx_24100006_lhu) ? `ysyx_24100006_RHWordU : 3'b0
         ) : 3'b0;
-
-    // 内存写使能
-    assign Mem_Write = (wb_ready == 1'b0)?
-        ((opcode == `ysyx_24100006_S_type) ? `ysyx_24100006_MEMW : 
-            `ysyx_24100006_MEMNW) : `ysyx_24100006_MEMNW;
 
     // 内存写模式选择
     assign Mem_WMask = 
@@ -403,13 +414,13 @@ module ysyx_24100006_controller_remake(
     assign sram_read_write =    (opcode == `ysyx_24100006_S_type)   ? `ysyx_24100006_mem_store  : 
                                 (opcode == `ysyx_24100006_load)     ? `ysyx_24100006_mem_load   : `ysyx_24100006_mem_idle;
 
-    assign is_fence_i = (id_valid == 1'b1) ? (opcode == 7'b0001111 && funct3 == 3'b001) : 1'b0;
+    assign is_fence_i = (opcode == 7'b0001111 && funct3 == 3'b001) ? 1'b1 : 1'b0;
 
 `ifdef VERILATOR_SIM
     always @(*) begin
         if(opcode == `ysyx_24100006_SYSTEM && funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) begin
             // $display("asdasdasdasd");
-            npc_trap();
+            // npc_trap();
         end
     end
 `endif

@@ -26,6 +26,52 @@ static const uint32_t img[] = {
     0x0000006f
 };
 
+// 下面两个想跑就得改GPR的0号寄存器的初值，因为不能读取地址0x0的内容，那块就没有数据
+static const uint32_t img_data_hazards_1[] = {
+	// 指令1: addi x1, x0, 10
+	0x00a00093,  // [12:0]=10, rd=1, funct3=0, rs1=0, opcode=0010011
+
+	// 指令2: addi x2, x1, 5  (RAW冒险)
+	0x00508113,  // [12:0]=5, rd=2, funct3=0, rs1=1, opcode=0010011
+
+	// 指令3: add x3, x1, x2  (双RAW冒险)
+	0x002081b3,  // funct7=0, rs2=2, rs1=1, funct3=0, rd=3, opcode=0110011
+
+	// 指令5: addi x1, x0, 20
+	0x01400093,  // [12:0]=20, rd=1, funct3=0, rs1=0, opcode=0010011
+
+	// 指令6: addi x4, x1, 3  (潜在WAR冒险)
+	0x00308213,  // [12:0]=3, rd=4, funct3=0, rs1=1, opcode=0010011
+
+	// 指令7: addi x2, x0, 30
+	0x01e00113,  // [12:0]=30, rd=2, funct3=0, rs1=0, opcode=0010011
+
+	// 指令8: addi x2, x2, 40 (潜在WAW冒险)
+	0x02810113,  // [12:0]=40, rd=2, funct3=0, rs1=2, opcode=0010011
+
+	// 指令9: add x5, x3, x0  (结构冒险)
+	0x000182b3,  // funct7=0, rs2=0, rs1=3, funct3=0, rd=5, opcode=0110011
+
+	// 指令10: ebreak
+	0x00100073,	 // ebreak
+};
+
+static const uint32_t img_data_hazards_2[] = {
+	// 示例1：lw -> addi（RAW冒险）
+	0x00002083,  // lw x1, 0(x0)    [x1 = mem[0]]
+	0x00508113,  // addi x2, x1, 5  [x2 = x1 + 5]  <-- RAW冒险（依赖x1）
+
+	// 示例2：lw -> add（RAW冒险）
+	0x00402183,  // lw x3, 4(x0)    [x3 = mem[4]]
+	0x00018233,  // add x4, x3, x0  [x4 = x3 + 0]  <-- RAW冒险（依赖x3）
+
+	// 示例3：lw -> sw（RAW冒险）
+	0x00802283,  // lw x5, 8(x0)    [x5 = mem[8]]
+	0x00502623,  // sw x5, 12(x0)   [mem[12] = x5] <-- RAW冒险（依赖x5）
+	// 指令: ebreak
+	0x00100073,	 // ebreak
+};
+
 // 输出ABCD两个字符
 static const uint32_t img_char_test[] = {
 	0x100007b7,
@@ -53,6 +99,7 @@ static uint8_t flash_src_data[FLASH_SIZE];  // 原始数据缓冲区
 
 void init_mem(size_t size){ 
 	pmem = (uint8_t *)malloc(size * sizeof(uint8_t));
+	memset(pmem,1,size * sizeof(uint8_t));
 	memcpy(pmem , img , sizeof(img));
 	if(pmem == NULL){exit(0);}
 	printf("npc physical memory area [%#x, %#lx]\n",PMEM_BASE, PMEM_BASE + size * sizeof(uint8_t));

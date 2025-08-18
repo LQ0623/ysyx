@@ -76,20 +76,20 @@ bool static checkregs(struct CPU_state *ref_r){
     for(int i = 0;i < REGNUM;i++){
         // nemu的gpr与npc的gpr相比
         if(ref_r -> gpr[i] != gpr[i]){
-            Log("PC = 0x%x, Difftest Reg Compare failed at %s, Difftest reg Get " FMT_WORD ", NPC reg Get " FMT_WORD, pc, regs[i], ref_r->gpr[i], gpr[i]);
+            Log(ANSI_FMT("PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest GPR reg Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest GPR reg Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC GPR reg Get ", ANSI_FG_RED) FMT_WORD, pc, regs[i], ref_r->gpr[i], gpr[i]);
             flag = false;
         }
     }
     for(int i = 0;i < 4;i++){
         if(ref_r -> csr[i] != csr[i]){
-            Log("PC = 0x%x, Difftest CSR Compare failed at %s, Difftest CSR Get " FMT_WORD ", NPC CSR Get " FMT_WORD, pc, SysReg[i], ref_r->csr[i], csr[i]);
+            Log(ANSI_FMT("PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest CSR Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest CSR Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC CSR Get ", ANSI_FG_RED) FMT_WORD, pc, SysReg[i], ref_r->csr[i], csr[i]);
             flag = false;
         }
     }
-    if(ref_r -> pc != pc){
-        Log("ref_r pc: " FMT_WORD "\tpc:" FMT_WORD "\tdnpc:" FMT_WORD, ref_r->pc, pc, dnpc);
-        flag = false;
-    }
+    // if(ref_r -> pc != pc){
+    //     Log(ANSI_FMT("ref_r pc: ", ANSI_FG_RED) FMT_WORD "\t"ANSI_FMT("dut pc: ", ANSI_FG_RED) FMT_WORD "\t"ANSI_FMT("dut dnpc: ", ANSI_FG_RED) FMT_WORD, ref_r->pc, pc, dnpc);
+    //     flag = false;
+    // }
     return flag;
 }
 

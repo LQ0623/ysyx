@@ -5,145 +5,122 @@ module ysyx_24100006_ifu(
     input clk,
     input reset,
 
+	// from EXE
     input [31:0] 		npc,
+	input 				redirect_valid, 	// 需要重定向PC
 	// AXI-Lite接口
     // read_addr
-	input 	reg 		axi_arready,
+	output	reg [31:0]	axi_araddr,
+	input 		 		axi_arready,
 	output 	reg 		axi_arvalid,
     // read data
-	input 	reg 		axi_rvalid,
+	input 		 		axi_rvalid,
     output 	reg 		axi_rready,
+	input	[31:0]		axi_rdata,
 	// write addr
-	input 	reg 		axi_awready,
+	input 		 		axi_awready,
 	output 	reg 		axi_awvalid,
 	// write data
-	input 	reg 		axi_wready,
+	input 				axi_wready,
 	output 	reg 		axi_wvalid,
 	// response
-	input 	reg 		axi_bvalid,
+	input 				axi_bvalid,
 	output 	reg 		axi_bready,
 
 	// 新增AXI信号
 	output 	reg	[7:0]	axi_arlen,
 	output 	reg	[2:0]	axi_arsize,
-	input 	reg			axi_rlast,
+	input 				axi_rlast,
 
 	// 握手信号
-	input 				wb_ready,	// 这个是决定if_valid是否有效,表示上一条指令执行完毕
-	input 				id_ready,
-	output 	reg 		if_valid,
+	output 	reg			if_in_valid,
+	input 				if_in_ready,
 
-    output 	reg [31:0] 	pc_F,
-
-	// PC更换为NPC的有效信号，本来可以直接使用if_valid的，但是因为访问指令寄存器加入了延时之后，导致取指和pc更新对不上拍
-	output 	reg 		PCW,
+    output 	[31:0] 		pc_F,
+	output 	reg [31:0] 	inst_F,
 
 	// Access Fault异常
 	input	[1:0]		Access_Fault
 );
 
-	reg [6:0] delay_counter;	// 因为现在的取指还是需要受到下面的模块执行情况的控制，所以需要将if_valid置为1之前需要延迟几个时钟周期，等到后面的模块执行完毕
+	reg PCW; 
+
+	// TODO:这里思考一下，是选取那种方式取指
+	// 是否可以启动新取指
+	// wire can_accept_new = (!if_in_valid && if_in_ready);
+	// wire can_accept_new = (!if_in_valid) || (if_in_valid && if_in_ready);
+	wire can_accept_new = !if_in_valid || if_in_ready;
 
 	// 握手机制
-	parameter S_IDLE = 0, S_FETCH = 1, S_DELAY_1 = 2, S_DELAY_2 = 3, S_DELAY_3 = 4, S_DELAY_4 = 5, S_DELAY_5 = 6, S_DELAY_6 = 7, S_DELAY_7 = 8, S_DELAY_8 = 9, S_DELAY_9 = 10, S_AR_DELAY = 11, S_R_DELAY = 12, S_DELAY_12 = 13, S_DELAY_13 = 14, S_DELAY_14 = 15, S_DELAY_15 = 16, S_DELAY_16 = 17, S_DELAY_17 = 18, S_DELAY_18 = 19, S_DELAY_19 = 20, S_WAIT = 21;
-	reg [5:0] state;
-
-	// 判断是否取下一条指令，new_ins信号为高表示可以取下一条指令
-	reg new_ins;
-	always @(posedge clk) begin
-		if(reset)begin
-			new_ins		<= 1'b1;
-		end else if(wb_ready == 1'b0)begin
-			new_ins		<= 1'b1;
-		end else if(if_valid == 1'b1)begin
-			new_ins		<= 1'b0;
-		end else begin
-			new_ins		<= new_ins;
-		end
-	end
-
+	parameter S_IDLE = 0, S_FETCH = 1, S_WAITD = 3;
+	reg [1:0] state;
 
 	always @(posedge clk) begin
 		if(reset) begin
 			state 			<= S_IDLE;
 			// state 			<= S_DELAY_7;
-			if_valid		<= 1'b0;
+			if_in_valid		<= 1'b0;
 			PCW				<= 1'b0;
+			// axi_araddr		<= 32'b0;
 			axi_arvalid 	<= 1'b0;
 			axi_awvalid		<= 1'b0;
 			axi_wvalid		<= 1'b0;
 			axi_bready		<= 1'b0;
 			axi_rready		<= 1'b0;
-			pc_F			<= 32'b0;
 
 			axi_arlen		<= 8'b0;
 			axi_arsize		<= 3'b010;	// 一次传输四个字节
-
-			delay_counter	<= 3;
 		end else begin
 			case (state)
-				S_IDLE: begin
-					if(if_valid == 1'b0 && new_ins == 1'b1) begin
-						// 后续如果修改的建议：判断是否有指令需要发送，然后在跳转到下一个状态
-						axi_arvalid	<= 1'b1;
-						state		<= S_FETCH;
-					end
-				end
-				S_FETCH: begin
-					// 地址握手成功
-					if(axi_arready == 1'b1)begin
-						axi_arvalid	<= 1'b0;
-						axi_rready	<= 1'b1;
-						state		<= S_DELAY_1;
-					end
-				end
-				S_DELAY_1: begin
-					if(axi_rvalid == 1'b1 && axi_rready == 1'b1) begin
-						axi_rready	<= 1'b0;
-						state		<= S_DELAY_2;
-					end
-				end
-				S_DELAY_2: begin
-					if_valid	<= 1'b1;
-					state		<= S_DELAY_3;
-				end
-				S_DELAY_3: begin
-					if(if_valid && id_ready) begin
-						if_valid		<= 1'b0;
-						delay_counter	<= 2;
-						state			<= S_DELAY_4;	// 这一个在多周期的环节不能省去
-					end
-				end
+                S_IDLE: begin
+                    if (can_accept_new) begin
+                        // axi_araddr  <= pc_F;
+                        axi_arvalid <= 1'b1;
+                        state       <= S_FETCH;
+                    end
+                end
+                S_FETCH: begin
+                    if (axi_arready) begin
+                        axi_arvalid <= 1'b0;
+                        axi_rready	<= 1'b1;
+                        state   	<= S_WAITD;
+                    end
+                end
+                S_WAITD: begin
+                    if (axi_rvalid && axi_rready) begin
+                        axi_rready	<= 1'b0;
+                        inst_F     	<= axi_rdata;
+                        if_in_valid	<= 1'b1; // 有新指令可输出
+                        state     	<= S_IDLE;
+                    end
+                end
+            endcase
 
-				S_DELAY_4: begin
-					if(delay_counter > 0)begin
-						delay_counter	<= delay_counter - 1'b1;
-					end else begin
-						state		<= S_DELAY_5;
-					end
-				end
-				S_DELAY_5:begin
-					PCW			<= 1'b1;
-					state		<= S_DELAY_6;
-				end
-				S_DELAY_6: begin
-					PCW			<= 1'b0;
-					state		<= S_WAIT;
-				end
-				S_WAIT: begin
-					state		<= S_IDLE;
-				end
-			endcase
+			// 当 IF_ID 接走数据后，清除 valid
+            if (if_in_valid && if_in_ready) begin
+                if_in_valid 		<= 1'b0;
+            end
 		end
 	end
+
+	wire [31:0] npc_temp;
+	assign npc_temp = redirect_valid ? npc : pc_F + 4;
+	assign axi_araddr = pc_F;
 
 	ysyx_24100006_pc PC(
 		.clk(clk),
 		.reset(reset),
-		.PCW(PCW),
+		.PCW(if_in_valid == 1 && if_in_ready == 1),
 		.Access_Fault(Access_Fault),
-		.npc(npc),
+		.npc(npc_temp),
 		.pc(pc_F)
 	);
+
+`ifdef VERILATOR_SIM
+	import "DPI-C" function void get_PCW(input bit PCW);
+	always @(*) begin
+		get_PCW(if_in_valid);
+	end
+`endif
 
 endmodule

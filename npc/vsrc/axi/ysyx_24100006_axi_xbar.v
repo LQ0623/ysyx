@@ -4,7 +4,6 @@ module ysyx_24100006_axi_xbar #(
 )(
     input         clk,
     input         reset,
-    input         mem_ready,
     
     // 主设备接口
     // 写通道
