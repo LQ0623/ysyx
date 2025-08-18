@@ -47,7 +47,7 @@ module ysyx_24100006_exeu(
 
 	// to IFU
 	output [31:0] 	npc_E,
-	output reg		redirect_valid,
+	output 			redirect_valid,
 	
 	// to MEMU
 	output [31:0] 	pc_M,
@@ -123,10 +123,7 @@ module ysyx_24100006_exeu(
 		.npc(npc_temp)
 	);
 
-	wire [31:0] pc_plus4	= pc_E + 4;
-
-	// 有跳转且不是跳转到pc+4的指令，才需要冲刷流水级寄存器
-	assign redirect_valid 	= (Jump != 0 && npc_temp != pc_plus4) ? 1'b1 : 1'b0;
+	assign redirect_valid = (exe_out_valid == 1 && Jump != 0 && npc_E != (pc_E + 32'd4)) ? 1'b1 : 1'b0;
 
 	// 直接透传到 EXE_MEM（它会寄存）
     assign pc_M            		= pc_E;

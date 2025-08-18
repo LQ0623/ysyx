@@ -1122,9 +1122,7 @@ module ysyx_24100006(
 	ysyx_24100006_IF_ID u_IF_ID (
 		.clk            	(clock),
 		.reset          	(reset),
-
-		.flush				(redirect_valid_E),		// 来自EXEU的流水线冲刷信号
-
+.flush_i        (redirect_valid_E),   // NEW
 		.in_valid       	(if_in_valid),		// 来自IFU
 		.in_ready       	(if_in_ready),		// 输出到IFU
 		.pc_i           	(pc_F),         	// IF阶段PC输入
@@ -1140,9 +1138,7 @@ module ysyx_24100006(
 	ysyx_24100006_ID_EXE u_ID_EXE (
 		.clk            	(clock),
 		.reset          	(reset),
-
-		.flush				(redirect_valid_E),		// 来自EXEU的流水线冲刷信号
-
+.flush_i        (redirect_valid_E),   // NEW
 		.is_break_i     	(is_break_D),     			// 是否是断点指令
 		.is_break_o     	(is_break_D_E),   			// 输出到EXEU
 
@@ -1301,7 +1297,9 @@ module ysyx_24100006(
 		.id_rs2        	(instruction_F_D[23:20]),
 		.id_rs1_ren    	(rs1_ren_D),   // 来自 IDU 新增输出
 		.id_rs2_ren    	(rs2_ren_D),
-
+		.id_rd			(Gpr_Write_Addr_D),
+		.id_wen			(Gpr_Write_D),
+		
 		// EX 阶段（忙判断：exe_out_valid | ~exe_out_ready）
 		.ex_out_valid	(exe_out_valid),
 		.ex_out_ready   (exe_out_ready),
@@ -1328,6 +1326,8 @@ module ysyx_24100006(
 	ysyx_24100006_ifu IF(
 		.clk(clock),
 		.reset(reset),
+		// 直接将 hazard 的 stall 信号给 IFU：
+		.stall_id(stall_id),
 
 		.redirect_valid(redirect_valid_E),
 		.npc(npc_E),

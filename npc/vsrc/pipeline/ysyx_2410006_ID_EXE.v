@@ -4,10 +4,8 @@ module ysyx_24100006_ID_EXE(
     input           reset,
 
     input           is_break_i,
-    output          is_break_o,
-    // 冲刷流水线
-    input           flush,
-    
+    output           is_break_o,
+    input           flush_i,   // NEW: flush current ID/EXE pipeline register on redirect
     // IDU  <----> ID_EXE
     input           in_valid,
     output          in_ready,
@@ -156,35 +154,12 @@ module ysyx_24100006_ID_EXE(
             Csr_Write_temp          <= 1'd0;
             is_break_temp           <= 1'b0;        // 复位时不是ebreak状态
             sram_read_write_temp    <= 2'd0;
-        end else if(flush == 1)begin
-            valid_temp              <= 1'b0;
-            pc_temp                 <= 32'h00000000;
-            sext_imm_temp           <= 32'd0;
-            rs1_data_temp           <= 32'd0;
-            rs2_data_temp           <= 32'd0;
-            rdata_csr_temp          <= 32'd0;
-            alu_op_temp             <= 4'd0;
-            Gpr_Write_Addr_temp     <= 4'b0;
-            Csr_Write_Addr_temp     <= 12'b0;
-            Gpr_Write_RD_temp       <= 3'd0;
-            Csr_Write_RD_temp       <= 2'd0;
-            Jump_temp               <= 4'd0;
-            Mem_WMask_temp          <= 8'd0;
-            Mem_RMask_temp          <= 3'd0;
-            irq_no_temp             <= 8'd0;
-            mtvec_temp              <= 32'd0;
-            mepc_temp               <= 32'd0;
-            is_fence_i_temp         <= 1'd0;
-            irq_temp                <= 1'd0;
-            AluSrcA_temp            <= 1'd0;
-            AluSrcB_temp            <= 1'd0;
-            Gpr_Write_temp          <= 1'd0;
-            Csr_Write_temp          <= 1'd0;
-            is_break_temp           <= 1'b0;        // 复位时不是ebreak状态
-            sram_read_write_temp    <= 2'd0;
         end else begin
+            if(flush_i)begin
+                valid_temp       <= 1'b0; // 冲刷流水线
+            end
             // 当允许接受新输入时
-            if (in_ready) begin
+            else if (in_ready) begin
                 valid_temp                  <= in_valid;
                 if (in_valid)begin
                     // 非复位逻辑 - 将输入信号赋值给临时寄存器

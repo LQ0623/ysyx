@@ -73,14 +73,12 @@ void init_difftest(char *ref_so_file, long img_size) {
 
 bool static checkregs(struct CPU_state *ref_r){
     bool flag = true;
-    printf("pc:0x%x\n",pc);
     for(int i = 0;i < REGNUM;i++){
         // nemu的gpr与npc的gpr相比
         if(ref_r -> gpr[i] != gpr[i]){
             Log(ANSI_FMT("PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest GPR reg Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest GPR reg Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC GPR reg Get ", ANSI_FG_RED) FMT_WORD, pc, regs[i], ref_r->gpr[i], gpr[i]);
             flag = false;
         }
-        printf("NPC gpr reg %s = " FMT_WORD ", REF fpr reg %s = " FMT_WORD "\n",regs[i],gpr[i],regs[i],ref_r->gpr[i]);
     }
     for(int i = 0;i < 4;i++){
         if(ref_r -> csr[i] != csr[i]){

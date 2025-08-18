@@ -17,7 +17,7 @@ module ysyx_24100006_GPR #(ADDR_WIDTH = 4, DATA_WIDTH = 32) (
     if (wen)begin
       rf[waddr] <= wdata;
     end
-    rf[0] <= 32'b0;
+    rf[0] <= 32'h80001008;
   end
 
   assign rs1_data = rf[rs1];
