@@ -4,8 +4,8 @@ module ysyx_24100006_ID_EXE(
     input           reset,
 
     input           is_break_i,
-    output           is_break_o,
-    
+    output          is_break_o,
+    input           flush_i,   // NEW: flush current ID/EXE pipeline register on redirect
     // IDU  <----> ID_EXE
     input           in_valid,
     output          in_ready,
@@ -155,8 +155,11 @@ module ysyx_24100006_ID_EXE(
             is_break_temp           <= 1'b0;        // 复位时不是ebreak状态
             sram_read_write_temp    <= 2'd0;
         end else begin
+            if(flush_i)begin
+                valid_temp       <= 1'b0; // 冲刷流水线
+            end
             // 当允许接受新输入时
-            if (in_ready) begin
+            else if (in_ready) begin
                 valid_temp                  <= in_valid;
                 if (in_valid)begin
                     // 非复位逻辑 - 将输入信号赋值给临时寄存器

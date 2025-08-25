@@ -53,7 +53,7 @@ module ysyx_24100006_axi_arbiter (
 	input 	reg	[2:0]	mem_axi_awsize,
 	input 	reg [3:0]	mem_axi_wstrb,
 	input 	reg			mem_axi_wlast,
-    
+    input   [1:0]       mem_axi_addr_suffix,
 
     // ================== SRAM接口 ==================
     // 读地址通道
@@ -87,7 +87,8 @@ module ysyx_24100006_axi_arbiter (
 	output 	reg	[7:0]	sram_axi_awlen,
 	output 	reg	[2:0]	sram_axi_awsize,
 	output 	reg [3:0]	sram_axi_wstrb,
-	output 	reg			sram_axi_wlast
+	output 	reg			sram_axi_wlast,
+    output  [1:0]       sram_axi_addr_suffix
 );
 
     parameter   ARB_IDLE        = 3'b000,   // 空闲状态
@@ -170,6 +171,9 @@ module ysyx_24100006_axi_arbiter (
                                 ((read_targeted_module == ARB_IFU_READ)) ? ifu_axi_arlen  : 8'h0;
     assign sram_axi_arsize   =   (read_targeted_module == ARB_MEMU_READ) ? mem_axi_arsize :
                                 ((read_targeted_module == ARB_IFU_READ)) ? ifu_axi_arsize : 3'h0;
+
+    assign sram_axi_addr_suffix =   (read_targeted_module == ARB_MEMU_READ) ? mem_axi_addr_suffix :
+                                ((read_targeted_module == ARB_IFU_READ)) ? 2'b0 : 2'b0;
 
     // ================== 读数据通道寄存器 ==================
     reg [31:0] ifu_rdata_reg;

@@ -248,37 +248,37 @@ static void statistic() {
 	// AMAT
 	double AMAT					= cache_access_time + (1-cache_hit_ratio) * mem_access_time;
 	
-	Log("total guest instructions = %lu", g_nr_guest_inst);
-	Log("CPU IPC is = %lf",(double)g_nr_guest_inst / (double)cycle);
-	Log("CPU CPI is = %lf",(double)cycle / (double)g_nr_guest_inst);
-	Log("IFU Read : %lu", ifu_r_counter);
-	Log("IDU translate instruction is : %ld",instruction_idu);
-	Log("EXU Finish : %lu", exeu_counter);
-	Log("LSU Write : %lu", lsu_w_counter);
-	Log("LSU Read : %lu", lsu_r_counter);
-	Log("IDU Cal : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_cal_type, (double)idu_cal_type  * 100.0 / (double)g_nr_guest_inst, avg_cycle[0], avg_cycle[0] / idu_cal_type);
-	Log("IDU Mem : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_mem_type, (double)idu_mem_type  * 100.0 / (double)g_nr_guest_inst, (avg_cycle[1] + avg_cycle[2]), (avg_cycle[1] + avg_cycle[2]) / idu_mem_type);
-	Log("IDU Jump : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_jump_type, (double)idu_jump_type  * 100.0 / (double)g_nr_guest_inst, avg_cycle[3], avg_cycle[3] / idu_jump_type);
-	Log("IDU Csr : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_csr_type, (double)idu_csr_type  * 100.0 / (double)g_nr_guest_inst, avg_cycle[4], avg_cycle[4] / idu_csr_type);
-	Log("LSU Read access latency : %lu",read_time);
-	Log("LSU Write access latency : %lu",write_time);
-	Log("LSU average memory access latency : %lf",(double)(read_time + write_time) / (double)(lsu_w_counter + lsu_r_counter));
-	Log("iCache hit ratio is %2.4lf",cache_hit_ratio);
-	Log("iCache access time all is %lu, iCache hit cnt is %lu",cache_access_time_all,cache_hit_cnt);
-	Log("single cache access time is %lf, single sdram access time is %lf",cache_access_time,mem_access_time);
-	Log("iCache miss time all is %lu, iCache miss cnt is %lu",cache_miss_time_all,cache_miss_cnt);
-	Log("single cache miss time is %lf", cache_miss_time);
-	Log("AMAT is %lf",AMAT);
-	Log("proportion Jump | Store | Load | Cal | Csr");
-	Log("   	 %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%%", jump_pro, store_pro, load_pro, cal_pro, csr_pro);
-	Log("host time spent = %lu us",g_timer);
-	Log("total cycle spent = %lu",cycle);
-	#ifdef CONFIG_CSV
-		fprintf(perf_time_fp, "%lu,%.4f,%.4f,%.4f,%.4f\n", cycle, avg_cycle[0], (avg_cycle[1] + avg_cycle[2]), avg_cycle[3], avg_cycle[4] );
-		close_csv();	// 关闭文件流
-	#endif
-	if (g_timer > 0) Log("simulation frequency = %.f inst/s", (double)cycle * 1000000 / (double)g_timer);
-  else Log("Finish running in less than 1 us and can not calculate the simulation frequency");
+// 	Log("total guest instructions = %lu", g_nr_guest_inst);
+// 	Log("CPU IPC is = %lf",(double)g_nr_guest_inst / (double)cycle);
+// 	Log("CPU CPI is = %lf",(double)cycle / (double)g_nr_guest_inst);
+// 	Log("IFU Read : %lu", ifu_r_counter);
+// 	Log("IDU translate instruction is : %ld",instruction_idu);
+// 	Log("EXU Finish : %lu", exeu_counter);
+// 	Log("LSU Write : %lu", lsu_w_counter);
+// 	Log("LSU Read : %lu", lsu_r_counter);
+// 	Log("IDU Cal : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_cal_type, (double)idu_cal_type  * 100.0 / (double)g_nr_guest_inst, avg_cycle[0], avg_cycle[0] / idu_cal_type);
+// 	Log("IDU Mem : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_mem_type, (double)idu_mem_type  * 100.0 / (double)g_nr_guest_inst, (avg_cycle[1] + avg_cycle[2]), (avg_cycle[1] + avg_cycle[2]) / idu_mem_type);
+// 	Log("IDU Jump : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_jump_type, (double)idu_jump_type  * 100.0 / (double)g_nr_guest_inst, avg_cycle[3], avg_cycle[3] / idu_jump_type);
+// 	Log("IDU Csr : %lu, the ratio : %.4lf%%, total time : %.0f, average execution cycle : %.4f", idu_csr_type, (double)idu_csr_type  * 100.0 / (double)g_nr_guest_inst, avg_cycle[4], avg_cycle[4] / idu_csr_type);
+// 	Log("LSU Read access latency : %lu",read_time);
+// 	Log("LSU Write access latency : %lu",write_time);
+// 	Log("LSU average memory access latency : %lf",(double)(read_time + write_time) / (double)(lsu_w_counter + lsu_r_counter));
+// 	Log("iCache hit ratio is %2.4lf",cache_hit_ratio);
+// 	Log("iCache access time all is %lu, iCache hit cnt is %lu",cache_access_time_all,cache_hit_cnt);
+// 	Log("single cache access time is %lf, single sdram access time is %lf",cache_access_time,mem_access_time);
+// 	Log("iCache miss time all is %lu, iCache miss cnt is %lu",cache_miss_time_all,cache_miss_cnt);
+// 	Log("single cache miss time is %lf", cache_miss_time);
+// 	Log("AMAT is %lf",AMAT);
+// 	Log("proportion Jump | Store | Load | Cal | Csr");
+// 	Log("   	 %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%% %2.4lf%%", jump_pro, store_pro, load_pro, cal_pro, csr_pro);
+// 	Log("host time spent = %lu us",g_timer);
+// 	Log("total cycle spent = %lu",cycle);
+// 	#ifdef CONFIG_CSV
+// 		fprintf(perf_time_fp, "%lu,%.4f,%.4f,%.4f,%.4f\n", cycle, avg_cycle[0], (avg_cycle[1] + avg_cycle[2]), avg_cycle[3], avg_cycle[4] );
+// 		close_csv();	// 关闭文件流
+// 	#endif
+// 	if (g_timer > 0) Log("simulation frequency = %.f inst/s", (double)cycle * 1000000 / (double)g_timer);
+//   else Log("Finish running in less than 1 us and can not calculate the simulation frequency");
 }
 
 extern "C" void npc_trap(){
@@ -295,7 +295,7 @@ extern "C" void npc_trap(){
 	if(code == 0)
 		Log("\033[1;32mHIT GOOD TRAP\033[0m");
 	else
-		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %d",code);
+		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %x",code);
 	Log("trap in %#x",pc);
 	statistic();
 	exit(0);

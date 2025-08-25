@@ -13,6 +13,7 @@ static const uint32_t img[] = {
 	0x00000413,
     0x00009117,
     0xffc10113,
+	0x00c00513,
     0x00c000ef,
     0x00000513,
     0x00008067,
@@ -72,6 +73,130 @@ static const uint32_t img_data_hazards_2[] = {
 	0x00100073,	 // ebreak
 };
 
+static const uint32_t img_data_hazards_3[] = {
+	// ---------------------------
+	// 1. ALU → ALU hazard
+	// ---------------------------
+	0x00500093,  // addi x1, x0, 5
+	0x00a00113,  // addi x2, x0, 10
+	0x002081b3,  // add  x3, x1, x2
+	0x40118233,  // sub  x4, x3, x1
+	0x002222b3,  // xor  x5, x4, x2
+
+	// ---------------------------
+	// 2. Load → ALU hazard
+	// ---------------------------
+	0x00002303,  // lw   x6, 0(x0)
+	0x001302b3,  // add  x5, x6, x1
+
+	// ---------------------------
+	// 3. Load → Store hazard
+	// ---------------------------
+	0x00402403,  // lw   x8, 4(x0)
+	0x00802423,  // sw   x8, 8(x0)
+
+	// ---------------------------
+	// 4. Store Address hazard
+	// ---------------------------
+	0x06400493,  // addi x9,  x0, 100
+	0x0c800513,  // addi x10, x0, 200
+	0x00a485b3,  // add  x11, x9, x10
+	0x00b0a023,  // sw   x1, 0(x11)
+
+	// ---------------------------
+	// 5. Multi-source hazard
+	// ---------------------------
+	0x00700613,  // addi x12, x0, 7
+	0x00900693,  // addi x13, x0, 9
+	0x00d60733,  // add  x14, x12, x13
+	0x40c707b3,  // sub  x15, x14, x12
+	0x00f70833,  // add  x16, x14, x15
+
+	// ---------------------------
+	// 6. 自依赖 (不应stall)
+	// ---------------------------
+	0x00088893,  // addi x17, x17, 0
+	0x00188933,  // add  x18, x17, x1
+	0x00100073,	 // ebreak
+
+};
+
+static const uint32_t img_data_hazards_4[] = {
+	0x00202023,//          	sw	s1,0(sp)
+	0x00202023,//          	sw	ra,8(sp)
+	0x00000497,//          	auipc	s1,0x0
+	0x0bc4a483,//          	lw	s1,188(s1) # 800000f4 <a>
+	0x00000013,
+	0x00000013,
+	0x00000013,
+	0x00000013,
+	0x00000013,
+	// 指令: ebreak
+	0x00100073,	 // ebreak
+};
+
+static const uint32_t img_control_hazard_1[] = {
+	// 用例 1: BEQ 控制冒险
+	0x00000513,   // addi x10, x0, 0
+	0x00100593,   // addi x11, x0, 1
+	0x00b50663,   // beq  x10, x11, 0x80000010   // 控制冒险
+	0x00200513,   // addi x10, x0, 2             // 未跳转路径
+	0x00300513,   // addi x10, x0, 3             // 分支目标 ; 控制冒险点
+
+	// 用例 2: BEQ + 数据冒险
+	0x00c00093,   // addi x1, x0, 12
+	0x00108093,   // addi x1, x1, 1              // x1=13
+	0x00108463,   // beq  x1, x1, 0x80000024      // 控制冒险 + 数据冒险 (x1 刚写)
+	0x00200093,   // addi x1, x0, 2               // 未跳转路径 (需冲刷)
+	0x00300093,   // addi x1, x0, 3               // 分支目标 ; 控制冒险点
+
+	// 用例 3: JAL 控制冒险
+	0x00000297,   // auipc x5, 0x0
+	0x008000EF,   // jal   x1, 0x80000034         // 控制冒险
+	0x00100313,   // addi  x6, x0, 1              // 被冲刷
+	0x00200313,   // addi  x6, x0, 2              // JAL 目标 ; 控制冒险点
+	0x00300313,   // addi  x6, x0, 3              
+
+	// 用例 4: JALR 控制冒险
+	0x00000413,   // addi x8, x0, 0
+	0x03800493,   // addi x9, x0, 56              // x9=0x38 ; 跳转目标
+	0x800004b7,   // lui  x9, 0x80000             // x9=0x80000000
+	0x05048493,   // addi x9, x9, 50              // x9=0x80000050
+	0x000480E7,   // jalr  x1, 0(x9)              // 控制冒险 + 数据冒险 (依赖x9)
+	0x00400413,   // addi x8, x0, 4               // JALR 目标 ; 控制冒险点
+	0x00500413,   // addi x8, x0, 5 
+
+	// 用例 5: 混合控制+数据冒险
+	0x00a00293,   // addi x5, x0, 10
+	0x00a00313,   // addi x6, x0, 11
+	0x00628463,   // beq   x5, x6, 0x80000068     // 控制冒险
+	0x00a303B3,   // add   x7, x6, x10            // 数据冒险 (依赖x6) ; 未跳转路径
+	0x00000393,   // addi  x7, x0, 0              // 分支目标 ; 控制冒险点
+
+	// // 用例 6: JALR 控制冒险
+	0x00000413,   // addi x8, x0, 0
+	0x00000513,   // addi x10, x0, 0              // x9=0x38 ; 跳转目标
+	0x80000537,   // lui  x10, 0x80000             // x9=0x80000000
+	0x08050513,   // addi x10, x10, 80              // x9=0x80000050
+	0x004500e7,   // jalr  x1, 4(x10)              // 控制冒险 + 数据冒险 (依赖x9)
+	0x00400413,   // addi x8, x0, 4               // 被冲刷
+	0x00b00293,   // addi x5, x0, 11               // JALR 目标 ; 控制冒险点
+	0x00b00313,   // addi x6, x0, 11
+	0x00628463,   // beq   x5, x6, 0x80000094     // 控制冒险
+	0x06400293,   // addi x5, x0, 100			// 被冲刷
+	0x00b30313,   // addi x6, x6, 11
+	0x00100073,	 // ebreak
+};
+
+static const uint32_t img_control_hazard_2[] = {
+	0x00008513,   // addi x10, x1, 0
+	0x00002583,   // lw x11, 0(x0)			// 0
+	0x00b50663,   // beq  x10, x11, 0x80000010   // 控制冒险
+	0x00200513,   // addi x10, x0, 2             // 未跳转路径
+	0x00300513,   // addi x10, x0, 3             // 分支目标 ; 控制冒险点
+	0x00100073,	 // ebreak
+};
+
 // 输出ABCD两个字符
 static const uint32_t img_char_test[] = {
 	0x100007b7,
@@ -99,8 +224,8 @@ static uint8_t flash_src_data[FLASH_SIZE];  // 原始数据缓冲区
 
 void init_mem(size_t size){ 
 	pmem = (uint8_t *)malloc(size * sizeof(uint8_t));
-	memset(pmem,1,size * sizeof(uint8_t));
-	memcpy(pmem , img , sizeof(img));
+	// memset(pmem,0,size * sizeof(uint8_t));
+	memcpy(pmem , img_data_hazards_3 , sizeof(img_data_hazards_3));
 	if(pmem == NULL){exit(0);}
 	printf("npc physical memory area [%#x, %#lx]\n",PMEM_BASE, PMEM_BASE + size * sizeof(uint8_t));
 }

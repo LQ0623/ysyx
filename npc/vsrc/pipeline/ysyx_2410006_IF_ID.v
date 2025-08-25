@@ -4,6 +4,8 @@ module ysyx_24100006_IF_ID(
     input           clk,
     input           reset,
     
+    input           flush_i,
+
     // IFU  <----> IF_ID
     input           in_valid,
     output          in_ready,
@@ -36,8 +38,12 @@ module ysyx_24100006_IF_ID(
             pc_temp             <= 32'h00000000;
             instruction_temp    <= 32'b0;
         end else begin
+            if(flush_i)begin
+                valid_temp       <= 1'b0; // 冲刷流水线
+            end
+            
             // 当允许接受新输入时
-            if (in_ready) begin
+            else if (in_ready) begin
                 valid_temp              <= in_valid;
                 if (in_valid)begin
                     pc_temp             <= pc_i;

@@ -71,7 +71,7 @@ module ysyx_24100006_memu(
     output          	mem_out_ready,   // MEMU -> EXE_MEM  (上游 ready)
     output          	mem_in_valid,    // MEMU -> MEM_WB (下游 valid)
     input           	mem_in_ready,    // MEM_WB -> MEMU (下游 ready)
-
+output is_load,
 	// to MEM_WB（下游）
 	output [31:0] 		pc_W,
 	output [31:0] 		sext_imm_W,
@@ -119,7 +119,7 @@ module ysyx_24100006_memu(
     // 访存锁存
     reg [31:0]	locked_addr;   // 地址锁存
     reg [31:0]  locked_data;   // 写数据锁存
-
+	reg	[1:0]	locked_sram_read_write;
 
 	// 握手机制
 	// ================= 状态机 =================
@@ -136,7 +136,7 @@ module ysyx_24100006_memu(
 
 	// ----------------- 上下游握手信号（纯组合） -----------------
     assign mem_out_ready = (state == S_IDLE);   // 只有空闲时才接新指令
-    assign mem_in_valid  = (state == S_SEND);   // 完成后仅在发送态有效
+    assign mem_in_valid  = ((state == S_SEND && locked_sram_read_write == 0) || (locked_sram_read_write !=0 && axi_rready == 1 && axi_rvalid == 1));   // 完成后仅在发送态有效
 
 	always @(posedge clk) begin
 		if(reset) begin
@@ -156,12 +156,13 @@ module ysyx_24100006_memu(
 			axi_wlast	<= 1'b0;
 
 			axi_addr_suffix<= 2'b0;
-
+			locked_sram_read_write<=0;
 			state		<= S_IDLE;
 		end else begin
 			case(state) 
 				// 空闲态：等待上游握手，锁存所有信号
 				S_IDLE: begin	// S_IDLE阶段用于锁存数据
+					locked_sram_read_write<=0;
 					if(mem_out_valid == 1'b1 && mem_out_ready == 1'b1) begin
 						if(sram_read_write == 2'b00) begin
 							// 锁存地址和数据
@@ -169,6 +170,7 @@ module ysyx_24100006_memu(
 							locked_data 	<= 32'h0;
 							state			<= S_SEND;		// 无访存，直接向下游发送
 						end else begin
+							locked_sram_read_write<=sram_read_write;
 							// 锁存地址和数据
 							locked_addr 	<= alu_result_M;
 							locked_data 	<= rs2_data_M;
@@ -179,25 +181,25 @@ module ysyx_24100006_memu(
 				// 根据锁存的类型发起 AXI
 				S_LOCK: begin
 					// axi 读取
-					if(sram_read_write == 2'b01) begin
+					if(locked_sram_read_write == 2'b01) begin
 						axi_araddr		<= locked_addr;	// 锁存的地址
 						// 传输需要读多少个字节
-						axi_arsize		<= 	(Mem_RMask_M == 0 || Mem_RMask_M == 1) ? 3'b000 :
-											(Mem_RMask_M == 2 || Mem_RMask_M == 3) ? 3'b001 :
-											(Mem_RMask_M == 4) ? 3'b010 : 3'b010;
+						axi_arsize		<= 	(Mem_RMask_r == 0 || Mem_RMask_r == 1) ? 3'b000 :
+											(Mem_RMask_r == 2 || Mem_RMask_r == 3) ? 3'b001 :
+											(Mem_RMask_r == 4) ? 3'b010 : 3'b010;
 						
 						axi_addr_suffix	<= locked_addr[1:0];
 
 						// axi握手
 						axi_arvalid		<= 1'b1;
 						state			<= READ_ADDR;
-					end else if(sram_read_write == 2'b10) begin
+					end else if(locked_sram_read_write == 2'b10) begin
 						// WRITE
 						axi_awaddr		<= locked_addr;	// 锁存的地址
 						// 传输需要写多少个字节
-						axi_awsize		<= 	(Mem_WMask_M == 8'b00000001) ? 3'b000 :
-											(Mem_WMask_M == 8'b00000011) ? 3'b001 :
-											(Mem_WMask_M == 8'b00001111) ? 3'b010 : 3'b010;
+						axi_awsize		<= 	(Mem_WMask_r == 8'b00000001) ? 3'b000 :
+											(Mem_WMask_r == 8'b00000011) ? 3'b001 :
+											(Mem_WMask_r == 8'b00001111) ? 3'b010 : 3'b010;
 
 						// 地址和数据同时发送，这样效率最高
 						axi_awvalid		<= 1'b1;
@@ -206,16 +208,16 @@ module ysyx_24100006_memu(
 						axi_wlast		<= 1'b1;	// 说明是最后一组数据
 						// 写入掩码需要按照实际的指令以及写入的地址来变化
 						// 写掩码：按地址低位对齐
-						axi_wstrb		<= 	(Mem_WMask_M == 8'b00000001) ? 	// sb指令，存储一个字节
+						axi_wstrb		<= 	(Mem_WMask_r == 8'b00000001) ? 	// sb指令，存储一个字节
 												(	(locked_addr[1:0] == 2'b00) ? 4'b0001 : 
 													(locked_addr[1:0] == 2'b01) ? 4'b0010 :
 													(locked_addr[1:0] == 2'b10) ? 4'b0100 :
 													(locked_addr[1:0] == 2'b11) ? 4'b1000 : 4'b0000) :
-											(Mem_WMask_M == 8'b00000011) ?	// sh指令，存储两个字节
+											(Mem_WMask_r == 8'b00000011) ?	// sh指令，存储两个字节
 												(	(locked_addr[1:0] == 2'b00) ? 4'b0011 : 
 													(locked_addr[1:0] == 2'b01) ? 4'b0110 :
 													(locked_addr[1:0] == 2'b10) ? 4'b1100 : 4'b0000) :
-											(Mem_WMask_M == 8'b00001111) ?	// sh指令，存储两个字节
+											(Mem_WMask_r == 8'b00001111) ?	// sh指令，存储两个字节
 												(	(locked_addr[1:0] == 2'b00) ? 4'b1111 : 4'b0000) : 4'b0000;
 						state			<= WRITE_ADDR;
 					end else begin
@@ -290,7 +292,7 @@ module ysyx_24100006_memu(
 					if (mem_in_ready == 1'b1) begin
                         // 完成与下游握手，回空闲
                         state 				<= S_IDLE;
-
+						
                         // 恢复一些缺省
                         axi_arsize       	<= 3'b010;
                         axi_awsize       	<= 3'b010;
@@ -356,7 +358,7 @@ module ysyx_24100006_memu(
 	
 
     // ================== 对外输出 ==================
-
+	assign is_load = (locked_sram_read_write == 2'b01); // 仅在读操作时为1
     // 向下游的数据（全部来源于本级锁存寄存器）
 	assign is_break_o      	= is_break_r;
     assign pc_W            	= pc_r;

@@ -126,6 +126,9 @@ module ysyx_24100006(
 	// IDU -> hazard
 	wire		rs1_ren_D;
 	wire		rs2_ren_D;
+	// MEMU -> hazard
+	// 是否是lw指令
+	wire is_load;
 
 	// EXEU -> IFU
 	wire [31:0] npc_E_F;              	// EXE->IFU传递的下一条PC
@@ -365,7 +368,7 @@ module ysyx_24100006(
 	reg			axi_wlast_mem;
 
 	// 用于分辨原始的地址的后两位
-	reg [1:0]	axi_addr_suffix;
+	reg [1:0]	axi_addr_suffix_mem;
     
 	// 下面的SRAM_axi_信号是指从xbar输出的信号，连接到axi模块的，本来是连接到存储SRAM（即mem）
 	// 读地址通道
@@ -703,7 +706,7 @@ module ysyx_24100006(
 	wire [2:0]	m_axi_awsize;
 	wire [3:0]	m_axi_wstrb;
 	wire		m_axi_wlast;
-
+	wire [1:0]	m_axi_addr_suffix;
 	// Access Fault异常信号
 	wire [1:0] 	Access_Fault;
 
@@ -757,7 +760,7 @@ module ysyx_24100006(
 		.mem_axi_awsize(axi_awsize_mem),
 		.mem_axi_wstrb(axi_wstrb_mem),
 		.mem_axi_wlast(axi_wlast_mem),
-
+		.mem_axi_addr_suffix(axi_addr_suffix_mem),
 		// ================== SRAM接口 ==================
 		// TAG：现在下面的连接的就是xbar了
 		// 读地址通道
@@ -789,7 +792,8 @@ module ysyx_24100006(
 		.sram_axi_awlen(m_axi_awlen),
 		.sram_axi_awsize(m_axi_awsize),
 		.sram_axi_wstrb(m_axi_wstrb),
-		.sram_axi_wlast(m_axi_wlast)
+		.sram_axi_wlast(m_axi_wlast),
+		.sram_axi_addr_suffix(m_axi_addr_suffix)
 	);
 
 `ifndef NPC
@@ -926,7 +930,7 @@ module ysyx_24100006(
 		.m_axi_wstrb(m_axi_wstrb),
 		.m_axi_wlast(m_axi_wlast),
 
-		.m_addr_suffix(axi_addr_suffix),
+		.m_addr_suffix(m_axi_addr_suffix),
 		
 
 		// SRAM 从设备接口 (写通道)
@@ -1028,7 +1032,7 @@ module ysyx_24100006(
 		.m_axi_wstrb(m_axi_wstrb),
 		.m_axi_wlast(m_axi_wlast),
 
-		.m_addr_suffix(axi_addr_suffix),
+		.m_addr_suffix(m_axi_addr_suffix),
 		
 
 		// SRAM 从设备接口 (写通道)
@@ -1122,7 +1126,7 @@ module ysyx_24100006(
 	ysyx_24100006_IF_ID u_IF_ID (
 		.clk            	(clock),
 		.reset          	(reset),
-
+		.flush_i        (redirect_valid_E_F),   // NEW
 		.in_valid       	(if_in_valid),		// 来自IFU
 		.in_ready       	(if_in_ready),		// 输出到IFU
 		.pc_i           	(pc_F),         	// IF阶段PC输入
@@ -1138,7 +1142,7 @@ module ysyx_24100006(
 	ysyx_24100006_ID_EXE u_ID_EXE (
 		.clk            	(clock),
 		.reset          	(reset),
-
+		.flush_i        (redirect_valid_E_F),   // NEW
 		.is_break_i     	(is_break_D),     			// 是否是断点指令
 		.is_break_o     	(is_break_D_E),   			// 输出到EXEU
 
@@ -1290,14 +1294,17 @@ module ysyx_24100006(
 		.Gpr_Write_o    	(Gpr_Write_M_W),
 		.Csr_Write_o    	(Csr_Write_M_W)
 	);
-
+	
 	ysyx_24100006_hazard u_hazard(
 		// ID 当前指令寄存器号：使用 IF_ID 之后、IDU 看到的那条指令
 		.id_rs1        	(instruction_F_D[18:15]),
 		.id_rs2        	(instruction_F_D[23:20]),
 		.id_rs1_ren    	(rs1_ren_D),   // 来自 IDU 新增输出
 		.id_rs2_ren    	(rs2_ren_D),
-
+		.id_rd			(Gpr_Write_Addr_D),
+		.id_wen			(Gpr_Write_D),
+		.id_out_valid(id_out_valid),
+		.is_load(is_load),
 		// EX 阶段（忙判断：exe_out_valid | ~exe_out_ready）
 		.ex_out_valid	(exe_out_valid),
 		.ex_out_ready   (exe_out_ready),
@@ -1309,12 +1316,14 @@ module ysyx_24100006(
 		.mem_out_ready 	(mem_out_ready),
 		.mem_rd        	(Gpr_Write_Addr_E_M),
 		.mem_wen       	(Gpr_Write_E_M),
-
+		.mem_stage_rd(Gpr_Write_Addr_M),
+		.mem_in_valid(mem_in_valid),
+		.mem_stage_out_valid(Gpr_Write_M),
 		// WB 阶段（忙判断：wb_out_valid | ~wb_out_ready）
 		.wb_out_valid   (wb_out_valid),
 		.wb_out_ready   (wb_out_ready),
-		.wb_rd         	(Gpr_Write_Addr_WD),
-		.wb_wen        	(Gpr_Write_WD),
+		.wb_rd         	(Gpr_Write_Addr_M_W),
+		.wb_wen        	(Gpr_Write_M_W),
 
 		.stall_id      	(stall_id)
 	);
@@ -1324,6 +1333,8 @@ module ysyx_24100006(
 	ysyx_24100006_ifu IF(
 		.clk(clock),
 		.reset(reset),
+		// 直接将 hazard 的 stall 信号给 IFU：
+		.stall_id(stall_id),
 
 		.redirect_valid(redirect_valid_E_F),
 		.npc(npc_E_F),
@@ -1526,14 +1537,14 @@ module ysyx_24100006(
 		.axi_awsize(axi_awsize_mem),
 		.axi_wstrb(axi_wstrb_mem),
 		.axi_wlast(axi_wlast_mem),
-		.axi_addr_suffix(axi_addr_suffix),
+		.axi_addr_suffix(axi_addr_suffix_mem),
 
 		// 模块握手信号
 		.mem_out_valid(mem_out_valid),
 		.mem_out_ready(mem_out_ready),
 		.mem_in_valid(mem_in_valid),
 		.mem_in_ready(mem_in_ready),
-
+		.is_load(is_load),
 		.pc_W(pc_M),
 		.sext_imm_W(sext_imm_M),
 		.alu_result_W(alu_result_M),

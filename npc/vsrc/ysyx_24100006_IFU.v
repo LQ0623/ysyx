@@ -4,7 +4,8 @@
 module ysyx_24100006_ifu(
     input clk,
     input reset,
-
+	input               stall_id, 
+	
 	// from EXE
     input [31:0] 		npc,
 	input 				redirect_valid, 	// 需要重定向PC
@@ -43,13 +44,31 @@ module ysyx_24100006_ifu(
 	input	[1:0]		Access_Fault
 );
 
+	// 是否发送重定向
+	reg [1:0] redirect_flag;	// 检测上升沿
+	always @(posedge clk) begin
+		redirect_flag = {redirect_flag[0],redirect_valid};
+	end
+	reg [1:0] req_epoch;
+	reg [1:0] cur_epoch;
+	always @(posedge clk) begin
+		if (reset) begin
+			req_epoch <= 2'b0;
+			cur_epoch <= 2'b0;
+		end else begin
+			if (axi_arvalid && axi_arready) begin
+				req_epoch <= cur_epoch;
+			end
+			if (redirect_flag == 2'b01) begin
+				cur_epoch <= cur_epoch + 1;
+			end
+		end
+	end
+
 	reg PCW; 
 
-	// TODO:这里思考一下，是选取那种方式取指
 	// 是否可以启动新取指
-	// wire can_accept_new = (!if_in_valid && if_in_ready);
-	// wire can_accept_new = (!if_in_valid) || (if_in_valid && if_in_ready);
-	wire can_accept_new = !if_in_valid || if_in_ready;
+	wire can_accept_new = !if_in_valid || (if_in_ready & ~stall_id);
 
 	// 握手机制
 	parameter S_IDLE = 0, S_FETCH = 1, S_WAITD = 3;
@@ -58,10 +77,8 @@ module ysyx_24100006_ifu(
 	always @(posedge clk) begin
 		if(reset) begin
 			state 			<= S_IDLE;
-			// state 			<= S_DELAY_7;
 			if_in_valid		<= 1'b0;
 			PCW				<= 1'b0;
-			// axi_araddr		<= 32'b0;
 			axi_arvalid 	<= 1'b0;
 			axi_awvalid		<= 1'b0;
 			axi_wvalid		<= 1'b0;
@@ -74,7 +91,6 @@ module ysyx_24100006_ifu(
 			case (state)
                 S_IDLE: begin
                     if (can_accept_new) begin
-                        // axi_araddr  <= pc_F;
                         axi_arvalid <= 1'b1;
                         state       <= S_FETCH;
                     end
@@ -88,10 +104,13 @@ module ysyx_24100006_ifu(
                 end
                 S_WAITD: begin
                     if (axi_rvalid && axi_rready) begin
-                        axi_rready	<= 1'b0;
-                        inst_F     	<= axi_rdata;
-                        if_in_valid	<= 1'b1; // 有新指令可输出
-                        state     	<= S_IDLE;
+                        if(req_epoch == cur_epoch && !redirect_valid) begin
+							// 取指成功
+							inst_F     	<= axi_rdata;
+							if_in_valid	<= 1'b1; // 有新指令可输出
+						end 
+						axi_rready	<= 1'b0;
+						state     	<= S_IDLE;
                     end
                 end
             endcase
@@ -110,7 +129,7 @@ module ysyx_24100006_ifu(
 	ysyx_24100006_pc PC(
 		.clk(clk),
 		.reset(reset),
-		.PCW(if_in_valid == 1 && if_in_ready == 1),
+		.PCW((if_in_valid == 1 && if_in_ready == 1) || redirect_valid),		// 要么取指，要么重定向
 		.Access_Fault(Access_Fault),
 		.npc(npc_temp),
 		.pc(pc_F)
