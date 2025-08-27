@@ -4,7 +4,7 @@ module ysyx_24100006_ID_EXE(
     input           reset,
 
     input           is_break_i,
-    output           is_break_o,
+    output          is_break_o,
     input           flush_i,   // NEW: flush current ID/EXE pipeline register on redirect
     // IDU  <----> ID_EXE
     input           in_valid,

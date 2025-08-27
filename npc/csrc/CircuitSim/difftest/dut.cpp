@@ -76,10 +76,11 @@ bool static checkregs(struct CPU_state *ref_r){
     for(int i = 0;i < REGNUM;i++){
         // nemu的gpr与npc的gpr相比
         if(ref_r -> gpr[i] != gpr[i]){
-            Log(ANSI_FMT("PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest GPR reg Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest GPR reg Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC GPR reg Get ", ANSI_FG_RED) FMT_WORD, pc, regs[i], ref_r->gpr[i], gpr[i]);
+            Log(ANSI_FMT("REF PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("DUT PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest GPR reg Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest GPR reg Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC GPR reg Get ", ANSI_FG_RED) FMT_WORD, ref_r->pc, pc, regs[i], ref_r->gpr[i], gpr[i]);
             flag = false;
         }
     }
+    // Log(ANSI_FMT("REF PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("DUT PC = 0x", ANSI_FG_RED)"%x, ", ref_r->pc, pc);
     for(int i = 0;i < 4;i++){
         if(ref_r -> csr[i] != csr[i]){
             Log(ANSI_FMT("PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest CSR Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest CSR Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC CSR Get ", ANSI_FG_RED) FMT_WORD, pc, SysReg[i], ref_r->csr[i], csr[i]);
@@ -122,9 +123,13 @@ void difftest_step() {
         ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
         return;
     }
+    while(pc != ref_r.pc){
+        ref_difftest_exec(1);
+        ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    }
 
     if(!checkregs(&ref_r)){
-        isa_reg_display();
+        // isa_reg_display();
         #ifdef CONFIG_DUMP_WAVE
             dump_wave_inc();
             close_wave();

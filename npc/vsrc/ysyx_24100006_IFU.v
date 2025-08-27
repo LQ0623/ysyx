@@ -45,6 +45,10 @@ module ysyx_24100006_ifu(
 );
 
 	// 是否发送重定向
+	reg [1:0] redirect_flag;	// 检测上升沿
+	always @(posedge clk) begin
+		redirect_flag = {redirect_flag[0],redirect_valid};
+	end
 	reg [1:0] req_epoch;
 	reg [1:0] cur_epoch;
 	always @(posedge clk) begin
@@ -55,7 +59,7 @@ module ysyx_24100006_ifu(
 			if (axi_arvalid && axi_arready) begin
 				req_epoch <= cur_epoch;
 			end
-			if (redirect_valid == 1) begin
+			if (redirect_flag == 2'b01) begin
 				cur_epoch <= cur_epoch + 1;
 			end
 		end
@@ -63,10 +67,7 @@ module ysyx_24100006_ifu(
 
 	reg PCW; 
 
-	// TODO:这里思考一下，是选取那种方式取指
 	// 是否可以启动新取指
-	// wire can_accept_new = (!if_in_valid && if_in_ready);
-	// wire can_accept_new = (!if_in_valid) || (if_in_valid && if_in_ready);
 	wire can_accept_new = !if_in_valid || (if_in_ready & ~stall_id);
 
 	// 握手机制
@@ -76,10 +77,8 @@ module ysyx_24100006_ifu(
 	always @(posedge clk) begin
 		if(reset) begin
 			state 			<= S_IDLE;
-			// state 			<= S_DELAY_7;
 			if_in_valid		<= 1'b0;
 			PCW				<= 1'b0;
-			// axi_araddr		<= 32'b0;
 			axi_arvalid 	<= 1'b0;
 			axi_awvalid		<= 1'b0;
 			axi_wvalid		<= 1'b0;
@@ -92,7 +91,6 @@ module ysyx_24100006_ifu(
 			case (state)
                 S_IDLE: begin
                     if (can_accept_new) begin
-                        // axi_araddr  <= pc_F;
                         axi_arvalid <= 1'b1;
                         state       <= S_FETCH;
                     end
@@ -106,7 +104,7 @@ module ysyx_24100006_ifu(
                 end
                 S_WAITD: begin
                     if (axi_rvalid && axi_rready) begin
-                        if(req_epoch == cur_epoch) begin
+                        if(req_epoch == cur_epoch && !redirect_valid) begin
 							// 取指成功
 							inst_F     	<= axi_rdata;
 							if_in_valid	<= 1'b1; // 有新指令可输出

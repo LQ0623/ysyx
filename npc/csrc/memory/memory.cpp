@@ -121,6 +121,20 @@ static const uint32_t img_data_hazards_3[] = {
 
 };
 
+static const uint32_t img_data_hazards_4[] = {
+	0x00202023,//          	sw	s1,0(sp)
+	0x00202023,//          	sw	ra,8(sp)
+	0x00000497,//          	auipc	s1,0x0
+	0x0bc4a483,//          	lw	s1,188(s1) # 800000f4 <a>
+	0x00000013,
+	0x00000013,
+	0x00000013,
+	0x00000013,
+	0x00000013,
+	// 指令: ebreak
+	0x00100073,	 // ebreak
+};
+
 static const uint32_t img_control_hazard_1[] = {
 	// 用例 1: BEQ 控制冒险
 	0x00000513,   // addi x10, x0, 0
@@ -211,7 +225,7 @@ static uint8_t flash_src_data[FLASH_SIZE];  // 原始数据缓冲区
 void init_mem(size_t size){ 
 	pmem = (uint8_t *)malloc(size * sizeof(uint8_t));
 	// memset(pmem,0,size * sizeof(uint8_t));
-	memcpy(pmem , img_control_hazard_2 , sizeof(img_control_hazard_2));
+	memcpy(pmem , img_data_hazards_3 , sizeof(img_data_hazards_3));
 	if(pmem == NULL){exit(0);}
 	printf("npc physical memory area [%#x, %#lx]\n",PMEM_BASE, PMEM_BASE + size * sizeof(uint8_t));
 }

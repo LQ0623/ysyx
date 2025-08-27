@@ -1,5 +1,5 @@
 /**
-  通用寄存器堆，riscv32e是16个寄存器
+  通用寄存器堆
 */
 module ysyx_24100006_GPR #(ADDR_WIDTH = 4, DATA_WIDTH = 32) (
   input clk,
@@ -17,7 +17,7 @@ module ysyx_24100006_GPR #(ADDR_WIDTH = 4, DATA_WIDTH = 32) (
     if (wen)begin
       rf[waddr] <= wdata;
     end
-    rf[0] <= 32'h80001008;
+    rf[0] <= 32'b0;
   end
 
   assign rs1_data = rf[rs1];

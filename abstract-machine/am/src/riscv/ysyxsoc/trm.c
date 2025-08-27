@@ -67,7 +67,7 @@ void halt(int code) {
 
 void _trm_init() {
   init_uart(1);
-  show_name();
+  // show_name();
   int ret = main(mainargs);
   halt(ret);
 }

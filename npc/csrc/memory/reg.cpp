@@ -6,7 +6,7 @@ word_t gpr[REGNUM];
 word_t csr[4];
 
 void isa_reg_display();
-
+int cnt = 0;
 const char *regs[] = {
     "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
     "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
@@ -23,6 +23,18 @@ void get_reg(){
     for(int i = 0;i < REGNUM; i++){
         gpr[i] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__GPR__DOT__rf[i];
     }
+    // if(pc == 0xa0000114 && cnt == 100){
+    //     printf("pc is %08x,inst is %#x\n",pc,inst);
+    //     printf("ra = %08x\n",gpr[1]);
+    //     npc_trap();
+    // }
+    // if(pc == 0xa0000114){
+    //     cnt++;
+    //     printf("pc is %08x,inst is %#x\n",pc,inst);
+    // }
+    // if(pc >= 0xa0000000){
+    //     printf("pc is %08x,inst is %#x\n",pc,inst);
+    // }
     csr[0] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__CSR__DOT__rf[0];
     csr[1] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__CSR__DOT__rf[1];
     csr[2] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__CSR__DOT__rf[3];

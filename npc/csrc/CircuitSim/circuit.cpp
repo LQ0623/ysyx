@@ -295,7 +295,7 @@ extern "C" void npc_trap(){
 	if(code == 0)
 		Log("\033[1;32mHIT GOOD TRAP\033[0m");
 	else
-		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %d",code);
+		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %x",code);
 	Log("trap in %#x",pc);
 	statistic();
 	exit(0);
