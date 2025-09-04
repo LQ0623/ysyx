@@ -21,6 +21,8 @@ input is_load,
     input          mem_out_ready,
     input  [3:0]   mem_rd,
     input          mem_wen,         // Gpr_Write_M
+
+    input          mem_stage_wen,   // 这里是因为load-use的情况，所以需要知道mem阶段正在处理的指令的rd是否写回，而不能学之前使用mem_wen，mem_wen是下一条指令的，而不是表示正在处理的指令是否需要写入寄存器
     input [3:0]    mem_stage_rd,    // 这才是真正的MEM阶段的rd，mem_rd其实是EXE阶段出来的，但是如果是load-use，那么mem_rd和mem_stage_rd不一样
     input          mem_in_valid,
     input          mem_stage_out_valid,     // 表示mem处理完总线请求时，存储的要写回的寄存器是否有效
@@ -53,9 +55,11 @@ input is_load,
     wire raw_wb_rs2  = id_rs2_ren & wb_wen_v  & busy_wb  & (id_rs2 == wb_rd);
 
     // 如果是 load 指令，且 ID 阶段的 rs1 或 rs2 与 EX 阶段的 rd 相同，则认为是 RAW 冲突
+    // raw_ex_load_rs是判断load指令与ID阶段的指令冲突
+    // raw_load_ex_rs是判断mem阶段刚运算完的指令要写的寄存器是否与ID阶段冲突
     wire raw_ex_load_rs = (is_load == 1) && 
-                            ((id_rs1_ren == 1  && (mem_wen_v == 1 && ((id_rs1 == mem_stage_rd)))) ||
-                            (id_rs2_ren == 1  && (mem_wen_v == 1 && ((id_rs2 == mem_stage_rd)))) ||
+                            ((id_rs1_ren == 1  && (mem_stage_wen == 1 && ((id_rs1 == mem_stage_rd)))) ||
+                            (id_rs2_ren == 1  && (mem_stage_wen == 1 && ((id_rs2 == mem_stage_rd)))) ||
                             (id_rs1_ren == 1  && (wb_wen_v == 1 && ((id_rs1 == wb_rd)))) ||
                             (id_rs2_ren == 1  && (wb_wen_v == 1 && ((id_rs2 == wb_rd)))));
 

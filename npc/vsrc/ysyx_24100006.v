@@ -1121,6 +1121,9 @@ module ysyx_24100006(
 
 `endif
 
+// 这是为了diff test而加的npc信号
+wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
+
 	// TAG:pipeline Reg
 	// IF_ID 模块实例化
 	ysyx_24100006_IF_ID u_IF_ID (
@@ -1203,6 +1206,8 @@ module ysyx_24100006(
 	ysyx_24100006_EXE_MEM u_EXE_MEM (
 		.clk            	(clock),
 		.reset          	(reset),
+.npc_E(npc_E_old),
+.npc_M(npc_E_M),
 
 		.is_break_i     	(is_break_E),     			// 是否是断点指令
 		.is_break_o     	(is_break_E_M),   			// 输出到MEMU
@@ -1256,6 +1261,8 @@ module ysyx_24100006(
 	ysyx_24100006_MEM_WB u_MEM_WB (
 		.clk            	(clock),
 		.reset          	(reset),
+.npc_M(npc_M),
+.npc_W(npc_M_W),
 
 		.is_break_i     	(is_break_M),     			// 是否是断点指令
 		.is_break_o     	(is_break_M_W),   			// 输出到WBU
@@ -1303,8 +1310,8 @@ module ysyx_24100006(
 		.id_rs2_ren    	(rs2_ren_D),
 		.id_rd			(Gpr_Write_Addr_D),
 		.id_wen			(Gpr_Write_D),
-		.id_out_valid(id_out_valid),
-		.is_load(is_load),
+		.id_out_valid	(id_out_valid),
+		.is_load		(is_load),
 		// EX 阶段（忙判断：exe_out_valid | ~exe_out_ready）
 		.ex_out_valid	(exe_out_valid),
 		.ex_out_ready   (exe_out_ready),
@@ -1316,8 +1323,10 @@ module ysyx_24100006(
 		.mem_out_ready 	(mem_out_ready),
 		.mem_rd        	(Gpr_Write_Addr_E_M),
 		.mem_wen       	(Gpr_Write_E_M),
-		.mem_stage_rd(Gpr_Write_Addr_M),
-		.mem_in_valid(mem_in_valid),
+
+		.mem_stage_wen	(Gpr_Write_M),
+		.mem_stage_rd	(Gpr_Write_Addr_M),
+		.mem_in_valid	(mem_in_valid),
 		.mem_stage_out_valid(Gpr_Write_M),
 		// WB 阶段（忙判断：wb_out_valid | ~wb_out_ready）
 		.wb_out_valid   (wb_out_valid),
@@ -1485,6 +1494,8 @@ module ysyx_24100006(
 	ysyx_24100006_memu MEM(
 		.clk(clock),
 		.reset(reset),
+.npc_E(npc_E_M),
+.npc_M(npc_M),
 
 		.is_break_i(is_break_E_M), // 是否是断点指令
 		.is_break_o(is_break_M),
@@ -1610,12 +1621,16 @@ module ysyx_24100006(
 	import "DPI-C" function void get_npc(input int npc);
 	import "DPI-C" function void get_if_valid(input bit new_inst);	// 是否是新指令
 	import "DPI-C" function void get_wb_ready(input bit wb_ready);
+	import "DPI-C" function void get_pc_w(input int pc_w);
+	import "DPI-C" function void get_npc_w(input int npc_w);
 	always @(*) begin
 		get_inst(axi_rdata_if);
 		get_pc(pc_F);
 		get_npc(npc_E_F);					// pc先不进行diff test，因为这个进行diff test找不到信号与之对应了
 		get_if_valid(if_in_valid);
 		get_wb_ready(wb_in_valid);			// 用于diff test，这个结合npc_temp信号刚好
+		get_pc_w(pc_M_W);
+		get_npc_w(npc_M_W);
 	end
 `endif
 

@@ -4,6 +4,8 @@ module ysyx_24100006_EXE_MEM(
     input           clk,
     input           reset,
     
+input [31:0]    npc_E,
+output [31:0]   npc_M,
     input           is_break_i,
     output          is_break_o,
 
@@ -82,6 +84,7 @@ module ysyx_24100006_EXE_MEM(
     reg [1:0]   sram_read_write_temp;
     reg         valid_temp;
 
+reg [31:0] npc_temp_old;
 
     // 使用 assign 语句将临时寄存器赋值给输出信号
     assign pc_o                 = pc_temp;
@@ -109,6 +112,7 @@ module ysyx_24100006_EXE_MEM(
     // 当没有有效存储时，或者当存储并且下游准备好时，可以接受新数据（可以滑动）
     assign in_ready             = (!valid_temp) || (out_ready && valid_temp);
 
+assign npc_M = npc_temp_old;
     // 如果 in_valid==0 且 in_ready==1 -> 清除有效（已由 valid_r <= in_valid 完成）
     always @(posedge clk) begin
         if (reset) begin
@@ -134,6 +138,8 @@ module ysyx_24100006_EXE_MEM(
             Csr_Write_temp          <= 1'd0;
             is_break_temp           <= 1'b0; // 复位时不可能是ebreak指令
             sram_read_write_temp    <= 2'd0;
+
+npc_temp_old            <= 32'd0;
         end
         // 若果当前输出被接受且有跳转指令，则清除当前的有效位，防止错误执行
         else if(out_ready && redirect_valid_temp)begin 
@@ -166,6 +172,8 @@ module ysyx_24100006_EXE_MEM(
                     Csr_Write_temp          <= Csr_Write_i;
                     is_break_temp           <= is_break_i;
                     sram_read_write_temp    <= sram_read_write_i;
+
+                    npc_temp_old            <= npc_i;
                 end 
             end
             // 没有新数据则一直保持数据

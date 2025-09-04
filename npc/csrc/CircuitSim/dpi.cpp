@@ -28,6 +28,12 @@ extern "C" void get_wb_ready(svBit wb_ready_sim){
 	wb_ready = wb_ready_sim;
 }
 
+extern "C" void get_pc_w(int pc_w_sim){
+    pc_w = pc_w_sim;
+}
+extern "C" void get_npc_w(int npc_w_sim){
+    npc_w = npc_w_sim;
+}
 // extern "C" void get_gpr(const svOpenArrayHandle rf){
 //     // 获取数组指针
 //     uint32_t *arr = (uint32_t *)svGetArrayPtr(rf);

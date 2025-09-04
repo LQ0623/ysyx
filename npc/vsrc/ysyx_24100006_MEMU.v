@@ -4,6 +4,8 @@
 module ysyx_24100006_memu(
     input 				clk,
 	input 				reset,
+input [31:0] npc_E,
+output [31:0] npc_M,
 
 	input           	is_break_i,
     output            	is_break_o,
@@ -136,7 +138,7 @@ output is_load,
 
 	// ----------------- 上下游握手信号（纯组合） -----------------
     assign mem_out_ready = (state == S_IDLE);   // 只有空闲时才接新指令
-    assign mem_in_valid  = ((state == S_SEND && locked_sram_read_write == 0) || (locked_sram_read_write !=0 && axi_rready == 1 && axi_rvalid == 1));   // 完成后仅在发送态有效
+    assign mem_in_valid  = ((state == S_SEND && locked_sram_read_write == 0) || (locked_sram_read_write !=0 && (axi_rready == 1 && axi_rvalid == 1)) || (axi_bready == 1 && axi_bvalid == 1));   // 完成后仅在发送态有效
 
 	always @(posedge clk) begin
 		if(reset) begin
@@ -304,7 +306,7 @@ output is_load,
 		end
 	end
 
-
+reg [31:0] npc_r;
 	// 所存数据
 	always @(posedge clk) begin
 		if(reset)begin
@@ -329,6 +331,8 @@ output is_load,
             Mem_WMask_r     <= 8'b0;
             Mem_RMask_r     <= 3'b0;
             sram_rw_r       <= 2'b00;
+
+			npc_r			<= 32'b0;
 		end else begin
 			if(state == S_IDLE)begin
 				// 锁存所有将要向下游传递的字段
@@ -352,6 +356,8 @@ output is_load,
 				Mem_WMask_r     <= Mem_WMask_M;
 				Mem_RMask_r     <= Mem_RMask_M;
 				sram_rw_r       <= sram_read_write;
+
+				npc_r			<= npc_E;
 			end
 		end
 	end
@@ -375,6 +381,7 @@ output is_load,
     assign Csr_Write_RD_W  	= Csr_Write_RD_r;
 	assign Gpr_Write_Addr_W	= Gpr_Write_Addr_r;
 	assign Csr_Write_Addr_W	= Csr_Write_Addr_r;
+assign npc_M = npc_r;
 
     // 读取数据的扩展：使用已锁存的读掩码
     ysyx_24100006_MuxKey#(5,3,32) mem_rdata_extend_i(

@@ -76,21 +76,21 @@ bool static checkregs(struct CPU_state *ref_r){
     for(int i = 0;i < REGNUM;i++){
         // nemu的gpr与npc的gpr相比
         if(ref_r -> gpr[i] != gpr[i]){
-            Log(ANSI_FMT("REF PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("DUT PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest GPR reg Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest GPR reg Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC GPR reg Get ", ANSI_FG_RED) FMT_WORD, ref_r->pc, pc, regs[i], ref_r->gpr[i], gpr[i]);
+            Log(ANSI_FMT("REF PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("DUT PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest GPR reg Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest GPR reg Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC GPR reg Get ", ANSI_FG_RED) FMT_WORD, ref_r->pc, npc_w, regs[i], ref_r->gpr[i], gpr[i]);
             flag = false;
         }
     }
     // Log(ANSI_FMT("REF PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("DUT PC = 0x", ANSI_FG_RED)"%x, ", ref_r->pc, pc);
     for(int i = 0;i < 4;i++){
         if(ref_r -> csr[i] != csr[i]){
-            Log(ANSI_FMT("PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest CSR Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest CSR Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC CSR Get ", ANSI_FG_RED) FMT_WORD, pc, SysReg[i], ref_r->csr[i], csr[i]);
+            Log(ANSI_FMT("PC = 0x", ANSI_FG_RED)"%x, "ANSI_FMT("Difftest CSR Compare failed at ", ANSI_FG_RED)" %s, "ANSI_FMT("Difftest CSR Get ", ANSI_FG_RED) FMT_WORD ", "ANSI_FMT("NPC CSR Get ", ANSI_FG_RED) FMT_WORD, npc_w, SysReg[i], ref_r->csr[i], csr[i]);
             flag = false;
         }
     }
-    // if(ref_r -> pc != pc){
-    //     Log(ANSI_FMT("ref_r pc: ", ANSI_FG_RED) FMT_WORD "\t"ANSI_FMT("dut pc: ", ANSI_FG_RED) FMT_WORD "\t"ANSI_FMT("dut dnpc: ", ANSI_FG_RED) FMT_WORD, ref_r->pc, pc, dnpc);
-    //     flag = false;
-    // }
+    if(ref_r -> pc != npc_w){
+        Log(ANSI_FMT("ref_r pc: ", ANSI_FG_RED) FMT_WORD "\t"ANSI_FMT("dut pc: ", ANSI_FG_RED) FMT_WORD "\t"ANSI_FMT("dut dnpc: ", ANSI_FG_RED) FMT_WORD, ref_r->pc, npc_w, dnpc);
+        flag = false;
+    }
     return flag;
 }
 
@@ -98,6 +98,9 @@ void difftest_step() {
     if(ref_difftest_memcpy == NULL) return;
 
     CPU_state ref_r;
+    ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    word_t pc_ref = ref_r.pc;
+    // printf("此时的dut的pc为 %#x\tref执行前的 ref_r.pc: %#x\tis_skip_diff 为 %d\n",pc_w,pc_ref,is_skip_diff);
     ref_difftest_exec(1);
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 #ifdef CONFIG_SOC
@@ -112,7 +115,7 @@ void difftest_step() {
         // 多周期需要给进行diff test的段的pc而不是npc，因为现在的pc就是原本的npc了
         // 单周期和多周期进入diff的时间不一样，导致pc的更新的时间不一样，之前是结束的进入，npc就是下一条要执行的指令的地址；
         // 现在是一开始进入的，pc才是下一条要执行的指令的地址
-        dut_r.pc = pc;
+        dut_r.pc = npc_w;
         for(int i = 0;i < REGNUM;i++){
             dut_r.gpr[i] = gpr[i];
         }
@@ -123,13 +126,18 @@ void difftest_step() {
         ref_difftest_regcpy(&dut_r, DIFFTEST_TO_REF);
         return;
     }
-    while(pc != ref_r.pc){
-        ref_difftest_exec(1);
-        ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-    }
+    // printf("此时的dut的pc为 %#x\tref执行前的 ref_r.pc: %#x\tis_skip_diff 为 %d\n",npc_w,ref_r.pc,is_skip_diff);
+    // while(pc_w != ref_r.pc){
+    //     printf("此时的dut的pc为 %#x\tref执行前的 ref_r.pc: %#x\tis_skip_diff 为 %d\n",pc_w,ref_r.pc,is_skip_diff);
+    //     ref_difftest_exec(1);
+    //     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    //     if(ref_r.pc == 0x80000060){
+    //         break;
+    //     }
+    // }
 
     if(!checkregs(&ref_r)){
-        // isa_reg_display();
+        isa_reg_display();
         #ifdef CONFIG_DUMP_WAVE
             dump_wave_inc();
             close_wave();

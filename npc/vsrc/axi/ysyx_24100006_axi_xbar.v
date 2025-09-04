@@ -1,3 +1,4 @@
+// TODO：提交时不提交这个文件
 module ysyx_24100006_axi_xbar #(
     parameter SRAM_ADDR     = 32'h8000_0000,
     parameter SPI_ADDR      = 32'h1000_1000
@@ -152,14 +153,14 @@ module ysyx_24100006_axi_xbar #(
     
 `else
 
-    wire sel_sram   = (m_axi_awaddr >= SRAM_ADDR && m_axi_awaddr < (SRAM_ADDR + 32'h0800_0000)) ||
-                    (m_axi_araddr >= SRAM_ADDR && m_axi_araddr < (SRAM_ADDR + 32'h0800_0000));       // SRAM的空间大小到在am中有
+    // wire sel_sram   = (m_axi_awaddr >= SRAM_ADDR && m_axi_awaddr < (SRAM_ADDR + 32'h0800_0000)) ||
+    //                 (m_axi_araddr >= SRAM_ADDR && m_axi_araddr < (SRAM_ADDR + 32'h0800_0000));       // SRAM的空间大小到在am中有
 
-    wire sel_uart   = ((m_axi_awaddr >= UART_ADDR && m_axi_awaddr < (UART_ADDR + 32'h0000_0008)) ||
-                    (m_axi_araddr >= UART_ADDR && m_axi_araddr < (UART_ADDR + 32'h0000_0008)));      // UART
+    wire sel_uart   = (m_axi_awaddr >= UART_ADDR && m_axi_awaddr < (UART_ADDR + 32'h0000_0008));      // UART
 
-    wire sel_clint  = (m_axi_awaddr >= CLINT_ADDR && m_axi_awaddr < (CLINT_ADDR + 32'h0000_0008)) ||
-                    (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
+    wire sel_clint  = (m_axi_araddr >= CLINT_ADDR && m_axi_araddr < (CLINT_ADDR + 32'h0000_0008));      // CLINT
+
+    wire sel_sram = ~sel_uart & ~sel_clint;
 
     // wire sel_sram   = 1;
     // wire sel_uart   = 0;
@@ -188,11 +189,11 @@ module ysyx_24100006_axi_xbar #(
 `endif
 
     // CLINT
-    assign clint_axi_awvalid    = sel_clint ? m_axi_awvalid  : 0;
-    assign clint_axi_awaddr     = sel_clint ? m_axi_awaddr   : 32'h0;
-    assign clint_axi_wvalid     = sel_clint ? m_axi_wvalid   : 0;
-    assign clint_axi_wdata      = sel_clint ? m_axi_wdata    : 32'h0;
-    assign clint_axi_bready     = sel_clint ? m_axi_bready   : 0;
+    assign clint_axi_awvalid    = 0;
+    assign clint_axi_awaddr     = 32'h0;
+    assign clint_axi_wvalid     = 0;
+    assign clint_axi_wdata      = 32'h0;
+    assign clint_axi_bready     = 0;
 
     // 读通道路由
     // SRAM
@@ -202,9 +203,9 @@ module ysyx_24100006_axi_xbar #(
 
 `ifdef NPC
     // UART
-    assign uart_axi_arvalid     = sel_uart ? m_axi_arvalid  : 0;
-    assign uart_axi_araddr      = sel_uart ? m_axi_araddr   : 32'h0;
-    assign uart_axi_rready      = sel_uart ? m_axi_rready   : 0;
+    assign uart_axi_arvalid     = 0;
+    assign uart_axi_araddr      = 32'h0;
+    assign uart_axi_rready      = 0;
 `endif
 
     // CLINT
