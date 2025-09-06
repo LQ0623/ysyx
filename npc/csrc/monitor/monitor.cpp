@@ -88,9 +88,9 @@ void init_monitor(int argc, char *argv[]){
     parse_args(argc, argv);
 
     init_log(log_file);
-
-    init_mem(0x7fffffff);
-
+    #ifndef CONFIG_SOC
+      init_mem(0x7fffffff);
+    #endif
     // init_mrom();
 
     init_flash();

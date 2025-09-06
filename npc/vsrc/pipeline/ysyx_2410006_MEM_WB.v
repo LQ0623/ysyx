@@ -2,6 +2,8 @@
 module ysyx_24100006_MEM_WB(
     input           clk,
     input           reset,
+input [31:0]    npc_M,
+output [31:0]   npc_W,
 
     input           is_break_i,
     output          is_break_o,
@@ -46,6 +48,9 @@ module ysyx_24100006_MEM_WB(
     output          irq_o,
     output          Gpr_Write_o,
     output          Csr_Write_o
+
+    // 异常处理相关
+    ,input          flush_i
 );
 
     // 声明临时寄存器
@@ -65,6 +70,8 @@ module ysyx_24100006_MEM_WB(
     reg         Csr_Write_temp;
     reg         is_break_temp;
     reg         valid_temp;
+
+reg [31:0] npc_temp;
 
     // 使用 assign 语句将临时寄存器赋值给输出信号
     assign pc_o             = pc_temp;
@@ -87,6 +94,8 @@ module ysyx_24100006_MEM_WB(
     // 当没有有效存储时，或者当存储并且下游准备好时，可以接受新数据（可以滑动）
     assign in_ready         = (!valid_temp) || (out_ready && valid_temp);
 
+assign npc_W    = npc_temp;
+
     // 如果 in_valid==0 且 in_ready==1 -> 清除有效（已由 valid_r <= in_valid 完成）
     always @(posedge clk) begin
         if (reset) begin
@@ -108,7 +117,14 @@ module ysyx_24100006_MEM_WB(
             Gpr_Write_temp      <= 1'd0;
             Csr_Write_temp      <= 1'd0;
             is_break_temp       <= 1'b0; // 复位时不可能是ebreak指令
-        end else begin
+
+            npc_temp            <= 32'd0;
+        end 
+        else if(flush_i == 1)begin
+            valid_temp       <= 1'b0; // 冲刷流水线
+            irq_temp         <= 1'b0;
+        end
+        else begin
             // 当允许接受新输入时
             if (in_ready) begin
                 valid_temp              <= in_valid;
@@ -130,6 +146,8 @@ module ysyx_24100006_MEM_WB(
                     Gpr_Write_temp      <= Gpr_Write_i;
                     Csr_Write_temp      <= Csr_Write_i;
                     is_break_temp       <= is_break_i;
+
+                    npc_temp            <= npc_M;
                 end 
             end
             // 没有新数据则一直保持数据

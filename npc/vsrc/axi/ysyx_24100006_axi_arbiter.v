@@ -211,7 +211,6 @@ module ysyx_24100006_axi_arbiter (
 
 
     // ================== SRAM写仲裁状态机 ==================
-// `ifdef NPC
     parameter   W_IDLE = 0, W_BUSY = 1;
 
     reg [1:0] axi_state_w;                // AXI目前的状态
@@ -242,7 +241,7 @@ module ysyx_24100006_axi_arbiter (
             endcase
         end
     end
-// `endif
+
 
     // 写入的实际数据，数据需要移位的
     wire [31:0] real_axi_wdata;
@@ -260,17 +259,11 @@ module ysyx_24100006_axi_arbiter (
 
 
     // SRAM 写通道
-    // assign sram_axi_awvalid =   mem_axi_awvalid;
-    // assign sram_axi_wvalid  =   mem_axi_wvalid;
-    assign sram_axi_bready  =   mem_axi_bready;
-// `ifndef NPC
-//     assign sram_axi_awaddr  =   mem_axi_awaddr; //  写地址可以一直传输,但是只有当valid=1时才能够有效
-// `else
     assign sram_axi_awaddr  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr  : 32'b0;
     assign sram_axi_awvalid =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awvalid : 1'b0;
     assign sram_axi_wvalid  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_wvalid  : 1'b0;
-// `endif
     assign sram_axi_wdata   =   real_axi_wdata;
+    assign sram_axi_bready  =   mem_axi_bready;
 
     // AXI新增信号
     assign sram_axi_awlen   =   mem_axi_awlen;

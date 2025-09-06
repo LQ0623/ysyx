@@ -197,6 +197,14 @@ static const uint32_t img_control_hazard_2[] = {
 	0x00100073,	 // ebreak
 };
 
+static const uint32_t img_control_hazard_3[] = {
+	0x00002783,	// lw x15, 0(x0)	
+	0x000780e7,	// jalr x1, 0(x15)		// 控制冒险 + 数据冒险 (依赖x15)
+	0x00200513,   // addi x10, x0, 2             // 被冲刷
+	0x00300513,   // addi x10, x0, 3             // JALR 目标 ; 控制冒险点
+	0x00100073,	 // ebreak
+};
+
 // 输出ABCD两个字符
 static const uint32_t img_char_test[] = {
 	0x100007b7,
