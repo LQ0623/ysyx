@@ -58,6 +58,9 @@ output [31:0]   npc_M,
     output          Gpr_Write_o,
     output          Csr_Write_o,
     output [1:0]    sram_read_write_o
+
+    // 异常处理相关
+    ,input          flush_i
 );
 
     // 声明临时寄存器
@@ -144,6 +147,11 @@ npc_temp_old            <= 32'd0;
         // 若果当前输出被接受且有跳转指令，则清除当前的有效位，防止错误执行
         else if(out_ready && redirect_valid_temp)begin 
             valid_temp <=0;
+            redirect_valid_temp<=0;
+        end
+        else if(flush_i == 1)begin
+            valid_temp <=0;
+            irq_temp         <= 1'b0;
             redirect_valid_temp<=0;
         end
         else begin

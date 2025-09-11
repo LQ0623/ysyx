@@ -38,8 +38,15 @@ module ysyx_24100006_wbu(
     output [31:0]   wdata_gpr,
     output [31:0]   wdata_csr
 
+    // 调试使用
+    ,input [31:0]   mtvec
+    ,input [31:0]   npc_M
+    ,output [31:0]  npc_W
 );
     
+    // 调试使用
+    reg [31:0] npc_temp;
+
     // 握手机制
 	parameter S_IDLE = 0, S_WRITE = 1;
 	reg state;
@@ -60,6 +67,8 @@ module ysyx_24100006_wbu(
         if (reset) begin
             wb_out_ready_reg <= 1'b1;  // 复位后WBU空闲
             processing <= 1'b0;
+
+            npc_temp <= 32'b0;
         end else begin
             // 默认：WBU空闲，可以接收新数据
             wb_out_ready_reg <= 1'b1;
@@ -72,6 +81,9 @@ module ysyx_24100006_wbu(
                 
                 // 标记我们正在处理（虽然通常立即完成）
                 processing <= 1'b1;
+
+                // 一旦开始处理，WBU不再空闲，直到处理完成
+                npc_temp   <= irq_WD ? mtvec : npc_M; // 调试使用
             end
             
             // 通常WBU在一个周期内完成，所以processing不会持续
@@ -90,6 +102,8 @@ module ysyx_24100006_wbu(
     assign Csr_Write_WD         = Csr_Write;
     assign Gpr_Write_Addr_WD    = Gpr_Write_Addr;
     assign Csr_Write_Addr_WD    = Csr_Write_Addr;
+
+    assign npc_W = npc_temp;        // 调试使用
 
     // 选择写入通用寄存器的内容
 	ysyx_24100006_MuxKey#(5,3,32) gpr_write_data_mux(wdata_gpr,Gpr_Write_RD,{

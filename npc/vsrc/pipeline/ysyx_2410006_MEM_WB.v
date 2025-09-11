@@ -48,6 +48,9 @@ output [31:0]   npc_W,
     output          irq_o,
     output          Gpr_Write_o,
     output          Csr_Write_o
+
+    // 异常处理相关
+    ,input          flush_i
 );
 
     // 声明临时寄存器
@@ -116,7 +119,12 @@ assign npc_W    = npc_temp;
             is_break_temp       <= 1'b0; // 复位时不可能是ebreak指令
 
             npc_temp            <= 32'd0;
-        end else begin
+        end 
+        else if(flush_i == 1)begin
+            valid_temp          <= 1'b0; // 冲刷流水线
+            irq_temp            <= 1'b0;
+        end
+        else begin
             // 当允许接受新输入时
             if (in_ready) begin
                 valid_temp              <= in_valid;

@@ -45,9 +45,9 @@ module ysyx_24100006_idu(
 
 	// control signal
 	output 			is_fence_i, // 是否刷新icache
-	output 			irq_E,
+	// output 			irq_E,
 	// 异常号
-	output [7:0] 	irq_no,
+	// output [7:0] 	irq_no,
 	output [3:0] 	aluop,
 	output 			AluSrcA,
 	output 			AluSrcB,
@@ -67,6 +67,12 @@ module ysyx_24100006_idu(
 	// CSR寄存器取出的异常PC
 	output [31:0] 	mtvec,
 	output [31:0] 	mepc
+
+    // 异常处理相关
+    ,input          irq_F
+    ,input [7:0]    irq_no_F
+    ,output         irq_D
+    ,output [7:0]   irq_no_D
 );
 
 	// 握手机制
@@ -185,8 +191,10 @@ module ysyx_24100006_idu(
     assign Mem_RMask   		= ctrl_Mem_RMask;
     assign sram_read_write 	= ctrl_sram_read_write;
     assign is_fence_i  		= ctrl_is_fence_i;
-    assign irq_E       		= ctrl_irq;
-    assign irq_no      		= ctrl_irq_no;
+
+    // 异常处理相关
+    assign irq_D       		= ctrl_irq | irq_F;
+    assign irq_no_D    		= ctrl_irq ? ctrl_irq_no : irq_no_F;
 
     // TODO:如果透传出现问题，则需要使用下面的
     // -------------------- 握手逻辑 --------------------

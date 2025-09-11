@@ -351,7 +351,7 @@ module ysyx_24100006_controller_remake(
     assign Jump = 
         ((opcode == `ysyx_24100006_jal) ? `ysyx_24100006_JAL :
         (opcode == `ysyx_24100006_jalr) ? `ysyx_24100006_JALR :
-        (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_JUMPECALL :
+        // (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_JUMPECALL :        // ecall指令算是异常处理，所以是一套单独的机制，不在这里进行跳转
         (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_mret) ? `ysyx_24100006_JUMPMRET :
         (opcode == `ysyx_24100006_B_type) ? (
             (funct3 == `ysyx_24100006_beq) ? `ysyx_24100006_JBEQ :

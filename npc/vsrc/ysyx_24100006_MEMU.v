@@ -373,8 +373,6 @@ reg [31:0] npc_r;
     assign rs1_data_W      	= rs1_data_r;
     assign rdata_csr_W     	= rdata_csr_r;
 
-    assign irq_W           	= irq_r;
-    assign irq_no_W        	= irq_no_r;
     assign Gpr_Write_W     	= Gpr_Write_r;
     assign Csr_Write_W     	= Csr_Write_r;
     assign Gpr_Write_RD_W  	= Gpr_Write_RD_r;
@@ -393,5 +391,16 @@ assign npc_M = npc_r;
             3'b100, axi_rdata[31:0]
         }
     );
+
+	// 异常处理相关
+	wire   store_exc		= (axi_bvalid == 1 && axi_bresp != 0);
+	assign irq_W       		= irq_r || store_exc;
+	assign irq_no_W    		= store_exc ? 8'h7 : irq_no_r;	// 5号异常为load异常，7号异常为store异常，但是加载异常在xbar还是arbiter就会处理，报错
+
+	// always @(posedge clk) begin
+	// 	if(axi_awaddr == 32'ha20913e8) begin
+	// 		$display("pc is %x ,memu write addr is %x , op is %x , write data is %x , read data is %x, awvalid is %x, wvalid is %x",pc_r,axi_awaddr,sram_read_write_r,axi_wdata,axi_rdata,axi_awvalid,axi_wvalid);
+	// 	end
+	// end
 
 endmodule

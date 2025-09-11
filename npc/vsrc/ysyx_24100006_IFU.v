@@ -42,12 +42,23 @@ module ysyx_24100006_ifu(
 
 	// Access Fault异常
 	input	[1:0]		Access_Fault
+
+	// 异常相关
+	,input [31:0]		csr_mtvec
+	,input				EXC
+	,output				irq
+	,output [7:0]		irq_no
 );
 
 	// 是否发送重定向
 	reg [1:0] redirect_flag;	// 检测上升沿
 	always @(posedge clk) begin
 		redirect_flag = {redirect_flag[0],redirect_valid};
+	end
+	// 异常处理机制
+	reg [1:0] exc_flag;	// 检测上升沿
+	always @(posedge clk) begin
+		exc_flag = {exc_flag[0],EXC};
 	end
 	reg [1:0] req_epoch;
 	reg [1:0] cur_epoch;
@@ -59,7 +70,7 @@ module ysyx_24100006_ifu(
 			if (axi_arvalid && axi_arready) begin
 				req_epoch <= cur_epoch;
 			end
-			if (redirect_flag == 2'b01) begin
+			if (redirect_flag == 2'b01 || exc_flag == 2'b01) begin
 				cur_epoch <= cur_epoch + 1;
 			end
 		end
@@ -104,7 +115,7 @@ module ysyx_24100006_ifu(
                 end
                 S_WAITD: begin
                     if (axi_rvalid && axi_rready) begin
-                        if(req_epoch == cur_epoch && !redirect_valid) begin
+                        if(req_epoch == cur_epoch && !redirect_valid && !EXC) begin
 							// 取指成功
 							inst_F     	<= axi_rdata;
 							if_in_valid	<= 1'b1; // 有新指令可输出
@@ -123,17 +134,22 @@ module ysyx_24100006_ifu(
 	end
 
 	wire [31:0] npc_temp;
-	assign npc_temp = redirect_valid ? npc : pc_F + 4;
+	assign npc_temp = EXC ? csr_mtvec : (redirect_valid ? npc : pc_F + 4);
 	assign axi_araddr = pc_F;
 
 	ysyx_24100006_pc PC(
 		.clk(clk),
 		.reset(reset),
-		.PCW((if_in_valid == 1 && if_in_ready == 1) || redirect_valid),		// 要么取指，要么重定向
+		.PCW((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC),		// 要么取指，要么重定向
 		.Access_Fault(Access_Fault),
 		.npc(npc_temp),
 		.pc(pc_F)
 	);
+
+
+	// 异常相关
+	assign irq 		= (pc_F[1:0] != 2'b00) ? 1 : 0;	// 取指地址不对齐
+	assign irq_no	= (pc_F[1:0] != 2'b00) ? 8'h00 : 8'h0;	// 取指地址不对齐为0
 
 `ifdef VERILATOR_SIM
 	import "DPI-C" function void get_PCW(input bit PCW);

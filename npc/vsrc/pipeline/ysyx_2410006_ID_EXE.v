@@ -157,6 +157,7 @@ module ysyx_24100006_ID_EXE(
         end else begin
             if(flush_i)begin
                 valid_temp       <= 1'b0; // 冲刷流水线
+                irq_temp         <= 1'b0; // 冲刷流水线时清除中断信号
             end
             // 当允许接受新输入时
             else if (in_ready) begin

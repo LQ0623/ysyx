@@ -147,10 +147,14 @@ module ysyx_24100006(
 
 
 	// IF阶段信号
+	wire		irq_F;
+	wire [7:0]	irq_no_F;
 	wire [31:0] pc_F;                 	// IF阶段PC
 	wire [31:0]	inst_F;					// IF阶段instruction
 
 	// IF_ID输出信号
+	wire		irq_F_D;			  	// IF->ID传递的中断标志
+	wire [7:0]	irq_no_F_D;		  		// IF->ID传递的中断号
 	wire [31:0] pc_F_D;               	// IF->ID传递的PC
 	wire [31:0] instruction_F_D;      	// IF->ID传递的指令
 
@@ -1129,7 +1133,7 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 	ysyx_24100006_IF_ID u_IF_ID (
 		.clk            	(clock),
 		.reset          	(reset),
-		.flush_i        (redirect_valid_E_F),   // NEW
+		.flush_i        	(redirect_valid_E_F || irq_WD),   // 当是跳转指令或者发生异常时冲刷
 		.in_valid       	(if_in_valid),		// 来自IFU
 		.in_ready       	(if_in_ready),		// 输出到IFU
 		.pc_i           	(pc_F),         	// IF阶段PC输入
@@ -1139,13 +1143,19 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 		.out_ready      	(id_out_ready),		// 来自IDU
 		.pc_o           	(pc_F_D),       	// 输出到ID阶段
 		.instruction_o  	(instruction_F_D)	// 输出到ID阶段
+
+		// 异常处理相关
+		,.irq_i(irq_F)
+		,.irq_no_i(irq_no_F)
+    	,.irq_o(irq_F_D)
+		,.irq_no_o(irq_no_F_D)
 	);
 
 	// ID_EXE 模块实例化
 	ysyx_24100006_ID_EXE u_ID_EXE (
 		.clk            	(clock),
 		.reset          	(reset),
-		.flush_i        (redirect_valid_E_F),   // NEW
+		.flush_i        	(redirect_valid_E_F || irq_WD),   // 当是跳转指令或者发生异常时冲刷
 		.is_break_i     	(is_break_D),     			// 是否是断点指令
 		.is_break_o     	(is_break_D_E),   			// 输出到EXEU
 
@@ -1206,8 +1216,11 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 	ysyx_24100006_EXE_MEM u_EXE_MEM (
 		.clk            	(clock),
 		.reset          	(reset),
+// 调试信息
 .npc_E(npc_E_old),
 .npc_M(npc_E_M),
+
+		.flush_i        	(irq_WD),   // 发生异常时需要冲刷流水线
 
 		.is_break_i     	(is_break_E),     			// 是否是断点指令
 		.is_break_o     	(is_break_E_M),   			// 输出到MEMU
@@ -1261,8 +1274,11 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 	ysyx_24100006_MEM_WB u_MEM_WB (
 		.clk            	(clock),
 		.reset          	(reset),
+// 调试信息
 .npc_M(npc_M),
 .npc_W(npc_M_W),
+
+		.flush_i        	(irq_WD),   // 发生异常时需要冲刷流水线
 
 		.is_break_i     	(is_break_M),     			// 是否是断点指令
 		.is_break_o     	(is_break_M_W),   			// 输出到WBU
@@ -1379,6 +1395,12 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 
 		// Access Fault异常
 		.Access_Fault(Access_Fault)
+
+		// 异常处理相关
+		,.csr_mtvec(mtvec_D)
+		,.EXC(irq_WD)
+		,.irq(irq_F)
+		,.irq_no(irq_no_F)
 	);
 	
 	ysyx_24100006_idu ID(
@@ -1413,8 +1435,6 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 		.rs2_data(rs2_data_D),
 		.rdata_csr(rdata_csr_D),
 		.is_fence_i(is_fence_i_D),
-		.irq_E(irq_D),
-		.irq_no(irq_no_D),
 		.aluop(alu_op_D),
 		.AluSrcA(AluSrcA_D),
 		.AluSrcB(AluSrcB_D),
@@ -1430,6 +1450,12 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 		.sram_read_write(sram_read_write_D),
 		.mtvec(mtvec_D),
 		.mepc(mepc_D)
+
+		// 异常处理相关
+		,.irq_F(irq_F_D)
+		,.irq_no_F(irq_no_F_D)
+		,.irq_D(irq_D)
+		,.irq_no_D(irq_no_D)
 	);
 
 	ysyx_24100006_exeu EXE(
@@ -1494,6 +1520,7 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 	ysyx_24100006_memu MEM(
 		.clk(clock),
 		.reset(reset),
+// 调试信息
 .npc_E(npc_E_M),
 .npc_M(npc_M),
 
@@ -1606,6 +1633,11 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 		.Csr_Write_Addr_WD(Csr_Write_Addr_WD),
 		.wdata_gpr(wdata_gpr_WD),
 		.wdata_csr(wdata_csr_WD)
+
+// 调试信息
+,.mtvec(mtvec_D)
+,.npc_M(npc_M_W)
+,.npc_W(npc_W)
 	);
 
 	// always @(*) begin
@@ -1628,9 +1660,9 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 		get_pc(pc_F);
 		get_npc(npc_E_F);					// pc先不进行diff test，因为这个进行diff test找不到信号与之对应了
 		get_if_valid(if_in_valid);
-		get_wb_ready(wb_in_valid);			// 用于diff test，这个结合npc_temp信号刚好
+		get_wb_ready(wb_in_valid);			// 用于diff test，这个结合npc_temp信号刚好，因为wb_out_valid有效的时候还没有写入，所以需要使用wb_in_valid
 		get_pc_w(pc_M_W);
-		get_npc_w(npc_M_W);
+		get_npc_w(npc_W);
 	end
 `endif
 

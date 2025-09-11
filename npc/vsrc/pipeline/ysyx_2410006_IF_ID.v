@@ -17,15 +17,29 @@ module ysyx_24100006_IF_ID(
     input           out_ready,
     output [31:0]   pc_o,
     output [31:0]   instruction_o
+
+    // 异常处理相关
+    ,input			irq_i
+	,input [7:0]	irq_no_i
+    ,output			irq_o
+	,output [7:0]	irq_no_o
 );
 
     reg [31:0]  pc_temp;
     reg [31:0]  instruction_temp;
     reg         valid_temp;
 
+    // 异常处理相关
+    reg			irq_temp;
+	reg [7:0]	irq_no_temp;
+
     // 使用 assign 语句将临时寄存器赋值给输出信号
     assign pc_o             = pc_temp;
     assign instruction_o    = instruction_temp;
+
+    // 异常处理相关
+    assign irq_o            = irq_temp;
+    assign irq_no_o         = irq_no_temp;
 
     assign out_valid        = valid_temp;
     // 当没有有效存储时，或者当存储并且下游准备好时，可以接受新数据（可以滑动）
@@ -37,9 +51,13 @@ module ysyx_24100006_IF_ID(
             valid_temp          <= 1'b0;
             pc_temp             <= 32'h00000000;
             instruction_temp    <= 32'b0;
+            // 异常处理相关
+            irq_temp            <= 1'b0;
+            irq_no_temp         <= 8'b0;
         end else begin
             if(flush_i)begin
-                valid_temp       <= 1'b0; // 冲刷流水线
+                valid_temp      <= 1'b0; // 冲刷流水线
+                irq_temp        <= 1'b0;
             end
             
             // 当允许接受新输入时
@@ -48,6 +66,9 @@ module ysyx_24100006_IF_ID(
                 if (in_valid)begin
                     pc_temp             <= pc_i;
                     instruction_temp    <= instruction_i;
+                    // 异常处理相关
+                    irq_temp            <= irq_i;
+                    irq_no_temp         <= irq_no_i;
                 end 
             end
             // 没有新数据则一直保持数据
