@@ -12,3 +12,4 @@
 build/
 yosys-sta/
 result
+Icache_pipeline_gpt.v
