@@ -58,6 +58,10 @@ module ysyx_24100006_IF_ID(
             if(flush_i)begin
                 valid_temp      <= 1'b0; // 冲刷流水线
                 irq_temp        <= 1'b0;
+                pc_temp             <= 32'b0;
+                instruction_temp    <= 32'b0;
+                // 异常处理相关
+                irq_no_temp         <= 8'b0;
             end
             
             // 当允许接受新输入时

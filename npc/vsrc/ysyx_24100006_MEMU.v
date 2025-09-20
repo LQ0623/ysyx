@@ -91,6 +91,11 @@ output is_load,
     output [11:0]   	Csr_Write_Addr_W,
 	output [2:0] 		Gpr_Write_RD_W,
 	output [1:0] 		Csr_Write_RD_W
+
+	// 前递单元设计
+	// ,output 			mem_is_load
+	,output		exe_mem_is_load
+	,output	[31:0]		mem_fw_data
 );
 
 	// TAG:也需要使用读写使能来进行状态的转移
@@ -247,6 +252,7 @@ output is_load,
                         state       	<= S_SEND;
 
 						// 清理可选项
+						locked_sram_read_write<=0;
                         axi_arsize  	<= 3'b000;
                         axi_addr_suffix <= 2'b00;
 					end
@@ -364,22 +370,25 @@ reg [31:0] npc_r;
 	
 
     // ================== 对外输出 ==================
+	// state==S_IDLE时，就需要锁存数据，因为这里ready的时候，上面一个模块会重新发一批数据，直接在state==S_IDLE时锁存，不然其他模块会以为这个数据其实是state==S_LOCK时锁存的，这样会导致stall的时候不正确
+	// 仅在空闲态时，直接将上一级的信号传递下去
+	// 否则全部使用本级锁存寄存器的值
 	assign is_load = (locked_sram_read_write == 2'b01); // 仅在读操作时为1
     // 向下游的数据（全部来源于本级锁存寄存器）
-	assign is_break_o      	= is_break_r;
-    assign pc_W            	= pc_r;
-    assign sext_imm_W      	= sext_imm_r;
-    assign alu_result_W    	= alu_result_r;
-    assign rs1_data_W      	= rs1_data_r;
-    assign rdata_csr_W     	= rdata_csr_r;
+	assign is_break_o      	= (state == S_IDLE) ? is_break_i : is_break_r;
+    assign pc_W            	= (state == S_IDLE) ? pc_M : pc_r;
+    assign sext_imm_W      	= (state == S_IDLE) ? sext_imm_M : sext_imm_r;
+    assign alu_result_W    	= (state == S_IDLE) ? alu_result_M : alu_result_r;
+    assign rs1_data_W      	= (state == S_IDLE) ? rs1_data_M : rs1_data_r;
+    assign rdata_csr_W     	= (state == S_IDLE) ? rdata_csr_M : rdata_csr_r;
 
-    assign Gpr_Write_W     	= Gpr_Write_r;
-    assign Csr_Write_W     	= Csr_Write_r;
-    assign Gpr_Write_RD_W  	= Gpr_Write_RD_r;
-    assign Csr_Write_RD_W  	= Csr_Write_RD_r;
-	assign Gpr_Write_Addr_W	= Gpr_Write_Addr_r;
-	assign Csr_Write_Addr_W	= Csr_Write_Addr_r;
-assign npc_M = npc_r;
+    assign Gpr_Write_W     	= (state == S_IDLE) ? Gpr_Write_M : Gpr_Write_r;
+    assign Csr_Write_W     	= (state == S_IDLE) ? Csr_Write_M : Csr_Write_r;
+    assign Gpr_Write_RD_W  	= (state == S_IDLE) ? Gpr_Write_RD_M : Gpr_Write_RD_r;
+    assign Csr_Write_RD_W  	= (state == S_IDLE) ? Csr_Write_RD_M : Csr_Write_RD_r;
+	assign Gpr_Write_Addr_W	= (state == S_IDLE) ? Gpr_Write_Addr_M : Gpr_Write_Addr_r;
+	assign Csr_Write_Addr_W	= (state == S_IDLE) ? Csr_Write_Addr_M : Csr_Write_Addr_r;
+assign npc_M = (state == S_IDLE) ? npc_E : npc_r;
 
     // 读取数据的扩展：使用已锁存的读掩码
     ysyx_24100006_MuxKey#(5,3,32) mem_rdata_extend_i(
@@ -396,6 +405,29 @@ assign npc_M = npc_r;
 	wire   store_exc		= (axi_bvalid == 1 && axi_bresp != 0);
 	assign irq_W       		= irq_r || store_exc;
 	assign irq_no_W    		= store_exc ? 8'h7 : irq_no_r;	// 5号异常为load异常，7号异常为store异常，但是加载异常在xbar还是arbiter就会处理，报错
+
+	// 前递单元设计
+	reg [1:0] cnt;
+	always @(posedge clk) begin
+		if(reset) begin
+			cnt <= 2'b0;
+		end else begin
+			if(mem_out_ready == 1'b1 && sram_read_write == 2'b01)begin
+				cnt <= cnt + 1'b1;
+			end
+			if(axi_rvalid == 1'b1) begin
+				cnt <= cnt - 1'b1;
+			end
+		end
+	end
+
+	assign exe_mem_is_load 	= (sram_read_write == 2'b01 && cnt != 0) ? 1'b1 : 1'b0;
+	assign mem_fw_data 	= 	(Gpr_Write_RD_W == 3'b000) ? sext_imm_W :
+							(Gpr_Write_RD_W == 3'b001) ? alu_result_W :
+							(Gpr_Write_RD_W == 3'b010) ? (pc_W + 32'd4) :
+							(Gpr_Write_RD_W == 3'b011) ? Mem_rdata_extend :
+							(Gpr_Write_RD_W == 3'b100) ? rdata_csr_W :
+							32'b0;
 
 	// always @(posedge clk) begin
 	// 	if(axi_awaddr == 32'ha20913e8) begin

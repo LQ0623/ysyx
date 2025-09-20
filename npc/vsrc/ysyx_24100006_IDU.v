@@ -73,6 +73,13 @@ module ysyx_24100006_idu(
     ,input [7:0]    irq_no_F
     ,output         irq_D
     ,output [7:0]   irq_no_D
+
+    // 前递单元设计
+    ,input [1:0]    forwardA
+    ,input [1:0]    forwardB
+    ,input [31:0]   exe_fw_data
+    ,input [31:0]   mem_fw_data
+    ,input [31:0]   wb_fw_data
 );
 
 	// 握手机制
@@ -167,12 +174,27 @@ module ysyx_24100006_idu(
         .is_fence_i(ctrl_is_fence_i)
     );
 
+    // 前递单元设计
+    wire [31:0] rs1_data_fw;
+    wire [31:0] rs2_data_fw;
+    assign rs1_data_fw = (forwardA == 2'b00) ? rs1_data_comb :
+                        (forwardA == 2'b01) ? exe_fw_data :
+                        (forwardA == 2'b10) ? mem_fw_data :
+                        (forwardA == 2'b11) ? wb_fw_data : 32'b0;
+
+    assign rs2_data_fw = (forwardB == 2'b00) ? rs2_data_comb :
+                        (forwardB == 2'b01) ? exe_fw_data : 
+                        (forwardB == 2'b10) ? mem_fw_data :
+                        (forwardB == 2'b11) ? wb_fw_data : 32'b0;
+
 	
 	// ---------------- map combinational outputs ----------------
     assign pc_E        		= pc_D;
     assign sext_imm    		= sext_imm_wire;
-    assign rs1_data    		= rs1_data_comb;
-    assign rs2_data    		= rs2_data_comb;
+    // assign rs1_data    		= rs1_data_comb;
+    // assign rs2_data    		= rs2_data_comb;
+    assign rs1_data    		= rs1_data_fw;
+    assign rs2_data    		= rs2_data_fw;
     assign rdata_csr   		= rdata_csr_comb;
     assign mtvec       		= mtvec_comb;
     assign mepc        		= mepc_comb;
