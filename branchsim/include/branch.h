@@ -24,7 +24,7 @@ class BranchPredictor {
         BTB* btb; //完全映射
 
     protected:
-        bool parse_inst(uint32_t inst, uint32_t pc, uint32_t* dest);
+        bool parse_inst(uint32_t inst, uint32_t pc, string* op, uint32_t* dest);
         int M() { return log2(set);}        // set = 2^M，表示BTB有多少个entry
         int N() { return log2(block_size);} // block_size = 2^N，表示忽略 pc 低N位
         int getIndex(uint32_t pc);
@@ -77,7 +77,7 @@ class BTFNPredictor : public BranchPredictor {
     public:
         BTFNPredictor(const char* logFile, int set) : BranchPredictor(logFile,set) {}
         
-        bool predict(uint32_t pc, uint32_t inst) override {}
+        bool predict(uint32_t pc, uint32_t inst) override;
 
         void statistic() override{
             log("========== BTFN Predictor Statistic ==========\n");

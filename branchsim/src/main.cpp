@@ -1,5 +1,6 @@
 #include <common.h>
 #include <branch.h>
+FILE *fp = NULL;
 
 int main(int argc, char **argv) {
     fp = fopen(argv[1], "r");

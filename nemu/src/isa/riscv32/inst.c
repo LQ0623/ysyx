@@ -210,6 +210,9 @@ static int decode_exec(Decode *s) {
   // 处理跳转指令的btrace
   #ifndef CONFIG_TARGET_SHARE
   if(is_jump){
+    if(BITS(s->isa.inst.val, 6,0) == 0b0110011){  // R型
+      printf("出错了 R型指令不应该是跳转指令\n");
+    }
     write_branchtrace(s->snpc - 4, s->isa.inst.val, s->dnpc != s->snpc);
   }
   #endif
