@@ -1,7 +1,7 @@
 BUILD_DIR = $(BRANCHSIM_HOME)/build
 
 # 默认文件路径
-TEXT_BTRACE ?= $(NEMU_HOME)/build/btrace.log
+TEXT_BTRACE ?= $(BRANCHSIM_HOME)/build/btrace.log
 
 # 编译选项
 CPPFLAGS = -std=c++17 -O2
@@ -20,6 +20,7 @@ $(BRANCHSIM_BIN): $(filter-out $(COMPRESS_SRC), $(SRCS))
 # 运行缓存模拟器（使用压缩后的 trace）
 run: $(BRANCHSIM_BIN)
 	@echo "#[Running BranchSim with compressed trace]"
+	@echo "#[NEMU_HOME: $(NEMU_HOME) , Trace file: $(TEXT_BTRACE)]"
 	@$(BRANCHSIM_BIN) $(TEXT_BTRACE)
 
 # 清理构建文件
