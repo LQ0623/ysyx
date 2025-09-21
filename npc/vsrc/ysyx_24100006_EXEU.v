@@ -69,6 +69,10 @@ module ysyx_24100006_exeu(
 	output [7:0] 	Mem_WMask_M,
 	output [2:0] 	Mem_RMask_M,
 	output [1:0] 	sram_read_write_M
+
+	// 前递单元设计
+	,output 		exe_is_load
+	,output	[31:0]	exe_fw_data
 );
 
 	// 组合握手：当需要等待 icache 刷新时，对上游施加反压、对下游不发 valid
@@ -149,5 +153,14 @@ module ysyx_24100006_exeu(
 
 	assign npc_E				= npc_temp;
 	assign is_break_o			= is_break_i;
+
+
+	// 前递单元设计
+	assign exe_is_load 	= 	(sram_read_write_M == 2'b01) ? 1'b1 : 1'b0;
+	assign exe_fw_data 	= 	(Gpr_Write_RD_M == 3'b000) ? sext_imm_M :
+							(Gpr_Write_RD_M == 3'b001) ? alu_result :
+							(Gpr_Write_RD_M == 3'b010) ? (pc_M + 32'd4) :
+							(Gpr_Write_RD_M == 3'b100) ? rdata_csr_M :
+							32'b0;
 
 endmodule

@@ -121,7 +121,7 @@ module ysyx_24100006_ID_EXE(
     assign is_break_o           = is_break_temp;
     assign sram_read_write_o    = sram_read_write_temp;
 
-    assign out_valid            = valid_temp;
+    assign out_valid            = (flush_i == 1'b1) ? 1'b0 : valid_temp;
     // 当没有有效存储时，或者当存储并且下游准备好时，可以接受新数据（可以滑动）
     assign in_ready             = (!valid_temp) || (out_ready && valid_temp);
 
@@ -155,9 +155,33 @@ module ysyx_24100006_ID_EXE(
             is_break_temp           <= 1'b0;        // 复位时不是ebreak状态
             sram_read_write_temp    <= 2'd0;
         end else begin
+            // flush的时候，将所有的数据都清除，不然会导致错误的指令被执行
             if(flush_i)begin
                 valid_temp       <= 1'b0; // 冲刷流水线
                 irq_temp         <= 1'b0; // 冲刷流水线时清除中断信号
+                pc_temp                 <= 32'h00000000;
+                sext_imm_temp           <= 32'd0;
+                rs1_data_temp           <= 32'd0;
+                rs2_data_temp           <= 32'd0;
+                rdata_csr_temp          <= 32'd0;
+                alu_op_temp             <= 4'd0;
+                Gpr_Write_Addr_temp     <= 4'b0;
+                Csr_Write_Addr_temp     <= 12'b0;
+                Gpr_Write_RD_temp       <= 3'd0;
+                Csr_Write_RD_temp       <= 2'd0;
+                Jump_temp               <= 4'd0;
+                Mem_WMask_temp          <= 8'd0;
+                Mem_RMask_temp          <= 3'd0;
+                irq_no_temp             <= 8'd0;
+                mtvec_temp              <= 32'd0;
+                mepc_temp               <= 32'd0;
+                is_fence_i_temp         <= 1'd0;
+                AluSrcA_temp            <= 1'd0;
+                AluSrcB_temp            <= 1'd0;
+                Gpr_Write_temp          <= 1'd0;
+                Csr_Write_temp          <= 1'd0;
+                is_break_temp           <= 1'b0;        // 复位时不是ebreak状态
+                sram_read_write_temp    <= 2'd0;
             end
             // 当允许接受新输入时
             else if (in_ready) begin

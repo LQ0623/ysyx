@@ -101,33 +101,38 @@ module ysyx_24100006_axi_arbiter (
     parameter   IDLE = 0, BUSY = 1;
 
     reg [1:0] axi_state;                // AXI目前的状态
-    reg [2:0] read_targeted_module;     // 当前是哪一个模块进行读操作
+    reg [2:0] targeted_module;     // 当前是哪一个模块进行操作
 
-    // ================== 读操作 ==================
+    // ================== 读写操作仲裁 ==================
     always @(posedge clk) begin
         if(reset) begin
             axi_state               <= IDLE;
-            read_targeted_module    <= ARB_IDLE;
+            targeted_module         <= ARB_IDLE;
         end else begin
             case(axi_state)
                 IDLE: begin     // 空闲状态
                     // 固定优先级
                     // MEMU优先策略
+                    // 写操作优先与读操作，读操作中IFU优先于MEMU
+                    if(mem_axi_awvalid == 1'b1) begin
+                        axi_state               <= BUSY;
+                        targeted_module         <= ARB_MEMU_WRITE;
+                    end else
                     if(ifu_axi_arvalid == 1'b1) begin               // 优先处理IFU
                         axi_state               <= BUSY;
-                        read_targeted_module    <= ARB_IFU_READ;
+                        targeted_module         <= ARB_IFU_READ;
                     end else if(mem_axi_arvalid == 1'b1) begin      // 其次处理MEMU
                         axi_state               <= BUSY;
-                        read_targeted_module    <= ARB_MEMU_READ;
+                        targeted_module         <= ARB_MEMU_READ;
                     end
                 end
 
                 BUSY: begin     // 总线不是空闲状态
                     // TAG:现在只是针对单次传输，没有突发传输，表示一次读传输完成
                     // TAG:加入sram_axi_rlast之后，表示这个是最后一个读数据
-                    if(sram_axi_rready == 1'b1 && sram_axi_rvalid == 1'b1 && sram_axi_rlast == 1'b1) begin
+                    if(sram_axi_rready == 1'b1 && sram_axi_rvalid == 1'b1 && sram_axi_rlast == 1'b1 || (targeted_module == ARB_MEMU_WRITE && sram_axi_bready == 1'b1 && sram_axi_bvalid == 1'b1)) begin
                         axi_state               <= IDLE;
-                        read_targeted_module    <= ARB_IDLE;
+                        targeted_module         <= ARB_IDLE;
                     end
                 end
             endcase
@@ -136,45 +141,45 @@ module ysyx_24100006_axi_arbiter (
 
     // ================== 信号转发逻辑 ==================
     // IFU 读通道
-    assign ifu_axi_arready  =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_arready : 1'b0;
-    assign ifu_axi_rvalid   =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_rvalid  : 1'b0;
-    assign ifu_axi_rresp    =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_rresp   : 2'b0;
-    // assign ifu_axi_rdata    =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_rdata   : 32'b0;
+    assign ifu_axi_arready  =   (targeted_module == ARB_IFU_READ) ? sram_axi_arready : 1'b0;
+    assign ifu_axi_rvalid   =   (targeted_module == ARB_IFU_READ) ? sram_axi_rvalid  : 1'b0;
+    assign ifu_axi_rresp    =   (targeted_module == ARB_IFU_READ) ? sram_axi_rresp   : 2'b0;
+    // assign ifu_axi_rdata    =   (targeted_module == ARB_IFU_READ) ? sram_axi_rdata   : 32'b0;
 
     // AXI新增信号
-    assign ifu_axi_rlast    =   (read_targeted_module == ARB_IFU_READ) ? sram_axi_rlast    : 1'b0;
+    assign ifu_axi_rlast    =   (targeted_module == ARB_IFU_READ) ? sram_axi_rlast    : 1'b0;
 
     // MEMU 读通道
-    assign mem_axi_arready  =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_arready : 1'b0;
-    assign mem_axi_rvalid   =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_rvalid  : 1'b0;
-    assign mem_axi_rresp    =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_rresp   : 2'b0;
-    // assign mem_axi_rdata    =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_rdata   : 32'b0; 
+    assign mem_axi_arready  =   (targeted_module == ARB_MEMU_READ) ? sram_axi_arready : 1'b0;
+    assign mem_axi_rvalid   =   (targeted_module == ARB_MEMU_READ) ? sram_axi_rvalid  : 1'b0;
+    assign mem_axi_rresp    =   (targeted_module == ARB_MEMU_READ) ? sram_axi_rresp   : 2'b0;
+    // assign mem_axi_rdata    =   (targeted_module == ARB_MEMU_READ) ? sram_axi_rdata   : 32'b0; 
 
     // AXI新增信号
-    assign mem_axi_rlast    =   (read_targeted_module == ARB_MEMU_READ) ? sram_axi_rlast    : 1'b0;
+    assign mem_axi_rlast    =   (targeted_module == ARB_MEMU_READ) ? sram_axi_rlast    : 1'b0;
 
     // MEMU 写通道
-    assign mem_axi_awready  =   sram_axi_awready;
-    assign mem_axi_wready   =   sram_axi_wready;
-    assign mem_axi_bvalid   =   sram_axi_bvalid;
-    assign mem_axi_bresp    =   sram_axi_bresp;
+    assign mem_axi_awready  =   (targeted_module == ARB_MEMU_WRITE) ? sram_axi_awready : 1'b0;
+    assign mem_axi_wready   =   (targeted_module == ARB_MEMU_WRITE) ? sram_axi_wready  : 1'b0;
+    assign mem_axi_bvalid   =   (targeted_module == ARB_MEMU_WRITE) ? sram_axi_bvalid  : 1'b0;
+    assign mem_axi_bresp    =   (targeted_module == ARB_MEMU_WRITE) ? sram_axi_bresp   : 2'b0;
 
     // SRAM 读通道
-    assign sram_axi_arvalid =   (read_targeted_module == ARB_MEMU_READ) ? mem_axi_arvalid : 
-                                ((read_targeted_module == ARB_IFU_READ) ? ifu_axi_arvalid : 1'b0);
-    assign sram_axi_rready  =   (read_targeted_module == ARB_MEMU_READ) ? mem_axi_rready  : 
-                                ((read_targeted_module == ARB_IFU_READ) ? ifu_axi_rready  : 1'b0);
-    assign sram_axi_araddr  =   (read_targeted_module == ARB_MEMU_READ) ? mem_axi_araddr  : 
-                                ((read_targeted_module == ARB_IFU_READ) ? ifu_axi_araddr  : 32'b0);
+    assign sram_axi_arvalid =   (targeted_module == ARB_MEMU_READ) ? mem_axi_arvalid : 
+                                ((targeted_module == ARB_IFU_READ) ? ifu_axi_arvalid : 1'b0);
+    assign sram_axi_rready  =   (targeted_module == ARB_MEMU_READ) ? mem_axi_rready  : 
+                                ((targeted_module == ARB_IFU_READ) ? ifu_axi_rready  : 1'b0);
+    assign sram_axi_araddr  =   (targeted_module == ARB_MEMU_READ) ? mem_axi_araddr  : 
+                                ((targeted_module == ARB_IFU_READ) ? ifu_axi_araddr  : 32'b0);
 
     // AXI 新增信号
-    assign sram_axi_arlen   =   (read_targeted_module == ARB_MEMU_READ) ? mem_axi_arlen   :
-                                ((read_targeted_module == ARB_IFU_READ)) ? ifu_axi_arlen  : 8'h0;
-    assign sram_axi_arsize   =   (read_targeted_module == ARB_MEMU_READ) ? mem_axi_arsize :
-                                ((read_targeted_module == ARB_IFU_READ)) ? ifu_axi_arsize : 3'h0;
+    assign sram_axi_arlen   =   (targeted_module == ARB_MEMU_READ) ? mem_axi_arlen   :
+                                ((targeted_module == ARB_IFU_READ)) ? ifu_axi_arlen  : 8'h0;
+    assign sram_axi_arsize   =   (targeted_module == ARB_MEMU_READ) ? mem_axi_arsize :
+                                ((targeted_module == ARB_IFU_READ)) ? ifu_axi_arsize : 3'h0;
 
-    assign sram_axi_addr_suffix =   (read_targeted_module == ARB_MEMU_READ) ? mem_axi_addr_suffix :
-                                ((read_targeted_module == ARB_IFU_READ)) ? 2'b0 : 2'b0;
+    assign sram_axi_addr_suffix =   (targeted_module == ARB_MEMU_READ) ? mem_axi_addr_suffix :
+                                ((targeted_module == ARB_IFU_READ)) ? 2'b0 : 2'b0;
 
     // ================== 读数据通道寄存器 ==================
     reg [31:0] ifu_rdata_reg;
@@ -186,7 +191,7 @@ module ysyx_24100006_axi_arbiter (
             ifu_rdata_reg <= 32'b0;
         end else begin
             // 仅当仲裁给IFU且SRAM返回有效数据时更新
-            if (read_targeted_module == ARB_IFU_READ && sram_axi_rvalid) 
+            if (targeted_module == ARB_IFU_READ && sram_axi_rvalid) 
                 ifu_rdata_reg <= sram_axi_rdata;
             // 其他情况保持原值
         end
@@ -198,7 +203,7 @@ module ysyx_24100006_axi_arbiter (
             mem_rdata_reg <= 32'b0;
         end else begin
             // 仅当仲裁给MEMU且SRAM返回有效数据时更新
-            if (read_targeted_module == ARB_MEMU_READ && sram_axi_rvalid) 
+            if (targeted_module == ARB_MEMU_READ && sram_axi_rvalid) 
                 mem_rdata_reg <= sram_axi_rdata;
             // 其他情况保持原值
         end
@@ -206,42 +211,8 @@ module ysyx_24100006_axi_arbiter (
 
     // 最终输出连接
     // 这么写是为了第一时间获取到数据，后续没有读入的时候还能保持数据
-    assign ifu_axi_rdata = (read_targeted_module == ARB_IFU_READ && sram_axi_rvalid) ? sram_axi_rdata : ifu_rdata_reg;
-    assign mem_axi_rdata = (read_targeted_module == ARB_MEMU_READ && sram_axi_rvalid) ? sram_axi_rdata : mem_rdata_reg;
-
-
-    // ================== SRAM写仲裁状态机 ==================
-    parameter   W_IDLE = 0, W_BUSY = 1;
-
-    reg [1:0] axi_state_w;                // AXI目前的状态
-    reg [2:0] write_targeted_module;     // 当前是哪一个模块进行读操作
-    // ================== 写操作 ==================
-    always @(posedge clk) begin
-        if(reset) begin
-            axi_state_w             <= IDLE;
-            write_targeted_module   <= ARB_IDLE;
-        end else begin
-            case(axi_state_w)
-                W_IDLE: begin     // 空闲状态
-                    // 固定优先级
-                    // MEMU优先策略
-                    if(mem_axi_awvalid == 1'b1) begin
-                        axi_state_w             <= W_BUSY;
-                        write_targeted_module   <= ARB_MEMU_WRITE;
-                    end
-                end
-
-                W_BUSY: begin     // 总线不是空闲状态
-                    // 现在只是针对单次传输，没有突发传输，表示一次读传输完成
-                    if(sram_axi_bready == 1'b1 && sram_axi_bvalid == 1'b1) begin
-                        axi_state_w             <= W_IDLE;
-                        write_targeted_module   <= ARB_IDLE;
-                    end
-                end
-            endcase
-        end
-    end
-
+    assign ifu_axi_rdata = (targeted_module == ARB_IFU_READ && sram_axi_rvalid) ? sram_axi_rdata : ifu_rdata_reg;
+    assign mem_axi_rdata = (targeted_module == ARB_MEMU_READ && sram_axi_rvalid) ? sram_axi_rdata : mem_rdata_reg;
 
     // 写入的实际数据，数据需要移位的
     wire [31:0] real_axi_wdata;
@@ -259,16 +230,16 @@ module ysyx_24100006_axi_arbiter (
 
 
     // SRAM 写通道
-    assign sram_axi_awaddr  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr  : 32'b0;
-    assign sram_axi_awvalid =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_awvalid : 1'b0;
-    assign sram_axi_wvalid  =   (write_targeted_module == ARB_MEMU_WRITE) ? mem_axi_wvalid  : 1'b0;
-    assign sram_axi_wdata   =   real_axi_wdata;
-    assign sram_axi_bready  =   mem_axi_bready;
+    assign sram_axi_awaddr  =   (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr  : 32'b0;
+    assign sram_axi_awvalid =   (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awvalid : 1'b0;
+    assign sram_axi_wvalid  =   (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wvalid  : 1'b0;
+    assign sram_axi_wdata   =   (targeted_module == ARB_MEMU_WRITE) ? real_axi_wdata  : 32'h0;
+    assign sram_axi_bready  =   (targeted_module == ARB_MEMU_WRITE) ? mem_axi_bready  : 1'b0;
 
     // AXI新增信号
-    assign sram_axi_awlen   =   mem_axi_awlen;
-    assign sram_axi_awsize  =   mem_axi_awsize;
-    assign sram_axi_wstrb   =   mem_axi_wstrb;
-    assign sram_axi_wlast   =   mem_axi_wlast;
+    assign sram_axi_awlen   =   (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awlen   : 8'h0;
+    assign sram_axi_awsize  =   (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awsize  : 3'h0;
+    assign sram_axi_wstrb   =   (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wstrb   : 4'h0;
+    assign sram_axi_wlast   =   (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wlast   : 1'b0;
 
 endmodule

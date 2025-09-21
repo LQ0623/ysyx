@@ -55,11 +55,11 @@ module ysyx_24100006_ifu(
 	always @(posedge clk) begin
 		redirect_flag = {redirect_flag[0],redirect_valid};
 	end
-	// // 异常处理机制
-	// reg [1:0] exc_flag;	// 检测上升沿
-	// always @(posedge clk) begin
-	// 	exc_flag = {exc_flag[0],EXC};
-	// end
+	// 异常处理机制
+	reg [1:0] exc_flag;	// 检测上升沿
+	always @(posedge clk) begin
+		exc_flag = {exc_flag[0],EXC};
+	end
 	reg [1:0] req_epoch;
 	reg [1:0] cur_epoch;
 	always @(posedge clk) begin
@@ -70,7 +70,7 @@ module ysyx_24100006_ifu(
 			if (axi_arvalid && axi_arready) begin
 				req_epoch <= cur_epoch;
 			end
-			if (redirect_flag == 2'b01 || EXC == 1'b1) begin
+			if (redirect_flag == 2'b01 || exc_flag == 2'b01) begin
 				cur_epoch <= cur_epoch + 1;
 			end
 		end

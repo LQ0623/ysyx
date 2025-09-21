@@ -27,6 +27,9 @@ VERILATOR_CFLAGS += -DVERILATOR_SIM
 # verilog使用的参数：是否使用YSYXSOC
 VERILATOR_CFLAGS += -DYSYXSOC
 
+# 多线程编译
+VERILATOR_CFLAGS += -j
+
 #source code
 VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
 # 将ysySoc/perip目录下面的所有的.v文件加入verilator的Verilog文件列表

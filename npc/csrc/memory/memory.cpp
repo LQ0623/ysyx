@@ -428,6 +428,10 @@ extern "C" void sdram_read(int chip_id, int bank_id, int row_id, int col_id, int
 	// printf("READ  addr = %#x , data = %#x\t",align_addr, *data);
 	// printf(" chip_id = %d, ba = %d, ra = %d, ca = %d\n", chip_id, bank_id, row_id, col_id);
 	
+	// if((bank_id == 0x2 && row_id == 0x5e && col_id == 0x16A) || (bank_id == 0x0 && row_id == 0x91 && col_id == 0x1f4) || (bank_id == 0x0 && row_id == 0x13 && col_id == 0x1f4)){
+	// 	printf("chip id is %x, bank_id is %x, row_id is %x, col_id is %x\n",chip_id,bank_id,row_id,col_id);
+	// 	printf("now read data:%#x , addr %x data is %x\n\n",*data,align_addr,*(uint16_t *)guest_to_host_sdram(align_addr, chip_id));
+	// }
 	#ifdef CONFIG_MTRACE
 		mtrace_log_write(align_addr, 16, 'r', 0);
 	#endif
@@ -470,6 +474,10 @@ extern "C" void sdram_write(int chip_id, int bank_id, int row_id, int col_id, in
 			printf("wstrb is %d\n", wstrb);
 			break;
 	}
+	// if((bank_id == 0x2 && row_id == 0x5e && col_id == 0x16A) || (bank_id == 0x0 && row_id == 0x91 && col_id == 0x1f4) || (bank_id == 0x0 && row_id == 0x13 && col_id == 0x1f4)){
+	// 	printf("chip id is %x, bank_id is %x, row_id is %x, col_id is %x\n",chip_id,bank_id,row_id,col_id);
+	// 	printf("pc is %#x,chip_id is %x, wstrb is %x, now write data:%#x , addr %x data is %x\n\n",npc_w,chip_id,wstrb,wdata,align_addr,*(uint16_t *)guest_to_host_sdram(align_addr, chip_id));
+	// }
 	#ifdef CONFIG_MTRACE
 		mtrace_log_write(align_addr, wstrb, 'w', wdata);
 	#endif
