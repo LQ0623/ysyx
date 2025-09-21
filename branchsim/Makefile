@@ -1,25 +1,28 @@
 BUILD_DIR = $(BRANCHSIM_HOME)/build
-TRACE_DIR = $(BRANCHSIM_HOME)/trace
 
-BTRACE_FILE_BIG = $(TRACE_DIR)/btrace.log
-BTRACE_FILE = $(TRACE_DIR)/btrace.log.bz2
-SRCS = $(shell find $(BRANCHSIM_HOME)/src/ -name "*.cpp")
-SRCS += $(shell find $(BRANCHSIM_HOME)/src/ -name "*.c")
+# 默认文件路径
+TEXT_BTRACE ?= $(NEMU_HOME)/build/btrace.log
+
+# 编译选项
 CPPFLAGS = -std=c++17 -O2
-CPPFLAGS += -DCONFIG_TRACE
 INCLUDE_FLAG = -I$(BRANCHSIM_HOME)/include
 
-bin = $(BUILD_DIR)/branchsim
 
-$(bin): $(SRCS)
+# 默认目标
+all: $(BRANCHSIM_BIN) $(COMPRESS_BIN)
+
+# 构建缓存模拟器
+$(BRANCHSIM_BIN): $(filter-out $(COMPRESS_SRC), $(SRCS))
+	@echo "#[Building BranchSim]"
 	@mkdir -p $(BUILD_DIR)
 	@g++ $(CPPFLAGS) -o $@ $(INCLUDE_FLAG) $^
 
-run: $(bin)
-	@echo "#[Run BranchSim]"
-	$(bin) $(BTRACE_FILE)
-zip:
-	pbzip2 -p4 -kv $(BTRACE_FILE_BIG)
-clean:
-	rm -rf $(BUILD_DIR)
+# 运行缓存模拟器（使用压缩后的 trace）
+run: $(BRANCHSIM_BIN)
+	@echo "#[Running BranchSim with compressed trace]"
+	@$(BRANCHSIM_BIN) $(TEXT_BTRACE)
 
+# 清理构建文件
+clean:
+	@echo "#[Cleaning up]"
+	@rm -rf $(BUILD_DIR) $(BRANCHSIM_BIN) $(COMPRESS_BIN)
