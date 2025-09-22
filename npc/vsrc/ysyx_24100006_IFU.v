@@ -6,6 +6,9 @@ module ysyx_24100006_ifu(
     input reset,
 	input               stall_id, 
 	
+	input 				is_fence_i,
+	input 				icache_flush_done,
+
 	// from EXE
     input [31:0] 		npc,
 	input 				redirect_valid, 	// 需要重定向PC
@@ -79,7 +82,7 @@ module ysyx_24100006_ifu(
 	reg PCW; 
 
 	// 是否可以启动新取指
-	wire can_accept_new = !if_in_valid || (if_in_ready & ~stall_id);
+	wire can_accept_new = !if_in_valid || (if_in_ready & ~stall_id) || (is_fence_i);
 
 	// 握手机制
 	parameter S_IDLE = 0, S_FETCH = 1, S_WAITD = 3;
@@ -99,6 +102,13 @@ module ysyx_24100006_ifu(
 			axi_arlen		<= 8'b0;
 			axi_arsize		<= 3'b010;	// 一次传输四个字节
 		end else begin
+
+			// 当 icache 刷新完毕后，回到空闲状态
+			// 以防止在刷新过程中进入取指状态
+			if(icache_flush_done)begin
+				state <= S_IDLE;
+			end
+
 			case (state)
                 S_IDLE: begin
                     if (can_accept_new) begin
@@ -133,8 +143,15 @@ module ysyx_24100006_ifu(
 		end
 	end
 
+	// 判断指令是否为jal指令，并计算跳转的位置
+	wire [31:0] jal_target;
+	wire 		is_jal;
+	assign is_jal 		= (inst_F[6:0] == 7'b1101111) ? 1'b1 : 1'b0;
+	assign jal_target 	= pc_F + {{12{inst_F[31]}},inst_F[19:12],inst_F[20],inst_F[30:21],1'b0};
+
+
 	wire [31:0] npc_temp;
-	assign npc_temp = EXC ? csr_mtvec : (redirect_valid ? npc : pc_F + 4);
+	assign npc_temp = EXC ? csr_mtvec : (redirect_valid ? npc : (is_jal ? jal_target : pc_F + 4));
 	assign axi_araddr = pc_F;
 
 	ysyx_24100006_pc PC(

@@ -78,14 +78,14 @@ module ysyx_24100006_exeu(
 	// 组合握手：当需要等待 icache 刷新时，对上游施加反压、对下游不发 valid
 	// The stall signal is asserted when a fence.i instruction is encountered and the icache has not finished flushing.
 	// This ensures the pipeline waits for the icache to complete before proceeding.
-	wire stall;
-	assign stall = is_fence_i && !icache_flush_done;
+	// wire stall;
+	// assign stall = is_fence_i && !icache_flush_done;
 
 	// 握手机制
 	// 下游 valid：上游 valid 且本级不 stall
-	assign exe_in_valid  = exe_out_valid & !stall;
+	assign exe_in_valid  = exe_out_valid;
 	// 上游 ready：下游 ready 且本级不 stall
-    assign exe_out_ready = exe_in_ready & !stall;
+    assign exe_out_ready = exe_in_ready;
 
 	// 计算
     wire [31:0] alu_a_data,alu_b_data;
@@ -128,7 +128,8 @@ module ysyx_24100006_exeu(
 	);
 
 	// 当是跳转指令且目标地址与pc+4不同时，才重定向
-	assign redirect_valid = (exe_out_valid == 1 && Jump != 0 && npc_E != (pc_E + 32'd4)) ? 1'b1 : 1'b0;
+	// 若是 jal 指令不需要要重定向，因为前面已经计算好了 npc
+	assign redirect_valid = (exe_out_valid == 1 && Jump != 0 && Jump != 1 && npc_E != (pc_E + 32'd4)) ? 1'b1 : 1'b0;
 
 	// 直接透传到 EXE_MEM（它会寄存）
     assign pc_M            		= pc_E;

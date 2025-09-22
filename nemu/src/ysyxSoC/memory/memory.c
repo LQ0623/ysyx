@@ -8,8 +8,11 @@ uint8_t *sdram = NULL;
 
 // trace的参数
 static FILE *itrace_fp = NULL;
+static FILE *btrace_fp = NULL;
 static char * itrace_file = "build/itrace.log";
+static char * btrace_file = "build/btrace.log";
 void init_icacheitrace();
+void init_branchtrace();
 
 void init_mrom(){
     mrom = malloc(0xfff);
@@ -53,6 +56,8 @@ void init_soc(){
 #ifndef CONFIG_TARGET_SHARE
     init_icacheitrace();
     Log("cache trace init");  
+    init_branchtrace();
+    Log("branch trace init");  
 #endif
     Log("soc init");
 }
@@ -208,4 +213,14 @@ void init_icacheitrace(){
 
 void write_icacheitrace(paddr_t addr){
     fprintf(itrace_fp, "%u\n", addr);
+}
+
+void init_branchtrace(){
+    btrace_fp = fopen(btrace_file, "w");
+    Log("branch trace file %s", btrace_file);
+    assert(itrace_fp);
+}
+
+void write_branchtrace(paddr_t pc, uint32_t inst, bool is_taken){
+    fprintf(btrace_fp, "%u %u %u\n", pc, inst, is_taken);
 }

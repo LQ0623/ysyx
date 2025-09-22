@@ -649,7 +649,7 @@ module ysyx_24100006(
         .clk            (clock), 				// 系统时钟
         .rst            (reset),				// 系统复位
         
-		.fence_i_i		(is_fence_i_D_E),		// 是否刷新icache的cache块
+		.fence_i_i		(is_fence_i_D),		// 是否刷新icache的cache块
 
         // CPU -> Icache接口
         .cpu_arvalid_i  (axi_arvalid_if),	 	// CPU地址有效
@@ -1139,7 +1139,7 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 	ysyx_24100006_IF_ID u_IF_ID (
 		.clk            	(clock),
 		.reset          	(reset),
-		.flush_i        	(redirect_valid_E_F || irq_WD),   // 当是跳转指令或者发生异常时冲刷
+		.flush_i        	(redirect_valid_E_F || irq_WD || (is_fence_i_D && !icache_flush_done_CE)),   // 当是跳转指令或者发生异常时冲刷
 		.in_valid       	(if_in_valid),		// 来自IFU
 		.in_ready       	(if_in_ready),		// 输出到IFU
 		.pc_i           	(pc_F),         	// IF阶段PC输入
@@ -1374,6 +1374,9 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 		.reset(reset),
 		// 直接将 hazard 的 stall 信号给 IFU：
 		.stall_id(stall_id),
+
+		.is_fence_i(is_fence_i_D),
+		.icache_flush_done(icache_flush_done_CE),
 
 		.redirect_valid(redirect_valid_E_F),
 		.npc(npc_E_F),

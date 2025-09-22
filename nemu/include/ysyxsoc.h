@@ -20,5 +20,7 @@ void socDev_write(paddr_t addr, int len, word_t data);
 // 写icachetrace
 void write_icacheitrace(paddr_t addr);
 
+// 写branchtrace
+void write_branchtrace(paddr_t pc, uint32_t inst, bool is_taken);
 
 #endif

@@ -121,9 +121,11 @@ module ysyx_24100006_wbu(
 		2'b01,rs1_data,
 		2'b10,(rdata_csr | rs1_data)
 	});
+`ifdef VERILATOR_SIM
 always @(*) begin
     if(is_break_i == 1)
         npc_trap();
 end
+`endif
 
 endmodule
