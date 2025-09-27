@@ -714,90 +714,120 @@ module ysyx_24100006(
 	// Access Fault异常信号
 	wire [1:0] 	Access_Fault;
 
-	// 仲裁器
-	ysyx_24100006_axi_arbiter arbiter(
-		.clk(clock),
-		.reset(reset),
-		// TAG：没有使用的信号都暂时没有接入
+	// AXI交叉开关仲裁器
+	ysyx_24100006_xbar_arbiter #(
+		.SRAM_ADDR(32'h8000_0000),  // 设置SRAM基地址
+		.SPI_ADDR(32'h1000_1000)    // 设置SPI基地址
+	) u_xbar_arbiter (
+		// 时钟和复位
+		.clk          (clock),
+		.reset        (reset),
+		
 		// ================== IFU接口 ==================
-		// 读地址通道
-		.ifu_axi_arvalid(axi_arvalid_icache),
-		.ifu_axi_arready(axi_arready_icache),
-		.ifu_axi_araddr(axi_araddr_icache),
-		// 读数据通道
-		.ifu_axi_rvalid(axi_rvalid_icache),
-		.ifu_axi_rready(axi_rready_icache),
-		.ifu_axi_rresp(axi_rresp_if),
-		.ifu_axi_rdata(axi_rdata_icache),
-		// AXI新增信号
-		.ifu_axi_arlen(axi_arlen_icache),
-		.ifu_axi_arsize(axi_arsize_icache),
-		.ifu_axi_rlast(axi_rlast_icache),
+		.ifu_axi_arvalid (axi_arvalid_icache),
+		.ifu_axi_arready (axi_arready_icache),
+		.ifu_axi_araddr  (axi_araddr_icache),
+		.ifu_axi_rvalid  (axi_rvalid_icache),
+		.ifu_axi_rready  (axi_rready_icache),
+		.ifu_axi_rresp   (axi_rresp_if),
+		.ifu_axi_rdata   (axi_rdata_icache),
+		.ifu_axi_arlen   (axi_arlen_icache),
+		.ifu_axi_arsize  (axi_arsize_icache),
+		.ifu_axi_rlast   (axi_rlast_icache),
 
 		// ================== MEMU接口 ==================
-		// 读地址通道
-		.mem_axi_arvalid(axi_arvalid_mem),
-		.mem_axi_arready(axi_arready_mem),
-		.mem_axi_araddr(axi_araddr_mem),
-		// 读数据通道
-		.mem_axi_rvalid(axi_rvalid_mem),
-		.mem_axi_rready(axi_rready_mem),
-		.mem_axi_rresp(axi_rresp_mem),
-		.mem_axi_rdata(axi_rdata_mem),
-		// 写地址通道
-		.mem_axi_awvalid(axi_awvalid_mem),
-		.mem_axi_awready(axi_awready_mem),
-		.mem_axi_awaddr(axi_awaddr_mem),
-		// 写数据通道
-		.mem_axi_wvalid(axi_wvalid_mem),
-		.mem_axi_wready(axi_wready_mem),
-		.mem_axi_wdata(axi_wdata_mem),
-		// 写响应通道
-		.mem_axi_bvalid(axi_bvalid_mem),
-		.mem_axi_bready(axi_bready_mem),
-		.mem_axi_bresp(axi_bresp_mem),
-		// AXI新增信号
-		.mem_axi_arlen(axi_arlen_mem),
-		.mem_axi_arsize(axi_arsize_mem),
-		.mem_axi_rlast(axi_rlast_mem),
-		.mem_axi_awlen(axi_awlen_mem),
-		.mem_axi_awsize(axi_awsize_mem),
-		.mem_axi_wstrb(axi_wstrb_mem),
-		.mem_axi_wlast(axi_wlast_mem),
-		.mem_axi_addr_suffix(axi_addr_suffix_mem),
-		// ================== SRAM接口 ==================
-		// TAG：现在下面的连接的就是xbar了
-		// 读地址通道
-		.sram_axi_arvalid(m_axi_arvalid),
-		.sram_axi_arready(m_axi_arready),
-		.sram_axi_araddr(m_axi_araddr),
-		// 读数据通道
-		.sram_axi_rvalid(m_axi_rvalid),
-		.sram_axi_rready(m_axi_rready),
-		.sram_axi_rresp(m_axi_rresp),
-		.sram_axi_rdata(m_axi_rdata),
-		// 写地址通道
-		.sram_axi_awvalid(m_axi_awvalid),
-		.sram_axi_awready(m_axi_awready),
-		.sram_axi_awaddr(m_axi_awaddr),
-		// 写数据通道
-		.sram_axi_wvalid(m_axi_wvalid),
-		.sram_axi_wready(m_axi_wready),
-		.sram_axi_wdata(m_axi_wdata),
-		// 写响应通道
-		.sram_axi_bvalid(m_axi_bvalid),
-		.sram_axi_bready(m_axi_bready),
-		.sram_axi_bresp(m_axi_bresp),
+		.mem_axi_arvalid  (axi_arvalid_mem),
+		.mem_axi_arready  (axi_arready_mem),
+		.mem_axi_araddr   (axi_araddr_mem),
+		.mem_axi_rvalid   (axi_rvalid_mem),
+		.mem_axi_rready   (axi_rready_mem),
+		.mem_axi_rresp    (axi_rresp_mem),
+		.mem_axi_rdata    (axi_rdata_mem),
+		.mem_axi_awvalid  (axi_awvalid_mem),
+		.mem_axi_awready  (axi_awready_mem),
+		.mem_axi_awaddr   (axi_awaddr_mem),
+		.mem_axi_wvalid   (axi_wvalid_mem),
+		.mem_axi_wready   (axi_wready_mem),
+		.mem_axi_wdata    (axi_wdata_mem),
+		.mem_axi_bvalid   (axi_bvalid_mem),
+		.mem_axi_bready   (axi_bready_mem),
+		.mem_axi_bresp    (axi_bresp_mem),
+		.mem_axi_arlen    (axi_arlen_mem),
+		.mem_axi_arsize   (axi_arsize_mem),
+		.mem_axi_rlast    (axi_rlast_mem),
+		.mem_axi_awlen    (axi_awlen_mem),
+		.mem_axi_awsize   (axi_awsize_mem),
+		.mem_axi_wstrb    (axi_wstrb_mem),
+		.mem_axi_wlast    (axi_wlast_mem),
+		.mem_axi_addr_suffix (axi_addr_suffix_mem),
 
-		// AXI新增信号
-		.sram_axi_arlen(m_axi_arlen),
-		.sram_axi_arsize(m_axi_arsize),
-		.sram_axi_rlast(m_axi_rlast),
-		.sram_axi_awlen(m_axi_awlen),
-		.sram_axi_awsize(m_axi_awsize),
-		.sram_axi_wstrb(m_axi_wstrb),
-		.sram_axi_wlast(m_axi_wlast),
-		.sram_axi_addr_suffix(m_axi_addr_suffix)
+		// ================== SRAM从设备 ==================
+		.sram_axi_awvalid (sram_axi_awvalid),
+		.sram_axi_awready (sram_axi_awready),
+		.sram_axi_awaddr  (sram_axi_awaddr),
+		.sram_axi_wvalid  (sram_axi_wvalid),
+		.sram_axi_wready  (sram_axi_wready),
+		.sram_axi_wdata   (sram_axi_wdata),
+		.sram_axi_bvalid  (sram_axi_bvalid),
+		.sram_axi_bready  (sram_axi_bready),
+		.sram_axi_bresp   (sram_axi_bresp),
+		.sram_axi_arvalid (sram_axi_arvalid),
+		.sram_axi_arready (sram_axi_arready),
+		.sram_axi_araddr  (sram_axi_araddr),
+		.sram_axi_rvalid  (sram_axi_rvalid),
+		.sram_axi_rready  (sram_axi_rready),
+		.sram_axi_rdata   (sram_axi_rdata),
+		.sram_axi_rresp   (sram_axi_rresp),
+		.sram_axi_arlen   (sram_axi_arlen),
+		.sram_axi_arsize  (sram_axi_arsize),
+		.sram_axi_rlast   (sram_axi_rlast),
+		.sram_axi_awlen   (sram_axi_awlen),
+		.sram_axi_awsize  (sram_axi_awsize),
+		.sram_axi_wstrb   (sram_axi_wstrb),
+		.sram_axi_wlast   (sram_axi_wlast),
+
+		// ================== UART从设备 ==================
+	`ifdef NPC
+		.uart_axi_awvalid (uart_axi_awvalid),
+		.uart_axi_awready (uart_axi_awready),
+		.uart_axi_awaddr  (uart_axi_awaddr),
+		.uart_axi_wvalid  (uart_axi_wvalid),
+		.uart_axi_wready  (uart_axi_wready),
+		.uart_axi_wdata   (uart_axi_wdata),
+		.uart_axi_wstrb   (uart_axi_wstrb),
+		.uart_axi_bvalid  (uart_axi_bvalid),
+		.uart_axi_bready  (uart_axi_bready),
+		.uart_axi_bresp   (uart_axi_bresp),
+		.uart_axi_arvalid (uart_axi_arvalid),
+		.uart_axi_arready (uart_axi_arready),
+		.uart_axi_araddr  (uart_axi_araddr),
+		.uart_axi_rvalid  (uart_axi_rvalid),
+		.uart_axi_rready  (uart_axi_rready),
+		.uart_axi_rdata   (uart_axi_rdata),
+		.uart_axi_rresp   (uart_axi_rresp),
+	`endif
+
+		// ================== CLINT从设备 ==================
+		.clint_axi_awvalid (clint_axi_awvalid),
+		.clint_axi_awready (clint_axi_awready),
+		.clint_axi_awaddr  (clint_axi_awaddr),
+		.clint_axi_wvalid  (clint_axi_wvalid),
+		.clint_axi_wready  (clint_axi_wready),
+		.clint_axi_wdata   (clint_axi_wdata),
+		.clint_axi_bvalid  (clint_axi_bvalid),
+		.clint_axi_bready  (clint_axi_bready),
+		.clint_axi_bresp   (clint_axi_bresp),
+		.clint_axi_arvalid (clint_axi_arvalid),
+		.clint_axi_arready (clint_axi_arready),
+		.clint_axi_araddr  (clint_axi_araddr),
+		.clint_axi_rvalid  (clint_axi_rvalid),
+		.clint_axi_rready  (clint_axi_rready),
+		.clint_axi_rdata   (clint_axi_rdata),
+		.clint_axi_rresp   (clint_axi_rresp),
+		.clint_axi_rlast   (clint_axi_rlast),
+
+		// ================== 访问错误信号 ==================
+		.Access_Fault (Access_Fault)
 	);
 
 `ifndef NPC
@@ -895,232 +925,6 @@ module ysyx_24100006(
 		.io_master_rdata_i        (io_master_rdata),
 		.io_master_rlast_i        (io_master_rlast),
 		.io_master_rid_i          (io_master_rid)           	// 无对应信号，强制置零
-	);
-
-	ysyx_24100006_axi_xbar xbar (
-		// 时钟和复位
-		.clk(clock),
-		.reset(reset),
-		
-		// 主设备接口 (写通道)
-		.m_axi_awvalid(m_axi_awvalid),
-		.m_axi_awready(m_axi_awready),
-		.m_axi_awaddr(m_axi_awaddr),
-		
-		.m_axi_wvalid(m_axi_wvalid),
-		.m_axi_wready(m_axi_wready),
-		.m_axi_wdata(m_axi_wdata),
-		
-		.m_axi_bvalid(m_axi_bvalid),
-		.m_axi_bready(m_axi_bready),
-		.m_axi_bresp(m_axi_bresp),
-
-		// 主设备接口 (读通道)
-		.m_axi_arvalid(m_axi_arvalid),
-		.m_axi_arready(m_axi_arready),
-		.m_axi_araddr(m_axi_araddr),
-		
-		.m_axi_rvalid(m_axi_rvalid),
-		.m_axi_rready(m_axi_rready),
-		.m_axi_rdata(m_axi_rdata),
-		.m_axi_rresp(m_axi_rresp),
-
-		// AXI新增信号
-		.m_axi_arlen(m_axi_arlen),
-		.m_axi_arsize(m_axi_arsize),
-		.m_axi_rlast(m_axi_rlast),
-		.m_axi_awlen(m_axi_awlen),
-		.m_axi_awsize(m_axi_awsize),
-		.m_axi_wstrb(m_axi_wstrb),
-		.m_axi_wlast(m_axi_wlast),
-
-		.m_addr_suffix(m_axi_addr_suffix),
-		
-
-		// SRAM 从设备接口 (写通道)
-		.sram_axi_awvalid(sram_axi_awvalid),
-		.sram_axi_awready(sram_axi_awready),
-		.sram_axi_awaddr(sram_axi_awaddr),
-		
-		.sram_axi_wvalid(sram_axi_wvalid),
-		.sram_axi_wready(sram_axi_wready),
-		.sram_axi_wdata(sram_axi_wdata),
-		
-		.sram_axi_bvalid(sram_axi_bvalid),
-		.sram_axi_bready(sram_axi_bready),
-		.sram_axi_bresp(sram_axi_bresp),
-
-		// SRAM 从设备接口 (读通道)
-		.sram_axi_arvalid(sram_axi_arvalid),
-		.sram_axi_arready(sram_axi_arready),
-		.sram_axi_araddr(sram_axi_araddr),
-		
-		.sram_axi_rvalid(sram_axi_rvalid),
-		.sram_axi_rready(sram_axi_rready),
-		.sram_axi_rdata(sram_axi_rdata),
-		.sram_axi_rresp(sram_axi_rresp),
-
-		// AXI新增信号
-		.sram_axi_arlen(sram_axi_arlen),
-		.sram_axi_arsize(sram_axi_arsize),
-		.sram_axi_rlast(sram_axi_rlast),
-		.sram_axi_awlen(sram_axi_awlen),
-		.sram_axi_awsize(sram_axi_awsize),
-		.sram_axi_wstrb(sram_axi_wstrb),
-		.sram_axi_wlast(sram_axi_wlast),
-
-		// CLINT 从设备接口 (写通道)
-		.clint_axi_awvalid(clint_axi_awvalid),
-		.clint_axi_awready(clint_axi_awready),
-		.clint_axi_awaddr(clint_axi_awaddr),
-		
-		.clint_axi_wvalid(clint_axi_wvalid),
-		.clint_axi_wready(clint_axi_wready),
-		.clint_axi_wdata(clint_axi_wdata),
-		
-		.clint_axi_bvalid(clint_axi_bvalid),
-		.clint_axi_bready(clint_axi_bready),
-		.clint_axi_bresp(clint_axi_bresp),
-
-		// CLINT 从设备接口 (读通道)
-		.clint_axi_arvalid(clint_axi_arvalid),
-		.clint_axi_arready(clint_axi_arready),
-		.clint_axi_araddr(clint_axi_araddr),
-		
-		.clint_axi_rvalid(clint_axi_rvalid),
-		.clint_axi_rready(clint_axi_rready),
-		.clint_axi_rdata(clint_axi_rdata),
-		.clint_axi_rresp(clint_axi_rresp),
-		.clint_axi_rlast(clint_axi_rlast),
-
-		// Access Fault异常
-		.Access_Fault(Access_Fault)
-	);
-
-`else
-	// 为NPC定义的xbar
-	ysyx_24100006_axi_xbar xbar (
-		// 时钟和复位
-		.clk(clock),
-		.reset(reset),
-		
-		// 主设备接口 (写通道)
-		.m_axi_awvalid(m_axi_awvalid),
-		.m_axi_awready(m_axi_awready),
-		.m_axi_awaddr(m_axi_awaddr),
-		
-		.m_axi_wvalid(m_axi_wvalid),
-		.m_axi_wready(m_axi_wready),
-		.m_axi_wdata(m_axi_wdata),
-		
-		.m_axi_bvalid(m_axi_bvalid),
-		.m_axi_bready(m_axi_bready),
-		.m_axi_bresp(m_axi_bresp),
-
-		// 主设备接口 (读通道)
-		.m_axi_arvalid(m_axi_arvalid),
-		.m_axi_arready(m_axi_arready),
-		.m_axi_araddr(m_axi_araddr),
-		
-		.m_axi_rvalid(m_axi_rvalid),
-		.m_axi_rready(m_axi_rready),
-		.m_axi_rdata(m_axi_rdata),
-		.m_axi_rresp(m_axi_rresp),
-
-		// AXI新增信号
-		.m_axi_arlen(m_axi_arlen),
-		.m_axi_arsize(m_axi_arsize),
-		.m_axi_rlast(m_axi_rlast),
-		.m_axi_awlen(m_axi_awlen),
-		.m_axi_awsize(m_axi_awsize),
-		.m_axi_wstrb(m_axi_wstrb),
-		.m_axi_wlast(m_axi_wlast),
-
-		.m_addr_suffix(m_axi_addr_suffix),
-		
-
-		// SRAM 从设备接口 (写通道)
-		.sram_axi_awvalid(sram_axi_awvalid),
-		.sram_axi_awready(sram_axi_awready),
-		.sram_axi_awaddr(sram_axi_awaddr),
-		
-		.sram_axi_wvalid(sram_axi_wvalid),
-		.sram_axi_wready(sram_axi_wready),
-		.sram_axi_wdata(sram_axi_wdata),
-		
-		.sram_axi_bvalid(sram_axi_bvalid),
-		.sram_axi_bready(sram_axi_bready),
-		.sram_axi_bresp(sram_axi_bresp),
-
-		// SRAM 从设备接口 (读通道)
-		.sram_axi_arvalid(sram_axi_arvalid),
-		.sram_axi_arready(sram_axi_arready),
-		.sram_axi_araddr(sram_axi_araddr),
-		
-		.sram_axi_rvalid(sram_axi_rvalid),
-		.sram_axi_rready(sram_axi_rready),
-		.sram_axi_rdata(sram_axi_rdata),
-		.sram_axi_rresp(sram_axi_rresp),
-
-		// AXI新增信号
-		.sram_axi_arlen(sram_axi_arlen),
-		.sram_axi_arsize(sram_axi_arsize),
-		.sram_axi_rlast(sram_axi_rlast),
-		.sram_axi_awlen(sram_axi_awlen),
-		.sram_axi_awsize(sram_axi_awsize),
-		.sram_axi_wstrb(sram_axi_wstrb),
-		.sram_axi_wlast(sram_axi_wlast),
-
-		// UART 从设备接口 (写通道)
-		.uart_axi_awvalid(uart_axi_awvalid),
-		.uart_axi_awready(uart_axi_awready),
-		.uart_axi_awaddr(uart_axi_awaddr),
-		
-		.uart_axi_wvalid(uart_axi_wvalid),
-		.uart_axi_wready(uart_axi_wready),
-		.uart_axi_wdata(uart_axi_wdata),
-		.uart_axi_wstrb(uart_axi_wstrb),
-		
-		.uart_axi_bvalid(uart_axi_bvalid),
-		.uart_axi_bready(uart_axi_bready),
-		.uart_axi_bresp(uart_axi_bresp),
-
-		// UART 从设备接口 (读通道)
-		.uart_axi_arvalid(uart_axi_arvalid),
-		.uart_axi_arready(uart_axi_arready),
-		.uart_axi_araddr(uart_axi_araddr),
-		
-		.uart_axi_rvalid(uart_axi_rvalid),
-		.uart_axi_rready(uart_axi_rready),
-		.uart_axi_rdata(uart_axi_rdata),
-		.uart_axi_rresp(uart_axi_rresp),
-
-		// CLINT 从设备接口 (写通道)
-		.clint_axi_awvalid(clint_axi_awvalid),
-		.clint_axi_awready(clint_axi_awready),
-		.clint_axi_awaddr(clint_axi_awaddr),
-		
-		.clint_axi_wvalid(clint_axi_wvalid),
-		.clint_axi_wready(clint_axi_wready),
-		.clint_axi_wdata(clint_axi_wdata),
-		
-		.clint_axi_bvalid(clint_axi_bvalid),
-		.clint_axi_bready(clint_axi_bready),
-		.clint_axi_bresp(clint_axi_bresp),
-
-		// CLINT 从设备接口 (读通道)
-		.clint_axi_arvalid(clint_axi_arvalid),
-		.clint_axi_arready(clint_axi_arready),
-		.clint_axi_araddr(clint_axi_araddr),
-		
-		.clint_axi_rvalid(clint_axi_rvalid),
-		.clint_axi_rready(clint_axi_rready),
-		.clint_axi_rdata(clint_axi_rdata),
-		.clint_axi_rresp(clint_axi_rresp),
-		.clint_axi_rlast(clint_axi_rlast),
-
-		// Access Fault异常
-		.Access_Fault(Access_Fault)
 	);
 
 `endif

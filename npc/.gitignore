@@ -13,3 +13,4 @@ build/
 yosys-sta/
 result
 Icache_pipeline_gpt.v
+ysyx_24100006_xbar_arbiter_copy.v
