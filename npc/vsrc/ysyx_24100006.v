@@ -119,7 +119,7 @@ module ysyx_24100006(
 
 	// 模块的信号
 	// Icache -> EXEU
-	wire icache_flush_done_CE;
+	wire 		icache_flush_done_CE;
 	// hazard -> IDU;
 	// === Hazard wires ===
 	wire        stall_id;
@@ -128,13 +128,13 @@ module ysyx_24100006(
 	wire		rs2_ren_D;
 	// MEMU -> hazard
 	// 是否是lw指令
-	wire is_load;
+	wire 		is_load;
 
 	// EXEU -> IFU
 	wire [31:0] npc_E_F;              	// EXE->IFU传递的下一条PC
 	wire		redirect_valid_E_F;
 	// WBU -> IDU
-	wire irq_WD;
+	wire 		irq_WD;
 	wire [7:0] 	irq_no_WD;
 	wire [3:0] 	Gpr_Write_Addr_WD;
 	wire [11:0]	Csr_Write_Addr_WD;
@@ -144,87 +144,68 @@ module ysyx_24100006(
 	wire [31:0] wdata_csr_WD;
 
 
+`ifdef VERILATOR_SIM
+	// 调试使用
+	wire [31:0] pc_F;                 	// IF阶段PC
+	wire [31:0] pc_F_D;               	// IF->ID传递的PC
+	wire [31:0] pc_D;                 	// ID阶段PC
+	wire [31:0] pc_D_E;               	// ID->EXE传递的PC
+	wire [31:0] pc_E;                 	// EXE阶段PC
+	wire [31:0] pc_E_M;               	// EXE->MEM传递的PC
+	wire [31:0] pc_M;                 	// MEM阶段PC
+	wire [31:0] pc_M_W;               	// MEM->WB传递的PC
+`endif 
+
 
 
 	// IF阶段信号
 	wire		irq_F;
 	wire [7:0]	irq_no_F;
-	wire [31:0] pc_F;                 	// IF阶段PC
 	wire [31:0]	inst_F;					// IF阶段instruction
 
 	// IF_ID输出信号
 	wire		irq_F_D;			  	// IF->ID传递的中断标志
 	wire [7:0]	irq_no_F_D;		  		// IF->ID传递的中断号
-	wire [31:0] pc_F_D;               	// IF->ID传递的PC
 	wire [31:0] instruction_F_D;      	// IF->ID传递的指令
 
 	// ID阶段信号
-	wire [31:0] pc_D;                 	// ID阶段PC
-	wire [31:0] sext_imm_D;           	// ID阶段符号扩展立即数
-	wire [31:0] rs1_data_D;           	// ID阶段rs1数据
-	wire [31:0] rs2_data_D;           	// ID阶段rs2数据
-	wire [31:0] rdata_csr_D;          	// ID阶段CSR数据
 	wire [3:0]  alu_op_D;             	// ID阶段ALU操作码
 	wire [3:0]	Gpr_Write_Addr_D;	  	// ID阶段GPR写寄存器的地址
 	wire [11:0]	Csr_Write_Addr_D;	  	// ID阶段CSR写寄存器的地址 
-	wire [2:0]  Gpr_Write_RD_D;       	// ID阶段GPR写寄存器
-	wire [1:0]  Csr_Write_RD_D;       	// ID阶段CSR写寄存器
-	wire [3:0]  Jump_D;               	// ID阶段跳转控制
-	wire [7:0]  Mem_WMask_D;          	// ID阶段写掩码
-	wire [2:0]  Mem_RMask_D;          	// ID阶段读掩码
+	wire [1:0]  Gpr_Write_RD_D;       	// ID阶段GPR写寄存器
+	wire [2:0]  Jump_D;               	// ID阶段跳转控制
 	wire [7:0]  irq_no_D;             	// ID阶段中断号
 	wire [31:0] mtvec_D;              	// ID阶段mtvec值
-	wire [31:0] mepc_D;               	// ID阶段mepc值
 	wire        is_fence_i_D;         	// ID阶段fence.i标志
 	wire        irq_D;                	// ID阶段中断标志
-	wire        AluSrcA_D;            	// ID阶段ALU源A选择
-	wire        AluSrcB_D;            	// ID阶段ALU源B选择
 	wire        Gpr_Write_D;          	// ID阶段GPR写使能
 	wire        Csr_Write_D;          	// ID阶段CSR写使能
 	wire		is_break_D;			  	// ID阶段break指令标志
 	wire [1:0]	sram_read_write_D;    	// ID阶段SRAM读写使能，这个是在MEMU中判断是LOAD操作还是STORE操作使用
 
 	// ID_EXE输出信号
-	wire [31:0] pc_D_E;               	// ID->EXE传递的PC
-	wire [31:0] sext_imm_D_E;         	// ID->EXE传递的立即数
-	wire [31:0] rs1_data_D_E;         	// ID->EXE传递的rs1数据
-	wire [31:0] rs2_data_D_E;         	// ID->EXE传递的rs2数据
-	wire [31:0] rdata_csr_D_E;        	// ID->EXE传递的CSR数据
 	wire [3:0]  alu_op_D_E;           	// ID->EXE传递的ALU操作码
 	wire [3:0]	Gpr_Write_Addr_D_E;	  	// ID->EXE传递的GPR写寄存器的地址
 	wire [11:0]	Csr_Write_Addr_D_E;	  	// ID->EXE传递的CSR写寄存器的地址 
-	wire [2:0]  Gpr_Write_RD_D_E;     	// ID->EXE传递的GPR写寄存器
-	wire [1:0]  Csr_Write_RD_D_E;     	// ID->EXE传递的CSR写寄存器
-	wire [3:0]  Jump_D_E;             	// ID->EXE传递的跳转控制
-	wire [7:0]  Mem_WMask_D_E;        	// ID->EXE传递的写掩码
-	wire [2:0]  Mem_RMask_D_E;        	// ID->EXE传递的读掩码
+	wire [1:0]  Gpr_Write_RD_D_E;     	// ID->EXE传递的GPR写寄存器
+	wire [2:0]  Jump_D_E;             	// ID->EXE传递的跳转控制
 	wire [7:0]  irq_no_D_E;           	// ID->EXE传递的中断号
 	wire [31:0] mtvec_D_E;            	// ID->EXE传递的mtvec值
-	wire [31:0] mepc_D_E;             	// ID->EXE传递的mepc值
 	wire        is_fence_i_D_E;       	// ID->EXE传递的fence.i标志
 	wire        irq_D_E;             	// ID->EXE传递的中断标志
-	wire        AluSrcA_D_E;          	// ID->EXE传递的ALU源A选择
-	wire		AluSrcB_D_E;	 	  	// ID->EXE传递的ALU源B选择
 	wire        Gpr_Write_D_E;        	// ID->EXE传递的GPR写使能
 	wire        Csr_Write_D_E;        	// ID->EXE传递的CSR写使能
 	wire		is_break_D_E; 		  	// ID->EXE传递的break指令标志
 	wire [1:0]	sram_read_write_D_E;  	// ID->EXE传递的SRAM读写使能，这个是在MEMU中判断是LOAD操作还是STORE操作使用
 
 	// EXE阶段信号
-	wire [31:0] pc_E;                 	// EXE阶段PC
 	wire		redirect_valid_E;	  	// 是否使用EXE级的结果更新PC
 	wire [31:0] npc_E;                	// EXE阶段下一条PC
 	wire [31:0] alu_result_E;        	// EXE阶段ALU结果
-	wire [31:0] sext_imm_E;          	// EXE阶段立即数
-	wire [31:0] rs1_data_E;           	// EXE阶段rs1数据
-	wire [31:0] rs2_data_E;           	// EXE阶段rs2数据
-	wire [31:0] rdata_csr_E;          	// EXE阶段CSR数据
 	wire [3:0]	Gpr_Write_Addr_E;	  	// EXE级GPR写寄存器的地址
 	wire [11:0]	Csr_Write_Addr_E;	  	// EXE级CSR写寄存器的地址 
-	wire [2:0]  Gpr_Write_RD_E;       	// EXE阶段GPR写寄存器
+	wire [1:0]  Gpr_Write_RD_E;       	// EXE阶段GPR写寄存器
 	wire [1:0]  Csr_Write_RD_E;       	// EXE阶段CSR写寄存器
-	wire [7:0]  Mem_WMask_E;          	// EXE阶段写掩码
-	wire [2:0]  Mem_RMask_E;          	// EXE阶段读掩码
 	wire [7:0]  irq_no_E;             	// EXE阶段中断号
 	wire        irq_E;                	// EXE阶段中断标志
 	wire        Gpr_Write_E;          	// EXE阶段GPR写使能
@@ -233,18 +214,11 @@ module ysyx_24100006(
 	wire [1:0]	sram_read_write_E;    	// EXE阶段SRAM读写使能，这个是在MEMU中判断是LOAD操作还是STORE操作使用
 
 	// EXE_MEM输出信号
-	wire [31:0] pc_E_M;               	// EXE->MEM传递的P
 	wire [31:0] alu_result_E_M;       	// EXE->MEM传递的ALU结果
-	wire [31:0] sext_imm_E_M;         	// EXE->MEM传递的立即数
-	wire [31:0] rs1_data_E_M;         	// EXE->MEM传递的rs1数据
-	wire [31:0] rs2_data_E_M;         	// EXE->MEM传递的rs2数据
-	wire [31:0] rdata_csr_E_M;        	// EXE->MEM传递的CSR数据
 	wire [3:0]	Gpr_Write_Addr_E_M;	  	// EXE->MEM传递的GPR写寄存器的地址
 	wire [11:0]	Csr_Write_Addr_E_M;	  	// EXE->MEM传递的CSR写寄存器的地址 
-	wire [2:0]  Gpr_Write_RD_E_M;     	// EXE->MEM传递的GPR写寄存器
+	wire [1:0]  Gpr_Write_RD_E_M;     	// EXE->MEM传递的GPR写寄存器
 	wire [1:0]  Csr_Write_RD_E_M;     	// EXE->MEM传递的CSR写寄存器
-	wire [7:0]  Mem_WMask_E_M;        	// EXE->MEM传递的写掩码
-	wire [2:0]  Mem_RMask_E_M;        	// EXE->MEM传递的读掩码
 	wire [7:0]  irq_no_E_M;           	// EXE->MEM传递的中断号
 	wire        irq_E_M;              	// EXE->MEM传递的中断标志
 	wire        Gpr_Write_E_M;        	// EXE->MEM传递的GPR写使能
@@ -253,16 +227,9 @@ module ysyx_24100006(
 	wire [1:0]	sram_read_write_E_M;  	// EXE->MEM传递的SRAM读写使能，这个是在MEMU中判断是LOAD操作还是STORE操作使用
 
 	// MEM阶段信号
-	wire [31:0] pc_M;                 	// MEM阶段PC
 	wire [31:0] alu_result_M;         	// MEM阶段ALU结果
-	wire [31:0] sext_imm_M;           	// MEM阶段立即数
-	wire [31:0] Mem_rdata_M;          	// MEM阶段内存读数据
-	wire [31:0] rs1_data_M;           	// MEM阶段rs1数据
-	wire [31:0] rdata_csr_M;          	// MEM阶段CSR数据
 	wire [3:0]	Gpr_Write_Addr_M;	  	// MEM级GPR写寄存器的地址
 	wire [11:0]	Csr_Write_Addr_M;	  	// MEM级CSR写寄存器的地址 
-	wire [2:0]  Gpr_Write_RD_M;       	// MEM阶段GPR写寄存器
-	wire [1:0]  Csr_Write_RD_M;       	// MEM阶段CSR写寄存器
 	wire [7:0]  irq_no_M;             	// MEM阶段中断号
 	wire        irq_M;                	// MEM阶段中断标志
 	wire        Gpr_Write_M;          	// MEM阶段GPR写使能
@@ -270,16 +237,8 @@ module ysyx_24100006(
 	wire		is_break_M; 		  	// MEM->MEM_WB传递的break指令标志
 
 	// MEM_WB输出信号
-	wire [31:0] pc_M_W;               	// MEM->WB传递的PC
-	wire [31:0] alu_result_M_W;       	// MEM->WB传递的ALU结果
-	wire [31:0] sext_imm_M_W;         	// MEM->WB传递的立即数
-	wire [31:0] Mem_rdata_M_W;        	// MEM->WB传递的内存读数据
-	wire [31:0] rs1_data_M_W;         	// MEM->WB传递的rs1数据
-	wire [31:0] rdata_csr_M_W;        	// MEM->WB传递的CSR数据
 	wire [3:0]	Gpr_Write_Addr_M_W;	  	// MEM->WB传递的GPR写寄存器的地址
 	wire [11:0]	Csr_Write_Addr_M_W;	  	// MEM->WB传递的CSR写寄存器的地址 
-	wire [2:0]  Gpr_Write_RD_M_W;     	// MEM->WB传递的GPR写寄存器
-	wire [1:0]  Csr_Write_RD_M_W;     	// MEM->WB传递的CSR写寄存器
 	wire [7:0]  irq_no_M_W;           	// MEM->WB传递的中断号
 	wire        irq_M_W;              	// MEM->WB传递的中断标志
 	wire        Gpr_Write_M_W;        	// MEM->WB传递的GPR写使能
@@ -289,30 +248,30 @@ module ysyx_24100006(
 
 	// 握手机制
 	// IF_ID
-	wire if_in_valid;
-	wire if_in_ready;
-	wire id_out_valid;
-	wire id_out_ready;
+	wire 		if_in_valid;
+	wire 		if_in_ready;
+	wire 		id_out_valid;
+	wire 		id_out_ready;
 	
 	// ID_EXE
-	wire id_in_valid;
-	wire id_in_ready;
-	wire exe_out_valid;
-	wire exe_out_ready;
+	wire 		id_in_valid;
+	wire 		id_in_ready;
+	wire 		exe_out_valid;
+	wire 		exe_out_ready;
 	
 	// EXE_MEM
-	wire exe_in_valid;
-	wire exe_in_ready;
-	wire mem_out_valid;
-	wire mem_out_ready;
+	wire 		exe_in_valid;
+	wire 		exe_in_ready;
+	wire 		mem_out_valid;
+	wire 		mem_out_ready;
 
 	// MEM_WB
-	wire mem_in_valid;
-	wire mem_in_ready;
-	wire wb_out_valid;
-	wire wb_out_ready;
-	wire wb_in_valid;
-	wire wb_in_ready;
+	wire 		mem_in_valid;
+	wire 		mem_in_ready;
+	wire 		wb_out_valid;
+	wire 		wb_out_ready;
+	wire 		wb_in_valid;
+	wire 		wb_in_ready;
 	
 
 	// AXI-Lite
@@ -406,7 +365,6 @@ module ysyx_24100006(
 	wire [3:0]		sram_axi_wstrb;
 	wire			sram_axi_wlast;
 
-`ifndef NPC
 	// TAG: 时钟相关的部分
 	// CLINT实例化
 	// 读地址通道
@@ -433,40 +391,40 @@ module ysyx_24100006(
     wire [1:0]  	clint_axi_bresp;
 
 	ysyx_24100006_clint clint(
-		.clk(clock),
-		.reset(reset),
+		.clk			(clock),
+		.reset			(reset),
 		
 		// axi 写入和读取地址
-		.axi_araddr(clint_axi_araddr),
-		.axi_awaddr(clint_axi_awaddr),
+		.axi_araddr		(clint_axi_araddr),
+		.axi_awaddr		(clint_axi_awaddr),
 		// axi 写入数据和写入使用的掩码
-		.axi_wdata(clint_axi_wdata),
+		.axi_wdata		(clint_axi_wdata),
 		// axi控制信号
 		// read data addr
-		.axi_arvalid(clint_axi_arvalid),
-		.axi_arready(clint_axi_arready),
+		.axi_arvalid	(clint_axi_arvalid),
+		.axi_arready	(clint_axi_arready),
 		// read data
-		.axi_rready(clint_axi_rready),
-		.axi_rvalid(clint_axi_rvalid),
+		.axi_rready		(clint_axi_rready),
+		.axi_rvalid		(clint_axi_rvalid),
 		// write data addr
-		.axi_awvalid(clint_axi_awvalid),
-		.axi_awready(clint_axi_awready),
+		.axi_awvalid	(clint_axi_awvalid),
+		.axi_awready	(clint_axi_awready),
 		// write data
-		.axi_wvalid(clint_axi_wvalid),
-		.axi_wready(clint_axi_wready),
+		.axi_wvalid		(clint_axi_wvalid),
+		.axi_wready		(clint_axi_wready),
 		// response
-		.axi_bready(clint_axi_bready),
-		.axi_bvalid(clint_axi_bvalid),
-		.axi_bresp(clint_axi_bresp),
+		.axi_bready		(clint_axi_bready),
+		.axi_bvalid		(clint_axi_bvalid),
+		.axi_bresp		(clint_axi_bresp),
 
 		// axi读取的回应
-		.axi_rresp(clint_axi_rresp),
+		.axi_rresp		(clint_axi_rresp),
 		// axi读取的数据
-		.axi_rdata(clint_axi_rdata),
-		.axi_rlast(clint_axi_rlast)
+		.axi_rdata		(clint_axi_rdata),
+		.axi_rlast		(clint_axi_rlast)
 	);
 
-`else
+`ifdef NPC
 // TAG:NPC使用的ram
 	ysyx_24100006_mem u_mem (
         // 系统时钟和复位
@@ -537,98 +495,37 @@ module ysyx_24100006(
     wire [1:0]  	uart_axi_bresp;
 
     ysyx_24100006_uart uart(
-		.clk(clock),
-		.reset(reset),
+		.clk			(clock),
+		.reset			(reset),
 		
 		// axi 写入和读取地址
-		.axi_araddr(uart_axi_araddr),
-		.axi_awaddr(uart_axi_awaddr),
+		.axi_araddr		(uart_axi_araddr),
+		.axi_awaddr		(uart_axi_awaddr),
 		// axi 写入数据和写入使用的掩码
-		.axi_wdata(uart_axi_wdata),
-		.axi_wstrb(uart_axi_wstrb),
+		.axi_wdata		(uart_axi_wdata),
+		.axi_wstrb		(uart_axi_wstrb),
 		// axi控制信号
 		// read data addr
-		.axi_arvalid(uart_axi_arvalid),
-		.axi_arready(uart_axi_arready),
+		.axi_arvalid	(uart_axi_arvalid),
+		.axi_arready	(uart_axi_arready),
 		// read data
-		.axi_rready(uart_axi_rready),
-		.axi_rvalid(uart_axi_rvalid),
+		.axi_rready		(uart_axi_rready),
+		.axi_rvalid		(uart_axi_rvalid),
 		// write data addr
-		.axi_awvalid(uart_axi_awvalid),
-		.axi_awready(uart_axi_awready),
+		.axi_awvalid	(uart_axi_awvalid),
+		.axi_awready	(uart_axi_awready),
 		// write data
-		.axi_wvalid(uart_axi_wvalid),
-		.axi_wready(uart_axi_wready),
+		.axi_wvalid		(uart_axi_wvalid),
+		.axi_wready		(uart_axi_wready),
 		// response
-		.axi_bready(uart_axi_bready),
-		.axi_bvalid(uart_axi_bvalid),
-		.axi_bresp(uart_axi_bresp),
+		.axi_bready		(uart_axi_bready),
+		.axi_bvalid		(uart_axi_bvalid),
+		.axi_bresp		(uart_axi_bresp),
 
 		// axi读取的回应
-		.axi_rresp(uart_axi_rresp),
+		.axi_rresp		(uart_axi_rresp),
 		// axi读取的数据
-		.axi_rdata(uart_axi_rdata)
-	);
-
-// TAG: 时钟相关的部分
-	// CLINT实例化
-	// 读地址通道
-	wire       		clint_axi_arvalid;
-    wire       		clint_axi_arready;
-    wire [31:0]  	clint_axi_araddr;
-    // 读数据通道
-    wire         	clint_axi_rvalid;
-    wire        	clint_axi_rready;
-    wire [1:0]		clint_axi_rresp;
-    wire [31:0]   	clint_axi_rdata;
-	wire			clint_axi_rlast;
-    // 写地址通道
-    wire         	clint_axi_awvalid;
-    wire          	clint_axi_awready;
-    wire [31:0]  	clint_axi_awaddr;
-    // 写数据通道
-    wire          	clint_axi_wvalid;
-    wire        	clint_axi_wready;
-    wire [31:0] 	clint_axi_wdata;
-    // 写响应通道
-    wire         	clint_axi_bvalid;
-    wire        	clint_axi_bready;
-    wire [1:0]  	clint_axi_bresp;
-
-	ysyx_24100006_clint #(
-		.BASE_ADDR( 32'ha000_0048 )
-	) clint(
-		.clk(clock),
-		.reset(reset),
-		
-		// axi 写入和读取地址
-		.axi_araddr(clint_axi_araddr),
-		.axi_awaddr(clint_axi_awaddr),
-		// axi 写入数据和写入使用的掩码
-		.axi_wdata(clint_axi_wdata),
-		// axi控制信号
-		// read data addr
-		.axi_arvalid(clint_axi_arvalid),
-		.axi_arready(clint_axi_arready),
-		// read data
-		.axi_rready(clint_axi_rready),
-		.axi_rvalid(clint_axi_rvalid),
-		// write data addr
-		.axi_awvalid(clint_axi_awvalid),
-		.axi_awready(clint_axi_awready),
-		// write data
-		.axi_wvalid(clint_axi_wvalid),
-		.axi_wready(clint_axi_wready),
-		// response
-		.axi_bready(clint_axi_bready),
-		.axi_bvalid(clint_axi_bvalid),
-		.axi_bresp(clint_axi_bresp),
-
-		// axi读取的回应
-		.axi_rresp(clint_axi_rresp),
-		// axi读取的数据
-		.axi_rdata(clint_axi_rdata),
-		.axi_rlast(clint_axi_rlast)
+		.axi_rdata		(uart_axi_rdata)
 	);
 
 `endif
@@ -720,8 +617,8 @@ module ysyx_24100006(
 		.SPI_ADDR(32'h1000_1000)    // 设置SPI基地址
 	) u_xbar_arbiter (
 		// 时钟和复位
-		.clk          (clock),
-		.reset        (reset),
+		.clk		(clock),
+		.reset        	(reset),
 		
 		// ================== IFU接口 ==================
 		.ifu_axi_arvalid (axi_arvalid_icache),
@@ -827,11 +724,11 @@ module ysyx_24100006(
 		.clint_axi_rlast   (clint_axi_rlast),
 
 		// ================== 访问错误信号 ==================
-		.Access_Fault (Access_Fault)
+		.Access_Fault 		(Access_Fault)
 	);
 
 `ifndef NPC
-	// YSYXSOC使用的axi模块和xbar模块
+	// YSYXSOC使用的axi模块
 	ysyx_24100006_axi #(
 		.AXI_DATA_WIDTH    (32),
 		.AXI_ADDR_WIDTH    (32),
@@ -929,8 +826,10 @@ module ysyx_24100006(
 
 `endif
 
-// 这是为了diff test而加的npc信号
-wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
+`ifdef VERILATOR_SIM
+	// 这是为了diff test而加的npc信号
+	wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
+`endif
 
 	// 前递单元
 	wire		exe_is_load;
@@ -938,155 +837,188 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 	wire [1:0] 	forwardA, forwardB;
 	wire [31:0] exe_fw_data, mem_fw_data;
 
+	// 面积优化相关的信号
+	wire [31:0] pc_j_m_e_n_D, alu_a_data_D, alu_b_data_D, pc_add_imm_D;
+	wire [31:0]	pc_j_m_e_n_D_E, alu_a_data_D_E, alu_b_data_D_E, pc_add_imm_D_E;
+
+	wire [31:0]	wdata_gpr_D, wdata_gpr_D_E, wdata_csr_D, wdata_csr_D_E;
+	wire [31:0]	wdata_gpr_E, wdata_gpr_E_M, wdata_csr_E, wdata_csr_E_M;
+	wire [31:0]	wdata_gpr_M, wdata_gpr_M_W, wdata_csr_M, wdata_csr_M_W;
+
+	wire [2:0] 	Mem_Mask_D, Mem_Mask_D_E;
+	wire [2:0] 	Mem_Mask_E, Mem_Mask_E_M;
+
+	wire [31:0]	pc_add_4_F, pc_add_4_F_D;
+	wire [31:0] pc_add_4_D, pc_add_4_D_E;
+
 	// TAG:pipeline Reg
 	// IF_ID 模块实例化
 	ysyx_24100006_IF_ID u_IF_ID (
 		.clk            	(clock),
 		.reset          	(reset),
-		.flush_i        	(redirect_valid_E_F || irq_WD || (is_fence_i_D && !icache_flush_done_CE)),   // 当是跳转指令或者发生异常时冲刷
-		.in_valid       	(if_in_valid),		// 来自IFU
-		.in_ready       	(if_in_ready),		// 输出到IFU
+
+`ifdef VERILATOR_SIM
+		// 调试信息
 		.pc_i           	(pc_F),         	// IF阶段PC输入
+		.pc_o           	(pc_F_D),       	// 输出到ID阶段
+`endif
+
+		.flush_i        	(redirect_valid_E_F || irq_WD || (is_fence_i_D && !icache_flush_done_CE)),   // 当是跳转指令或者发生异常时冲刷
 		.instruction_i  	(inst_F),			// IF阶段指令输入
 
+		.in_valid       	(if_in_valid),		// 来自IFU
+		.in_ready       	(if_in_ready),		// 输出到IFU
 		.out_valid      	(id_out_valid),		// 输出到IDU
 		.out_ready      	(id_out_ready),		// 来自IDU
-		.pc_o           	(pc_F_D),       	// 输出到ID阶段
+		
 		.instruction_o  	(instruction_F_D)	// 输出到ID阶段
 
 		// 异常处理相关
-		,.irq_i(irq_F)
-		,.irq_no_i(irq_no_F)
-    	,.irq_o(irq_F_D)
-		,.irq_no_o(irq_no_F_D)
+		,.irq_i				(irq_F)
+		,.irq_no_i			(irq_no_F)
+    	,.irq_o				(irq_F_D)
+		,.irq_no_o			(irq_no_F_D)
+
+		// 面积优化相关
+		,.pc_add_4_i		(pc_add_4_F)
+		,.pc_add_4_o		(pc_add_4_F_D)
 	);
 
 	// ID_EXE 模块实例化
 	ysyx_24100006_ID_EXE u_ID_EXE (
 		.clk            	(clock),
 		.reset          	(reset),
+
+`ifdef VERILATOR_SIM
+		// 调试信息
+		.pc_i           	(pc_D),         	// ID阶段PC输入
+		.pc_o           	(pc_D_E),
+`endif
+
 		.flush_i        	(redirect_valid_E_F || irq_WD),   // 当是跳转指令或者发生异常时冲刷
 		.is_break_i     	(is_break_D),     			// 是否是断点指令
 		.is_break_o     	(is_break_D_E),   			// 输出到EXEU
 
-		.in_valid       	(id_in_valid),		// 来自IDU
-		.in_ready       	(id_in_ready),		// 输出到IDU
-		.pc_i           	(pc_D),         	// ID阶段PC输入
-		.sext_imm_i     	(sext_imm_D),
-		.rs1_data_i     	(rs1_data_D),
-		.rs2_data_i     	(rs2_data_D),
-		.rdata_csr_i    	(rdata_csr_D),
+
 		.alu_op_i       	(alu_op_D),
 		.Gpr_Write_Addr_i	(Gpr_Write_Addr_D),
 		.Csr_Write_Addr_i	(Csr_Write_Addr_D),
 		.Gpr_Write_RD_i 	(Gpr_Write_RD_D),
-		.Csr_Write_RD_i 	(Csr_Write_RD_D),
 		.Jump_i         	(Jump_D),
-		.Mem_WMask_i    	(Mem_WMask_D),
-		.Mem_RMask_i    	(Mem_RMask_D),
 		.irq_no_i       	(irq_no_D),
-		.mtvec_i        	(mtvec_D),
-		.mepc_i         	(mepc_D),
 		.is_fence_i_i   	(is_fence_i_D),
 		.irq_i          	(irq_D),
-		.AluSrcA_i      	(AluSrcA_D),
-		.AluSrcB_i			(AluSrcB_D),
 		.Gpr_Write_i    	(Gpr_Write_D),
 		.Csr_Write_i    	(Csr_Write_D),
 		.sram_read_write_i 	(sram_read_write_D),
 
+		.in_valid       	(id_in_valid),		// 来自IDU
+		.in_ready       	(id_in_ready),		// 输出到IDU
 		.out_valid      	(exe_out_valid),    	// 输出到EXEU
 		.out_ready      	(exe_out_ready),    	// 来自EXEU
-		.pc_o           	(pc_D_E),
-		.sext_imm_o     	(sext_imm_D_E),
-		.rs1_data_o     	(rs1_data_D_E),
-		.rs2_data_o     	(rs2_data_D_E),
-		.rdata_csr_o    	(rdata_csr_D_E),
+
 		.alu_op_o       	(alu_op_D_E),
 		.Gpr_Write_Addr_o	(Gpr_Write_Addr_D_E),
 		.Csr_Write_Addr_o	(Csr_Write_Addr_D_E),
 		.Gpr_Write_RD_o 	(Gpr_Write_RD_D_E),
-		.Csr_Write_RD_o 	(Csr_Write_RD_D_E),
 		.Jump_o         	(Jump_D_E),
-		.Mem_WMask_o    	(Mem_WMask_D_E),
-		.Mem_RMask_o    	(Mem_RMask_D_E),
 		.irq_no_o       	(irq_no_D_E),
-		.mtvec_o        	(mtvec_D_E),
-		.mepc_o         	(mepc_D_E),
 		.is_fence_i_o   	(is_fence_i_D_E),
 		.irq_o          	(irq_D_E),
-		.AluSrcA_o      	(AluSrcA_D_E),
-		.AluSrcB_o			(AluSrcB_D_E),
 		.Gpr_Write_o    	(Gpr_Write_D_E),
 		.Csr_Write_o    	(Csr_Write_D_E),
 		.sram_read_write_o 	(sram_read_write_D_E)
+
+		// 面积优化相关
+		,.pc_j_m_e_n_i		(pc_j_m_e_n_D)
+		,.alu_a_data_i		(alu_a_data_D)
+		,.alu_b_data_i		(alu_b_data_D)
+		,.pc_add_imm_i		(pc_add_imm_D)
+		,.pc_j_m_e_n_o		(pc_j_m_e_n_D_E)
+		,.alu_a_data_o		(alu_a_data_D_E)
+		,.alu_b_data_o		(alu_b_data_D_E)
+		,.pc_add_imm_o		(pc_add_imm_D_E)
+
+		,.wdata_gpr_i		(wdata_gpr_D)
+		,.wdata_csr_i		(wdata_csr_D)
+		,.wdata_gpr_o		(wdata_gpr_D_E)
+		,.wdata_csr_o		(wdata_csr_D_E)
+
+		,.Mem_Mask_i		(Mem_Mask_D)
+		,.Mem_Mask_o		(Mem_Mask_D_E)
+
+		,.pc_add_4_i		(pc_add_4_D)
+		,.pc_add_4_o		(pc_add_4_D_E)
 	);
 
 	// EXE_MEM 模块实例化
 	ysyx_24100006_EXE_MEM u_EXE_MEM (
 		.clk            	(clock),
 		.reset          	(reset),
-// 调试信息
-.npc_E(npc_E_old),
-.npc_M(npc_E_M),
+
+`ifdef VERILATOR_SIM
+		// 调试信息
+		.pc_i           	(pc_E),
+		.pc_o           	(pc_E_M),
+		.npc_E				(npc_E_old),
+		.npc_M				(npc_E_M),
+`endif
 
 		.flush_i        	(irq_WD),   // 发生异常时需要冲刷流水线
-
 		.is_break_i     	(is_break_E),     			// 是否是断点指令
 		.is_break_o     	(is_break_E_M),   			// 输出到MEMU
-
-		.in_valid       	(exe_in_valid), 	// 来自EXEU
-		.in_ready       	(exe_in_ready),     // 输出到EXEU
-		.pc_i           	(pc_E),
+		
 		.npc_i          	(npc_E),
 		.redirect_valid_i	(redirect_valid_E),
 		.alu_result_i   	(alu_result_E),
-		.sext_imm_i     	(sext_imm_E),
-		.rs1_data_i     	(rs1_data_E),
-		.rs2_data_i     	(rs2_data_E),
-		.rdata_csr_i     	(rdata_csr_E),
 		.Gpr_Write_Addr_i	(Gpr_Write_Addr_E),
 		.Csr_Write_Addr_i	(Csr_Write_Addr_E),
 		.Gpr_Write_RD_i 	(Gpr_Write_RD_E),
-		.Csr_Write_RD_i 	(Csr_Write_RD_E),
-		.Mem_WMask_i    	(Mem_WMask_E),
-		.Mem_RMask_i    	(Mem_RMask_E),
 		.irq_no_i       	(irq_no_E),
 		.irq_i          	(irq_E),
 		.Gpr_Write_i    	(Gpr_Write_E),
 		.Csr_Write_i    	(Csr_Write_E),
 		.sram_read_write_i 	(sram_read_write_E),
 
-		.out_valid      	(mem_out_valid),    	// 输出到MEMU
-		.out_ready      	(mem_out_ready),    	// 来自MEMU
-		.pc_o           	(pc_E_M),
+		.in_valid       	(exe_in_valid), 	// 来自EXEU
+		.in_ready       	(exe_in_ready),     // 输出到EXEU
+		.out_valid      	(mem_out_valid), 	// 输出到MEMU
+		.out_ready      	(mem_out_ready), 	// 来自MEMU
+
 		.npc_o          	(npc_E_F),
 		.redirect_valid_o	(redirect_valid_E_F),
 		.alu_result_o   	(alu_result_E_M),
-		.sext_imm_o     	(sext_imm_E_M),
-		.rs1_data_o     	(rs1_data_E_M),
-		.rs2_data_o     	(rs2_data_E_M),
-		.rdata_csr_o     	(rdata_csr_E_M),
 		.Gpr_Write_Addr_o	(Gpr_Write_Addr_E_M),
 		.Csr_Write_Addr_o	(Csr_Write_Addr_E_M),
 		.Gpr_Write_RD_o 	(Gpr_Write_RD_E_M),
-		.Csr_Write_RD_o 	(Csr_Write_RD_E_M),
-		.Mem_WMask_o    	(Mem_WMask_E_M),
-		.Mem_RMask_o    	(Mem_RMask_E_M),
 		.irq_no_o       	(irq_no_E_M),
 		.irq_o          	(irq_E_M),
 		.Gpr_Write_o    	(Gpr_Write_E_M),
 		.Csr_Write_o    	(Csr_Write_E_M),
 		.sram_read_write_o 	(sram_read_write_E_M)
+
+		// 面积优化
+		,.wdata_gpr_i		(wdata_gpr_E)
+		,.wdata_csr_i		(wdata_csr_E)
+		,.wdata_gpr_o		(wdata_gpr_E_M)
+		,.wdata_csr_o		(wdata_csr_E_M)
+		
+		,.Mem_Mask_i		(Mem_Mask_E)
+		,.Mem_Mask_o		(Mem_Mask_E_M)
 	);
 
 	// MEM_WB 模块实例化
 	ysyx_24100006_MEM_WB u_MEM_WB (
 		.clk            	(clock),
 		.reset          	(reset),
-// 调试信息
-.npc_M(npc_M),
-.npc_W(npc_M_W),
+
+`ifdef VERILATOR_SIM
+		// 调试信息
+		.pc_i           	(pc_M),
+		.pc_o           	(pc_M_W),
+		.npc_M				(npc_M),
+		.npc_W				(npc_M_W),
+`endif
 
 		.flush_i        	(irq_WD),   // 发生异常时需要冲刷流水线
 
@@ -1095,16 +1027,9 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 
 		.in_valid       	(mem_in_valid),     // 来自MEMU
 		.in_ready       	(mem_in_ready),     // 输出到MEMU
-		.pc_i           	(pc_M),
-		.alu_result_i   	(alu_result_M),
-		.sext_imm_i     	(sext_imm_M),
-		.Mem_rdata_i    	(Mem_rdata_M),
-		.rs1_data_i     	(rs1_data_M),
-		.rdata_csr_i    	(rdata_csr_M),
+		
 		.Gpr_Write_Addr_i	(Gpr_Write_Addr_M),
 		.Csr_Write_Addr_i	(Csr_Write_Addr_M),
-		.Gpr_Write_RD_i 	(Gpr_Write_RD_M),
-		.Csr_Write_RD_i 	(Csr_Write_RD_M),
 		.irq_no_i       	(irq_no_M),
 		.irq_i          	(irq_M),
 		.Gpr_Write_i    	(Gpr_Write_M),
@@ -1112,369 +1037,385 @@ wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
 
 		.out_valid      	(wb_out_valid),			// 输出到WBU
 		.out_ready      	(wb_out_ready),    		// 来自WBU
-		.pc_o           	(pc_M_W),
-		.alu_result_o   	(alu_result_M_W),
-		.sext_imm_o     	(sext_imm_M_W),
-		.Mem_rdata_o    	(Mem_rdata_M_W),
-		.rs1_data_o     	(rs1_data_M_W),
-		.rdata_csr_o    	(rdata_csr_M_W),
 		.Gpr_Write_Addr_o	(Gpr_Write_Addr_M_W),
 		.Csr_Write_Addr_o	(Csr_Write_Addr_M_W),
-		.Gpr_Write_RD_o 	(Gpr_Write_RD_M_W),
-		.Csr_Write_RD_o 	(Csr_Write_RD_M_W),
 		.irq_no_o       	(irq_no_M_W),
 		.irq_o          	(irq_M_W),
 		.Gpr_Write_o    	(Gpr_Write_M_W),
 		.Csr_Write_o    	(Csr_Write_M_W)
+
+		// 面积优化
+		,.wdata_gpr_i		(wdata_gpr_M)
+		,.wdata_csr_i		(wdata_csr_M)
+		,.wdata_gpr_o		(wdata_gpr_M_W)
+		,.wdata_csr_o		(wdata_csr_M_W)
 	);
 	
 	ysyx_24100006_hazard u_hazard(
 		// ID 当前指令寄存器号：使用 IF_ID 之后、IDU 看到的那条指令
-		.id_rs1        	(instruction_F_D[18:15]),
-		.id_rs2        	(instruction_F_D[23:20]),
-		.id_rs1_ren    	(rs1_ren_D),   // 来自 IDU 新增输出
-		.id_rs2_ren    	(rs2_ren_D),
-		.id_rd			(Gpr_Write_Addr_D),
-		.id_wen			(Gpr_Write_D),
-		.id_out_valid	(id_out_valid),
-		.is_load		(is_load),
+		.id_rs1        		(instruction_F_D[18:15]),
+		.id_rs2        		(instruction_F_D[23:20]),
+		.id_rs1_ren    		(rs1_ren_D),   // 来自 IDU 新增输出
+		.id_rs2_ren    		(rs2_ren_D),
+		.id_rd				(Gpr_Write_Addr_D),
+		.id_wen				(Gpr_Write_D),
+		.id_out_valid		(id_out_valid),
+		.is_load			(is_load),
 		// EX 阶段（忙判断：exe_out_valid | ~exe_out_ready）
-		.ex_out_valid	(exe_in_valid),
-		.ex_out_ready   (exe_in_ready),
-		.ex_rd         	(Gpr_Write_Addr_E),
-		.ex_wen        	(Gpr_Write_E),
+		.ex_out_valid		(exe_in_valid),
+		.ex_out_ready   	(exe_in_ready),
+		.ex_rd         		(Gpr_Write_Addr_E),
+		.ex_wen        		(Gpr_Write_E),
 
 		// MEM 阶段（忙判断：mem_out_valid | ~mem_out_ready）
-		.mem_out_valid 	(mem_in_valid),
-		.mem_out_ready 	(mem_out_ready),
-		.mem_rd        	(Gpr_Write_Addr_M),
-		.mem_wen       	(Gpr_Write_M),
+		.mem_out_valid 		(mem_in_valid),
+		.mem_out_ready 		(mem_out_ready),
+		.mem_rd        		(Gpr_Write_Addr_M),
+		.mem_wen       		(Gpr_Write_M),
 
-		.mem_stage_wen	(Gpr_Write_E_M),
-		.mem_stage_rd	(Gpr_Write_Addr_E_M),
-		.mem_in_valid	(mem_out_valid),
+		.mem_stage_wen		(Gpr_Write_E_M),
+		.mem_stage_rd		(Gpr_Write_Addr_E_M),
+		.mem_in_valid		(mem_out_valid),
 		.mem_stage_out_valid(Gpr_Write_M),
 		// WB 阶段（忙判断：wb_out_valid | ~wb_out_ready）
-		.wb_out_valid   (wb_in_valid),
-		.wb_out_ready   (wb_in_ready),
-		.wb_rd         	(Gpr_Write_Addr_WD),
-		.wb_wen        	(Gpr_Write_WD),
+		.wb_out_valid   	(wb_in_valid),
+		.wb_out_ready   	(wb_in_ready),
+		.wb_rd         		(Gpr_Write_Addr_WD),
+		.wb_wen        		(Gpr_Write_WD),
 
-		.stall_id      	(stall_id)
+		.stall_id      		(stall_id)
 
 		// 前递单元设计
-		,.clk(clock)
-		,.exe_mem_is_load(exe_mem_is_load)
-		,.exe_is_load	(exe_is_load)
-		,.mem_rvalid	(axi_rvalid_mem)
-		,.forwardA      (forwardA)
-		,.forwardB      (forwardB)
+		,.clk				(clock)
+		,.exe_mem_is_load	(exe_mem_is_load)
+		,.exe_is_load		(exe_is_load)
+		,.mem_rvalid		(axi_rvalid_mem)
+		,.forwardA      	(forwardA)
+		,.forwardB      	(forwardB)
 	);
 
 
 
 	ysyx_24100006_ifu IF(
-		.clk(clock),
-		.reset(reset),
+		.clk				(clock),
+		.reset				(reset),
+
+`ifdef VERILATOR_SIM
+		// 调试信息
+		.pc_F				(pc_F),
+`endif
+
 		// 直接将 hazard 的 stall 信号给 IFU：
-		.stall_id(stall_id),
+		.stall_id			(stall_id),
 
-		.is_fence_i(is_fence_i_D),
-		.icache_flush_done(icache_flush_done_CE),
+		.is_fence_i			(is_fence_i_D),
+		.icache_flush_done	(icache_flush_done_CE),
 
-		.redirect_valid(redirect_valid_E_F),
-		.npc(npc_E_F),
+		.redirect_valid		(redirect_valid_E_F),
+		.npc				(npc_E_F),
 		// AXI 接口信号
 		// read data addr
-		.axi_araddr(axi_araddr_if),
-		.axi_arready(axi_arready_if),
-		.axi_arvalid(axi_arvalid_if),
+		.axi_araddr			(axi_araddr_if),
+		.axi_arready		(axi_arready_if),
+		.axi_arvalid		(axi_arvalid_if),
 		// read data
-		.axi_rvalid(axi_rvalid_if),
-		.axi_rready(axi_rready_if),
-		.axi_rdata(axi_rdata_if),
+		.axi_rvalid			(axi_rvalid_if),
+		.axi_rready			(axi_rready_if),
+		.axi_rdata			(axi_rdata_if),
 		// write data addr
-		.axi_awvalid(axi_awvalid_if),
-		.axi_awready(axi_awready_if),
+		.axi_awvalid		(axi_awvalid_if),
+		.axi_awready		(axi_awready_if),
 		// write data
-		.axi_wvalid(axi_wvalid_if),
-		.axi_wready(axi_wready_if),
+		.axi_wvalid			(axi_wvalid_if),
+		.axi_wready			(axi_wready_if),
 		// response
-		.axi_bvalid(axi_bvalid_if),
-		.axi_bready(axi_bready_if),
+		.axi_bvalid			(axi_bvalid_if),
+		.axi_bready			(axi_bready_if),
 		// 新增AXI信号
-		.axi_arlen(axi_arlen_if),
-		.axi_arsize(axi_arsize_if),
-		.axi_rlast(axi_rlast_if),
+		.axi_arlen			(axi_arlen_if),
+		.axi_arsize			(axi_arsize_if),
+		.axi_rlast			(axi_rlast_if),
 		// 模块握手信号
-		.if_in_valid(if_in_valid),
-		.if_in_ready(if_in_ready),
+		.if_in_valid	(if_in_valid),
+		.if_in_ready		(if_in_ready),
 
-
-		.pc_F(pc_F),
-		.inst_F(inst_F),
+		.inst_F				(inst_F),
+		.pc_add_4_o			(pc_add_4_F),
 
 		// Access Fault异常
-		.Access_Fault(Access_Fault)
+		.Access_Fault		(Access_Fault)
 
 		// 异常处理相关
-		,.csr_mtvec(mtvec_D)
-		,.EXC(irq_WD)
-		,.irq(irq_F)
-		,.irq_no(irq_no_F)
+		,.csr_mtvec			(mtvec_D)
+		,.EXC				(irq_WD)
+		,.irq				(irq_F)
+		,.irq_no			(irq_no_F)
 	);
 	
 	ysyx_24100006_idu ID(
-		.clk(clock),
-		.reset(reset),
+		.clk				(clock),
+		.reset				(reset),
 
-		.stall_id(stall_id),
+`ifdef VERILATOR_SIM
+		// 调试信息
+		.pc_D				(pc_F_D),
+		.pc_E				(pc_D),
+`endif
 
-		.instruction(instruction_F_D),
-		.pc_D(pc_F_D),
-		.irq_W(irq_WD),
-		.irq_no_W(irq_no_WD),
-		.Gpr_Write_Addr_W(Gpr_Write_Addr_WD),
-		.Csr_Write_Addr_W(Csr_Write_Addr_WD),
-		.Gpr_Write_W(Gpr_Write_WD),
-		.Csr_Write_W(Csr_Write_WD),
-		.wdata_gpr_W(wdata_gpr_WD),
-		.wdata_csr_W(wdata_csr_WD),
+		.stall_id			(stall_id),
+
+		.instruction		(instruction_F_D),
+		.irq_W				(irq_WD),
+		.irq_no_W			(irq_no_WD),
+		.Gpr_Write_Addr_W	(Gpr_Write_Addr_WD),
+		.Csr_Write_Addr_W	(Csr_Write_Addr_WD),
+		.Gpr_Write_W		(Gpr_Write_WD),
+		.Csr_Write_W		(Csr_Write_WD),
+		.wdata_gpr_W		(wdata_gpr_WD),
+		.wdata_csr_W		(wdata_csr_WD),
 		
-		.id_out_valid(id_out_valid),
-		.id_out_ready(id_out_ready),
-		.id_in_valid(id_in_valid),
-		.id_in_ready(id_in_ready),
+		.id_out_valid		(id_out_valid),
+		.id_out_ready		(id_out_ready),
+		.id_in_valid		(id_in_valid),
+		.id_in_ready		(id_in_ready),
 
-		.rs1_ren(rs1_ren_D),
-		.rs2_ren(rs2_ren_D),
-		.is_break(is_break_D),
-
-		.pc_E(pc_D),
-		.sext_imm(sext_imm_D),
-		.rs1_data(rs1_data_D),
-		.rs2_data(rs2_data_D),
-		.rdata_csr(rdata_csr_D),
-		.is_fence_i(is_fence_i_D),
-		.aluop(alu_op_D),
-		.AluSrcA(AluSrcA_D),
-		.AluSrcB(AluSrcB_D),
-		.Gpr_Write_E(Gpr_Write_D),
-		.Csr_Write_E(Csr_Write_D),
-		.Gpr_Write_Addr(Gpr_Write_Addr_D),
-		.Csr_Write_Addr(Csr_Write_Addr_D),
-		.Gpr_Write_RD(Gpr_Write_RD_D),
-		.Csr_Write_RD(Csr_Write_RD_D),
-		.Jump(Jump_D),
-		.Mem_WMask(Mem_WMask_D),
-		.Mem_RMask(Mem_RMask_D),
-		.sram_read_write(sram_read_write_D),
-		.mtvec(mtvec_D),
-		.mepc(mepc_D)
+		.rs1_ren			(rs1_ren_D),
+		.rs2_ren			(rs2_ren_D),
+		.is_break			(is_break_D),
+		
+		.is_fence_i			(is_fence_i_D),
+		.aluop				(alu_op_D),
+		.Gpr_Write_E		(Gpr_Write_D),
+		.Csr_Write_E		(Csr_Write_D),
+		.Gpr_Write_Addr		(Gpr_Write_Addr_D),
+		.Csr_Write_Addr		(Csr_Write_Addr_D),
+		.Gpr_Write_RD		(Gpr_Write_RD_D),
+		.Jump				(Jump_D),
+		.sram_read_write	(sram_read_write_D),
+		.mtvec				(mtvec_D)
 
 		// 异常处理相关
-		,.irq_F(irq_F_D)
-		,.irq_no_F(irq_no_F_D)
-		,.irq_D(irq_D)
-		,.irq_no_D(irq_no_D)
+		,.irq_F				(irq_F_D)
+		,.irq_no_F			(irq_no_F_D)
+		,.irq_D				(irq_D)
+		,.irq_no_D			(irq_no_D)
 
 		// 前递单元设计
-		,.forwardA(forwardA)
-		,.forwardB(forwardB)
-		,.exe_fw_data(exe_fw_data)
-		,.mem_fw_data(mem_fw_data)
-		,.wb_fw_data(wdata_gpr_WD)
+		,.forwardA			(forwardA)
+		,.forwardB			(forwardB)
+		,.exe_fw_data		(exe_fw_data)
+		,.mem_fw_data		(mem_fw_data)
+		,.wb_fw_data		(wdata_gpr_WD)
+		
+
+		// 面积优化相关
+		,.pc_j_m_e_n_D		(pc_j_m_e_n_D)  
+		,.alu_a_data_D		(alu_a_data_D)
+		,.alu_b_data_D		(alu_b_data_D)
+		,.pc_add_imm_D		(pc_add_imm_D)
+
+		,.Mem_Mask			(Mem_Mask_D)
+		
+		,.wdata_gpr_D		(wdata_gpr_D)
+		,.wdata_csr_D		(wdata_csr_D)
+
+		,.pc_add_4_i		(pc_add_4_F_D)
+		,.pc_add_4_o		(pc_add_4_D)
 	);
 
 	ysyx_24100006_exeu EXE(
-		.clk(clock),
-		.reset(reset),
+		.clk				(clock),
+		.reset				(reset),
 
-		.icache_flush_done(icache_flush_done_CE),
-		.is_break_i(is_break_D_E), // 是否是断点指令
-		.is_break_o(is_break_E),
+`ifdef VERILATOR_SIM
+		// 调试信息
+		.pc_E				(pc_D_E),
+		.pc_M				(pc_E),
+`endif
 
-		.pc_E(pc_D_E),
-		.sext_imm_E(sext_imm_D_E),
-		.rs1_data_E(rs1_data_D_E),
-		.rs2_data_E(rs2_data_D_E),
-		.rdata_csr_E(rdata_csr_D_E),
-		.mtvec(mtvec_D_E),
-		.mepc(mepc_D_E),
-		.is_fence_i(is_fence_i_D_E),
-		.irq_E(irq_D_E),
-		.irq_no_E(irq_no_D_E),
-		.aluop(alu_op_D_E),
-		.AluSrcA(AluSrcA_D_E),
-		.AluSrcB(AluSrcB_D_E),
-		.Jump(Jump_D_E),
-		.Gpr_Write_E(Gpr_Write_D_E),
-		.Csr_Write_E(Csr_Write_D_E),
-		.Gpr_Write_Addr_E(Gpr_Write_Addr_D_E),
-		.Csr_Write_Addr_E(Csr_Write_Addr_D_E),
-		.Gpr_Write_RD_E(Gpr_Write_RD_D_E),
-		.Csr_Write_RD_E(Csr_Write_RD_D_E),
-		.Mem_WMask_E(Mem_WMask_D_E),
-		.Mem_RMask_E(Mem_RMask_D_E),
-		.sram_read_write_E(sram_read_write_D_E),
+		.icache_flush_done	(icache_flush_done_CE),
+		.is_break_i			(is_break_D_E), // 是否是断点指令
+		.is_break_o			(is_break_E),
+		
+		.is_fence_i			(is_fence_i_D_E),
+		.irq_E				(irq_D_E),
+		.irq_no_E			(irq_no_D_E),
+		.aluop				(alu_op_D_E),
 
-		.exe_out_valid(exe_out_valid),
-		.exe_out_ready(exe_out_ready),
-		.exe_in_valid(exe_in_valid),
-		.exe_in_ready(exe_in_ready),
+		.Jump				(Jump_D_E),
+		.Gpr_Write_E		(Gpr_Write_D_E),
+		.Csr_Write_E		(Csr_Write_D_E),
+		.Gpr_Write_Addr_E	(Gpr_Write_Addr_D_E),
+		.Csr_Write_Addr_E	(Csr_Write_Addr_D_E),
+		.Gpr_Write_RD_E		(Gpr_Write_RD_D_E),
 
-		.npc_E(npc_E),
-		.redirect_valid(redirect_valid_E),
+		.sram_read_write_E	(sram_read_write_D_E),
 
-		.pc_M(pc_E),
-		.alu_result(alu_result_E),
-		.sext_imm_M(sext_imm_E),
-		.rs1_data_M(rs1_data_E),
-		.rs2_data_M(rs2_data_E),
-		.rdata_csr_M(rdata_csr_E),
-		.irq_M(irq_E),
-		.irq_no_M(irq_no_E),
-		.Gpr_Write_M(Gpr_Write_E),
-		.Csr_Write_M(Csr_Write_E),
-		.Gpr_Write_Addr_M(Gpr_Write_Addr_E),
-		.Csr_Write_Addr_M(Csr_Write_Addr_E),
-		.Gpr_Write_RD_M(Gpr_Write_RD_E),
-		.Csr_Write_RD_M(Csr_Write_RD_E),
-		.Mem_WMask_M(Mem_WMask_E),
-		.Mem_RMask_M(Mem_RMask_E),
-		.sram_read_write_M(sram_read_write_E)
+		.exe_out_valid		(exe_out_valid),
+		.exe_out_ready		(exe_out_ready),
+		.exe_in_valid		(exe_in_valid),
+		.exe_in_ready		(exe_in_ready),
+
+		.npc_E				(npc_E),
+		.redirect_valid		(redirect_valid_E),
+		
+		.alu_result			(alu_result_E),
+
+		.irq_M				(irq_E),
+		.irq_no_M			(irq_no_E),
+		.Gpr_Write_M		(Gpr_Write_E),
+		.Csr_Write_M		(Csr_Write_E),
+		.Gpr_Write_Addr_M	(Gpr_Write_Addr_E),
+		.Csr_Write_Addr_M	(Csr_Write_Addr_E),
+		.Gpr_Write_RD_M		(Gpr_Write_RD_E),
+
+		.sram_read_write_M	(sram_read_write_E)
 
 		// 前递单元设计
-		,.exe_is_load(exe_is_load)
-		,.exe_fw_data(exe_fw_data)
+		,.exe_is_load		(exe_is_load)
+		,.exe_fw_data		(exe_fw_data)
+
+		// 面积优化相关
+		,.pc_j_m_e_n_E		(pc_j_m_e_n_D_E)    
+		,.alu_a_data_E		(alu_a_data_D_E)
+		,.alu_b_data_E		(alu_b_data_D_E)
+		,.pc_add_imm_E		(pc_add_imm_D_E)
+
+		,.wdata_gpr_E		(wdata_gpr_D_E)
+		,.wdata_csr_E		(wdata_csr_D_E)
+		,.wdata_gpr_M		(wdata_gpr_E)
+		,.wdata_csr_M		(wdata_csr_E)
+
+		,.Mem_Mask_E		(Mem_Mask_D_E)
+		,.Mem_Mask_M		(Mem_Mask_E)
+
+		,.pc_add_4			(pc_add_4_D_E)
 	);
 
 	ysyx_24100006_memu MEM(
-		.clk(clock),
-		.reset(reset),
-// 调试信息
-.npc_E(npc_E_M),
-.npc_M(npc_M),
+		.clk				(clock),
+		.reset				(reset),
 
-		.is_break_i(is_break_E_M), // 是否是断点指令
-		.is_break_o(is_break_M),
+`ifdef VERILATOR_SIM
+		// 调试信息
+		.pc_M				(pc_E_M),
+		.pc_W				(pc_M),
+		.npc_E				(npc_E_M),
+		.npc_M				(npc_M),
+`endif
 
-		.sram_read_write(sram_read_write_E_M),
-		.pc_M(pc_E_M),
-		.alu_result_M(alu_result_E_M),
-		.sext_imm_M(sext_imm_E_M),
-		.rs1_data_M(rs1_data_E_M),
-		.rs2_data_M(rs2_data_E_M),
-		.rdata_csr_M(rdata_csr_E_M),
+		.is_break_i			(is_break_E_M), // 是否是断点指令
+		.is_break_o			(is_break_M),
 
-		.irq_M(irq_E_M),
-		.irq_no_M(irq_no_E_M),
-		.Gpr_Write_M(Gpr_Write_E_M),
-		.Csr_Write_M(Csr_Write_E_M),
-		.Gpr_Write_Addr_M(Gpr_Write_Addr_E_M),
-		.Csr_Write_Addr_M(Csr_Write_Addr_E_M),
-		.Gpr_Write_RD_M(Gpr_Write_RD_E_M),
-		.Csr_Write_RD_M(Csr_Write_RD_E_M),
-		.Mem_WMask_M(Mem_WMask_E_M),
-		.Mem_RMask_M(Mem_RMask_E_M),
+		.sram_read_write	(sram_read_write_E_M),
+		.alu_result_M		(alu_result_E_M),
+		.irq_M				(irq_E_M),
+		.irq_no_M			(irq_no_E_M),
+		.Gpr_Write_M		(Gpr_Write_E_M),
+		.Csr_Write_M		(Csr_Write_E_M),
+		.Gpr_Write_Addr_M	(Gpr_Write_Addr_E_M),
+		.Csr_Write_Addr_M	(Csr_Write_Addr_E_M),
+		.Gpr_Write_RD_M		(Gpr_Write_RD_E_M),
+
 
 		// AXI 接口信号
 		// read data addr
-		.axi_araddr(axi_araddr_mem),
-		.axi_arready(axi_arready_mem),
-		.axi_arvalid(axi_arvalid_mem),
+		.axi_araddr			(axi_araddr_mem),
+		.axi_arready		(axi_arready_mem),
+		.axi_arvalid		(axi_arvalid_mem),
 		// read data
-		.axi_rdata(axi_rdata_mem),
-		.axi_rvalid(axi_rvalid_mem),
-		.axi_rready(axi_rready_mem),
+		.axi_rdata			(axi_rdata_mem),
+		.axi_rvalid			(axi_rvalid_mem),
+		.axi_rready			(axi_rready_mem),
 		// write data addr
-		.axi_awaddr(axi_awaddr_mem),
-		.axi_awvalid(axi_awvalid_mem),
-		.axi_awready(axi_awready_mem),
+		.axi_awaddr			(axi_awaddr_mem),
+		.axi_awvalid		(axi_awvalid_mem),
+		.axi_awready		(axi_awready_mem),
 		// write data
-		.axi_wvalid(axi_wvalid_mem),
-		.axi_wdata(axi_wdata_mem),
-		.axi_wready(axi_wready_mem),
+		.axi_wvalid			(axi_wvalid_mem),
+		.axi_wdata			(axi_wdata_mem),
+		.axi_wready			(axi_wready_mem),
 		// response
-		.axi_bvalid(axi_bvalid_mem),
-		.axi_bready(axi_bready_mem),
-		.axi_bresp(axi_bresp_mem),
+		.axi_bvalid			(axi_bvalid_mem),
+		.axi_bready			(axi_bready_mem),
+		.axi_bresp			(axi_bresp_mem),
 		// 新增AXI信号
-		.axi_arlen(axi_arlen_mem),
-		.axi_arsize(axi_arsize_mem),
-		.axi_rlast(axi_rlast_mem),
-		.axi_awlen(axi_awlen_mem),
-		.axi_awsize(axi_awsize_mem),
-		.axi_wstrb(axi_wstrb_mem),
-		.axi_wlast(axi_wlast_mem),
-		.axi_addr_suffix(axi_addr_suffix_mem),
+		.axi_arlen			(axi_arlen_mem),
+		.axi_arsize			(axi_arsize_mem),
+		.axi_rlast			(axi_rlast_mem),
+		.axi_awlen			(axi_awlen_mem),
+		.axi_awsize			(axi_awsize_mem),
+		.axi_wstrb			(axi_wstrb_mem),
+		.axi_wlast			(axi_wlast_mem),
+		.axi_addr_suffix	(axi_addr_suffix_mem),
 
 		// 模块握手信号
-		.mem_out_valid(mem_out_valid),
-		.mem_out_ready(mem_out_ready),
-		.mem_in_valid(mem_in_valid),
-		.mem_in_ready(mem_in_ready),
-		.is_load(is_load),
-		.pc_W(pc_M),
-		.sext_imm_W(sext_imm_M),
-		.alu_result_W(alu_result_M),
-		.rs1_data_W(rs1_data_M),
-		.rdata_csr_W(rdata_csr_M),
-		.Mem_rdata_extend(Mem_rdata_M),
-		.irq_W(irq_M),
-		.irq_no_W(irq_no_M),
-		.Gpr_Write_W(Gpr_Write_M),
-		.Csr_Write_W(Csr_Write_M),
-		.Gpr_Write_Addr_W(Gpr_Write_Addr_M),
-		.Csr_Write_Addr_W(Csr_Write_Addr_M),
-		.Gpr_Write_RD_W(Gpr_Write_RD_M),
-		.Csr_Write_RD_W(Csr_Write_RD_M)
+		.mem_out_valid		(mem_out_valid),
+		.mem_out_ready		(mem_out_ready),
+		.mem_in_valid		(mem_in_valid),
+		.mem_in_ready		(mem_in_ready),
+		.is_load			(is_load),
+
+		.irq_W				(irq_M),
+		.irq_no_W			(irq_no_M),
+		.Gpr_Write_W		(Gpr_Write_M),
+		.Csr_Write_W		(Csr_Write_M),
+		.Gpr_Write_Addr_W	(Gpr_Write_Addr_M),
+		.Csr_Write_Addr_W	(Csr_Write_Addr_M)
+
 
 		// 前递单元设计
-		// ,.mem_is_load(mem_is_load)
-		,.exe_mem_is_load(exe_mem_is_load)
-		,.mem_fw_data(mem_fw_data)
+		,.exe_mem_is_load	(exe_mem_is_load)
+		,.mem_fw_data		(mem_fw_data)
+
+		// 面积优化
+		,.wdata_gpr_M		(wdata_gpr_E_M)
+		,.wdata_csr_M		(wdata_csr_E_M)
+		,.wdata_gpr_W		(wdata_gpr_M)
+		,.wdata_csr_W		(wdata_csr_M)
+
+		,.Mem_Mask_M		(Mem_Mask_E_M)
 	);
 
 	ysyx_24100006_wbu WB(
-		.clk(clock),
-		.reset(reset),
+		.clk				(clock),
+		.reset				(reset),
+
+`ifdef VERILATOR_SIM
+		// 调试信息
+		.pc_w				(pc_M_W),
+		.mtvec				(mtvec_D),
+		.npc_M				(npc_M_W),
+		.npc_W				(npc_W),
+`endif
+
+		.is_break_i			(is_break_M_W), // 是否是断点指令
+
+		.irq_W				(irq_M_W),
+		.irq_no_W			(irq_no_M_W),
+		.Gpr_Write			(Gpr_Write_M_W),
+		.Csr_Write			(Csr_Write_M_W),
+		.Gpr_Write_Addr		(Gpr_Write_Addr_M_W),
+		.Csr_Write_Addr		(Csr_Write_Addr_M_W),
 		
-		.is_break_i(is_break_M_W), // 是否是断点指令
+		.wb_out_valid		(wb_out_valid),
+		.wb_out_ready		(wb_out_ready),
+		.wb_in_valid		(wb_in_valid),
+		.wb_in_ready		(1),
 
-		.pc_w(pc_M_W),
-		.sext_imm(sext_imm_M_W),
-		.alu_result(alu_result_M_W),
-		.Mem_rdata_extend(Mem_rdata_M_W),
-		.rdata_csr(rdata_csr_M_W),
-		.rs1_data(rs1_data_M_W),
-		.irq_W(irq_M_W),
-		.irq_no_W(irq_no_M_W),
-		.Gpr_Write(Gpr_Write_M_W),
-		.Csr_Write(Csr_Write_M_W),
-		.Gpr_Write_Addr(Gpr_Write_Addr_M_W),
-		.Csr_Write_Addr(Csr_Write_Addr_M_W),
-		.Gpr_Write_RD(Gpr_Write_RD_M_W),
-		.Csr_Write_RD(Csr_Write_RD_M_W),
-		
-		.wb_out_valid(wb_out_valid),
-		.wb_out_ready(wb_out_ready),
-		.wb_in_valid(wb_in_valid),
-		.wb_in_ready(1),
+		.irq_WD				(irq_WD),
+		.irq_no_WD			(irq_no_WD),
+		.Gpr_Write_WD		(Gpr_Write_WD),
+		.Csr_Write_WD		(Csr_Write_WD),
+		.Gpr_Write_Addr_WD	(Gpr_Write_Addr_WD),
+		.Csr_Write_Addr_WD	(Csr_Write_Addr_WD),
+		.wdata_gpr			(wdata_gpr_WD),
+		.wdata_csr			(wdata_csr_WD)
 
-		.irq_WD(irq_WD),
-		.irq_no_WD(irq_no_WD),
-		.Gpr_Write_WD(Gpr_Write_WD),
-		.Csr_Write_WD(Csr_Write_WD),
-		.Gpr_Write_Addr_WD(Gpr_Write_Addr_WD),
-		.Csr_Write_Addr_WD(Csr_Write_Addr_WD),
-		.wdata_gpr(wdata_gpr_WD),
-		.wdata_csr(wdata_csr_WD)
+		// 面积优化
+		,.wdata_gpr_W		(wdata_gpr_M_W)
+		,.wdata_csr_W		(wdata_csr_M_W)
 
-// 调试信息
-,.mtvec(mtvec_D)
-,.npc_M(npc_M_W)
-,.npc_W(npc_W)
 	);
 
 	// always @(*) begin

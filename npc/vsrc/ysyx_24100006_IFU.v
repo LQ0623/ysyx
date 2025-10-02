@@ -40,8 +40,12 @@ module ysyx_24100006_ifu(
 	output 	reg			if_in_valid,
 	input 				if_in_ready,
 
+`ifdef VERILATOR_SIM
     output 	[31:0] 		pc_F,
-	output 	reg [31:0] 	inst_F,
+`endif
+
+	output reg [31:0] 	inst_F,
+	output [31:0]		pc_add_4_o,
 
 	// Access Fault异常
 	input	[1:0]		Access_Fault
@@ -143,6 +147,11 @@ module ysyx_24100006_ifu(
 		end
 	end
 
+// 如果不是仿真的话,那么pc_F是没有定义的
+`ifndef VERILATOR_SIM
+	wire [31:0] pc_F;
+`endif
+
 	// 判断指令是否为jal指令，并计算跳转的位置
 	wire [31:0] jal_target;
 	wire 		is_jal;
@@ -151,8 +160,9 @@ module ysyx_24100006_ifu(
 
 
 	wire [31:0] npc_temp;
-	assign npc_temp = EXC ? csr_mtvec : (redirect_valid ? npc : (is_jal ? jal_target : pc_F + 4));
-	assign axi_araddr = pc_F;
+	assign pc_add_4_o 	= pc_F + 4;
+	assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : (is_jal ? jal_target : pc_add_4_o));
+	assign axi_araddr 	= pc_F;
 
 	ysyx_24100006_pc PC(
 		.clk(clk),

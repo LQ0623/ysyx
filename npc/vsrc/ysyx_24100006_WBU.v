@@ -6,12 +6,6 @@ module ysyx_24100006_wbu(
     input           clk,
     input           reset,
     input           is_break_i,
-    input [31:0]    pc_w,
-    input [31:0]    sext_imm,
-    input [31:0]    alu_result,
-    input [31:0]    Mem_rdata_extend,
-    input [31:0]    rdata_csr,
-    input [31:0]    rs1_data,
 
     // control signal
     input           irq_W,
@@ -20,8 +14,6 @@ module ysyx_24100006_wbu(
 	input           Csr_Write,
     input [3:0]     Gpr_Write_Addr,
     input [11:0]    Csr_Write_Addr,
-    input [2:0]     Gpr_Write_RD,
-    input [1:0]     Csr_Write_RD,
 
     // 握手机制使用
 	input           wb_out_valid,   // MEM_WB -> WBU   (上游 valid)
@@ -38,14 +30,23 @@ module ysyx_24100006_wbu(
     output [31:0]   wdata_gpr,
     output [31:0]   wdata_csr
 
+    // 面积优化
+	,input 	[31:0]  wdata_gpr_W
+	,input 	[31:0]  wdata_csr_W
+
+`ifdef VERILATOR_SIM
     // 调试使用
-    ,input [31:0]   mtvec
-    ,input [31:0]   npc_M
+    ,input  [31:0]  pc_w
+    ,input  [31:0]  mtvec
+    ,input  [31:0]  npc_M
     ,output [31:0]  npc_W
+`endif
 );
     
+`ifdef VERILATOR_SIM
     // 调试使用
     reg [31:0] npc_temp;
+`endif
 
     // 握手机制
 	parameter S_IDLE = 0, S_WRITE = 1;
@@ -65,13 +66,12 @@ module ysyx_24100006_wbu(
 
     always @(posedge clk) begin
         if (reset) begin
-            wb_out_ready_reg <= 1'b1;  // 复位后WBU空闲
-            processing <= 1'b0;
+            wb_out_ready_reg    <= 1'b1;  // 复位后WBU空闲
+            processing          <= 1'b0;
 
-            npc_temp <= 32'b0;
         end else begin
             // 默认：WBU空闲，可以接收新数据
-            wb_out_ready_reg <= 1'b1;
+            wb_out_ready_reg    <= 1'b1;
             
             // 当上游有有效数据且我们空闲时，开始处理
             if (wb_out_valid && wb_out_ready_reg) begin
@@ -80,17 +80,19 @@ module ysyx_24100006_wbu(
                 // 而不仅仅是产生信号
                 
                 // 标记我们正在处理（虽然通常立即完成）
-                processing <= 1'b1;
+                processing      <= 1'b1;
 
+`ifdef VERILATOR_SIM
                 // 一旦开始处理，WBU不再空闲，直到处理完成
-                npc_temp   <= irq_WD ? mtvec : npc_M; // 调试使用
+                npc_temp        <= irq_WD ? mtvec : npc_M; // 调试使用
+`endif
             end
             
             // 通常WBU在一个周期内完成，所以processing不会持续
             // 但如果需要模拟多周期行为（如调试模式），可以扩展
             if (processing) begin
                 // 实际写入已完成，清除处理标志
-                processing <= 1'b0;
+                processing      <= 1'b0;
             end
         end
     end
@@ -103,24 +105,16 @@ module ysyx_24100006_wbu(
     assign Gpr_Write_Addr_WD    = Gpr_Write_Addr;
     assign Csr_Write_Addr_WD    = Csr_Write_Addr;
 
+`ifdef VERILATOR_SIM
     assign npc_W = npc_temp;        // 调试使用
+`endif
 
     // 选择写入通用寄存器的内容
-	ysyx_24100006_MuxKey#(5,3,32) gpr_write_data_mux(wdata_gpr,Gpr_Write_RD,{
-		3'b000, sext_imm,
-		3'b001, alu_result,
-		3'b010, (pc_w+4),
-		3'b011, Mem_rdata_extend,
-		3'b100, rdata_csr
-	});
-
+    assign wdata_gpr            = wdata_gpr_W;
 
 	// 选择写入系统寄存器的内容
-	ysyx_24100006_MuxKey#(3,2,32) csr_write_data_mux(wdata_csr,Csr_Write_RD,{
-		2'b00,pc_w,
-		2'b01,rs1_data,
-		2'b10,(rdata_csr | rs1_data)
-	});
+    assign wdata_csr            = wdata_csr_W;
+
 `ifdef VERILATOR_SIM
 always @(*) begin
     if(is_break_i == 1)

@@ -18,9 +18,9 @@
 `define ysyx_24100006_MEMW                  1
 `define ysyx_24100006_MEMNW                 0
 // 写多少字节的内存
-`define ysyx_24100006_WByte                 8'b00000001
-`define ysyx_24100006_WHWord                8'b00000011   // 半字
-`define ysyx_24100006_WWord                 8'b00001111
+`define ysyx_24100006_WByte                 3'b000
+`define ysyx_24100006_WHWord                3'b001   // 半字
+`define ysyx_24100006_WWord                 3'b011
 
 // MEM_READ
 `define ysyx_24100006_MEMR                  1
@@ -33,17 +33,17 @@
 `define ysyx_24100006_RWord                 4
 
 // pc跳转是否加imm
-`define ysyx_24100006_NJUMP                 0
+`define ysyx_24100006_NJUMP_MRET_JALR       0
 `define ysyx_24100006_JAL                   1
-`define ysyx_24100006_JALR                  2
-`define ysyx_24100006_JBEQ                  3
-`define ysyx_24100006_JBNE                  4
-`define ysyx_24100006_JBLT                  5
-`define ysyx_24100006_JBGE                  6
-`define ysyx_24100006_JBLTU                 7
-`define ysyx_24100006_JBGEU                 8
-`define ysyx_24100006_JUMPMRET              9
-`define ysyx_24100006_JUMPECALL             10
+// `define ysyx_24100006_JALR                  2
+`define ysyx_24100006_JBEQ                  2
+`define ysyx_24100006_JBNE                  3
+`define ysyx_24100006_JBLT                  4
+`define ysyx_24100006_JBGE                  5
+`define ysyx_24100006_JBLTU                 6
+`define ysyx_24100006_JBGEU                 7
+// `define ysyx_24100006_JUMPMRET              9
+// `define ysyx_24100006_JUMPECALL             10
 // 指令的imm的类型
 `define ysyx_24100006_I_TYPE_IMM            0
 `define ysyx_24100006_J_TYPE_IMM            1
@@ -89,28 +89,26 @@
     计算下一条指令
 */
 module ysyx_24100006_npc(
-    input[31:0]     pc,
-    input[31:0]     mtvec,
-    input[31:0]     mepc,
-    input[3:0]      Skip_mode,
-    input[31:0]     sext_imm,
-    input[31:0]     rs_data,
+    // input[31:0]     pc,
+    // input[31:0]     mtvec,
+    // input[31:0]     mepc,
+    input [2:0]      Skip_mode,
+    // input[31:0]     sext_imm,
+    // input[31:0]     rs_data,
+    input [31:0]    pc_n_m_e,        // NO_JUMP/MRET/ECALL三种跳转的地址
+    input [31:0]    pc_add_imm,
     input           cmp_result,
     input           zf,         // 判断rs_data是否等于rt_data，相等就会为1
     output[31:0]    npc
 );
 
-    assign npc  =   (Skip_mode == `ysyx_24100006_NJUMP)?                        (pc + 4):
-                    (Skip_mode == `ysyx_24100006_JAL)?                          (pc + sext_imm):
-                    (Skip_mode == `ysyx_24100006_JALR)?                         ((rs_data+ sext_imm) & (~32'b1)):
-                    (Skip_mode == `ysyx_24100006_JBEQ && zf == 1'b1)?           (pc + sext_imm) :  // 这个需要单独的一个信号来控制
-                    (Skip_mode == `ysyx_24100006_JBNE && zf == 1'b0)?           (pc + sext_imm) :
-                    (Skip_mode == `ysyx_24100006_JBLT && cmp_result == 1'b1)?   (pc + sext_imm) :
-                    (Skip_mode == `ysyx_24100006_JBLTU && cmp_result == 1'b1)?  (pc + sext_imm) :
-                    (Skip_mode == `ysyx_24100006_JBGE && cmp_result == 1'b0)?   (pc + sext_imm) :
-                    (Skip_mode == `ysyx_24100006_JBGEU && cmp_result == 1'b0)?  (pc + sext_imm) :
-                    (Skip_mode == `ysyx_24100006_JUMPMRET)?                     (mepc)          : 
-                    (Skip_mode == `ysyx_24100006_JUMPECALL)?                    (mtvec)         : (pc + 4);
+    assign npc  =   (Skip_mode == `ysyx_24100006_JAL)?                          pc_add_imm:
+                    (Skip_mode == `ysyx_24100006_JBEQ && zf == 1'b1)?           pc_add_imm :  // 这个需要单独的一个信号来控制
+                    (Skip_mode == `ysyx_24100006_JBNE && zf == 1'b0)?           pc_add_imm :
+                    (Skip_mode == `ysyx_24100006_JBLT && cmp_result == 1'b1)?   pc_add_imm :
+                    (Skip_mode == `ysyx_24100006_JBLTU && cmp_result == 1'b1)?  pc_add_imm :
+                    (Skip_mode == `ysyx_24100006_JBGE && cmp_result == 1'b0)?   pc_add_imm :
+                    (Skip_mode == `ysyx_24100006_JBGEU && cmp_result == 1'b0)?  pc_add_imm : pc_n_m_e;
 
 endmodule
 

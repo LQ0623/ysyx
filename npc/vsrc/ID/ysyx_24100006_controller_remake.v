@@ -22,9 +22,12 @@
 `define ysyx_24100006_MEMW                  1
 `define ysyx_24100006_MEMNW                 0
 // 写多少字节的内存
-`define ysyx_24100006_WByte                 8'b00000001
-`define ysyx_24100006_WHWord                8'b00000011   // 半字
-`define ysyx_24100006_WWord                 8'b00001111
+// `define ysyx_24100006_WByte                 8'b00000001
+// `define ysyx_24100006_WHWord                8'b00000011   // 半字
+// `define ysyx_24100006_WWord                 8'b00001111
+`define ysyx_24100006_WByte                 3'b000
+`define ysyx_24100006_WHWord                3'b001   // 半字
+`define ysyx_24100006_WWord                 3'b011
 
 // MEM_READ
 `define ysyx_24100006_MEMR                  1
@@ -37,17 +40,17 @@
 `define ysyx_24100006_RWord                 4
 
 // pc跳转是否加imm
-`define ysyx_24100006_NJUMP                 0
+`define ysyx_24100006_NJUMP_MRET_JALR       0
 `define ysyx_24100006_JAL                   1
-`define ysyx_24100006_JALR                  2
-`define ysyx_24100006_JBEQ                  3
-`define ysyx_24100006_JBNE                  4
-`define ysyx_24100006_JBLT                  5
-`define ysyx_24100006_JBGE                  6
-`define ysyx_24100006_JBLTU                 7
-`define ysyx_24100006_JBGEU                 8
-`define ysyx_24100006_JUMPMRET              9
-`define ysyx_24100006_JUMPECALL             10
+// `define ysyx_24100006_JALR                  2
+`define ysyx_24100006_JBEQ                  2
+`define ysyx_24100006_JBNE                  3
+`define ysyx_24100006_JBLT                  4
+`define ysyx_24100006_JBGE                  5
+`define ysyx_24100006_JBLTU                 6
+`define ysyx_24100006_JBGEU                 7
+// `define ysyx_24100006_JUMPMRET              9
+// `define ysyx_24100006_JUMPECALL             10
 // 指令的imm的类型
 `define ysyx_24100006_I_TYPE_IMM            0
 `define ysyx_24100006_J_TYPE_IMM            1
@@ -191,7 +194,7 @@ module ysyx_24100006_controller_remake(
     output  [1:0] Csr_Write_RD,
 
     /* pc的跳转类型 */
-    output  [3:0] Jump,
+    output  [2:0] Jump,
     /* 立即数的种类 */
     output  [2:0] Imm_Type,
     /* 源操作数的种类 */
@@ -200,7 +203,7 @@ module ysyx_24100006_controller_remake(
     /* 读内存是读多少字节，以及如何扩展 */
     output  [2:0] Mem_RMask,
     /* 写内存是多少字节 */
-    output  [7:0] Mem_WMask,
+    output  [2:0] Mem_WMask,
     /* 判断MEMU的是读取数据、写入数据还是不操作内存 */
     output [1:0] sram_read_write,
     /* 是否刷新icache */
@@ -350,17 +353,17 @@ module ysyx_24100006_controller_remake(
     // 跳转类型
     assign Jump = 
         ((opcode == `ysyx_24100006_jal) ? `ysyx_24100006_JAL :
-        (opcode == `ysyx_24100006_jalr) ? `ysyx_24100006_JALR :
+        // (opcode == `ysyx_24100006_jalr) ? `ysyx_24100006_JALR :
         // (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_JUMPECALL :        // ecall指令算是异常处理，所以是一套单独的机制，不在这里进行跳转
-        (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_mret) ? `ysyx_24100006_JUMPMRET :
+        // (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_mret) ? `ysyx_24100006_JUMPMRET :
         (opcode == `ysyx_24100006_B_type) ? (
             (funct3 == `ysyx_24100006_beq) ? `ysyx_24100006_JBEQ :
             (funct3 == `ysyx_24100006_bne) ? `ysyx_24100006_JBNE :
             (funct3 == `ysyx_24100006_blt) ? `ysyx_24100006_JBLT :
             (funct3 == `ysyx_24100006_bge) ? `ysyx_24100006_JBGE :
             (funct3 == `ysyx_24100006_bltu) ? `ysyx_24100006_JBLTU :
-            (funct3 == `ysyx_24100006_bgeu) ? `ysyx_24100006_JBGEU : `ysyx_24100006_NJUMP
-        ) : `ysyx_24100006_NJUMP);
+            (funct3 == `ysyx_24100006_bgeu) ? `ysyx_24100006_JBGEU : `ysyx_24100006_NJUMP_MRET_JALR
+        ) : `ysyx_24100006_NJUMP_MRET_JALR);
 
     // 立即数类型
     assign Imm_Type = 
@@ -408,8 +411,8 @@ module ysyx_24100006_controller_remake(
         (opcode == `ysyx_24100006_S_type) ? (
             (funct3 == `ysyx_24100006_sb) ? `ysyx_24100006_WByte :
             (funct3 == `ysyx_24100006_sh) ? `ysyx_24100006_WHWord : 
-            (funct3 == `ysyx_24100006_sw) ? `ysyx_24100006_WWord : 8'b0
-        ) : 8'b0;
+            (funct3 == `ysyx_24100006_sw) ? `ysyx_24100006_WWord : 3'b0
+        ) : 3'b0;
 
     assign sram_read_write =    (opcode == `ysyx_24100006_S_type)   ? `ysyx_24100006_mem_store  : 
                                 (opcode == `ysyx_24100006_load)     ? `ysyx_24100006_mem_load   : `ysyx_24100006_mem_idle;

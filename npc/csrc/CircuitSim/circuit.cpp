@@ -37,16 +37,16 @@ void single_cycle(){  //  0 --> 0 > 1 --> 1 > 0 this is a cycle in cpu  _|-|_|-
 	cpu->clock=0;   //negedge 1->0 no
     cpu->eval();  //process 0->0 refresh combination logic and make them stable
 	#ifdef CONFIG_DUMP_WAVE
-	if(pc >= 0xa0000000){
+	// if(pc >= 0x80056a94 && pc <= 0x80056a9c){
 		dump_wave_inc();
-	}
+	// }
 	#endif
 	cpu->clock=1;   //posedge 0->1 refresh sequential logic
     cpu->eval();  //process 1->1 refresh sequential logic(sim)
 	#ifdef CONFIG_DUMP_WAVE
-	if(pc >= 0xa0000000){
+	// if(pc >= 0x80056a94 && pc <= 0x80056a9c){
 		dump_wave_inc();
-	}
+	// }
 	#endif
 }
 

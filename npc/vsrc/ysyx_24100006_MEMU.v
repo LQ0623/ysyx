@@ -4,20 +4,20 @@
 module ysyx_24100006_memu(
     input 				clk,
 	input 				reset,
-input [31:0] npc_E,
-output [31:0] npc_M,
+
+`ifdef VERILATOR_SIM
+	input [31:0] 		pc_M,
+	output [31:0] 		pc_W,
+	input  [31:0] 		npc_E,
+	output [31:0] 		npc_M,
+`endif
 
 	input           	is_break_i,
     output            	is_break_o,
 	input [1:0]			sram_read_write,	// 00:无访存 01:读 10:写
 
 	// from EXE_MEM（上一拍已寄存，但仍需在本级再次锁存）
-	input [31:0] 		pc_M,
 	input [31:0] 		alu_result_M,
-	input [31:0] 		sext_imm_M,
-	input [31:0] 		rs1_data_M,
-    input [31:0] 		rs2_data_M,
-	input [31:0] 		rdata_csr_M,
 
 	// control signal
 	input 				irq_M,
@@ -26,10 +26,7 @@ output [31:0] npc_M,
 	input 				Csr_Write_M,
 	input [3:0]     	Gpr_Write_Addr_M,
     input [11:0]    	Csr_Write_Addr_M,
-	input [2:0] 		Gpr_Write_RD_M,
-	input [1:0] 		Csr_Write_RD_M,
-	input [7:0] 		Mem_WMask_M,
-	input [2:0] 		Mem_RMask_M,
+	input [1:0] 		Gpr_Write_RD_M,
 
 	// AXI-Lite接口
     // read_addr
@@ -73,28 +70,26 @@ output [31:0] npc_M,
     output          	mem_out_ready,   // MEMU -> EXE_MEM  (上游 ready)
     output          	mem_in_valid,    // MEMU -> MEM_WB (下游 valid)
     input           	mem_in_ready,    // MEM_WB -> MEMU (下游 ready)
-output is_load,
+	output 				is_load,
 	// to MEM_WB（下游）
-	output [31:0] 		pc_W,
-	output [31:0] 		sext_imm_W,
-	output [31:0] 		alu_result_W,
-	output [31:0] 		rs1_data_W,
-	output [31:0] 		rdata_csr_W,
-	output [31:0] 		Mem_rdata_extend,
-
 	// control signal to WBU（经 MEM_WB）
 	output 				irq_W,
 	output [7:0] 		irq_no_W,
 	output 				Gpr_Write_W,
 	output 				Csr_Write_W,
 	output [3:0]    	Gpr_Write_Addr_W,
-    output [11:0]   	Csr_Write_Addr_W,
-	output [2:0] 		Gpr_Write_RD_W,
-	output [1:0] 		Csr_Write_RD_W
+    output [11:0]   	Csr_Write_Addr_W
+
+	// 面积优化
+	,input 	[31:0]  	wdata_gpr_M
+	,input 	[31:0]  	wdata_csr_M
+    ,output [31:0]  	wdata_gpr_W
+    ,output [31:0]  	wdata_csr_W
+
+	,input  [2:0]   	Mem_Mask_M
 
 	// 前递单元设计
-	// ,output 			mem_is_load
-	,output		exe_mem_is_load
+	,output				exe_mem_is_load
 	,output	[31:0]		mem_fw_data
 );
 
@@ -103,12 +98,6 @@ output is_load,
 
 	// ================= 内部寄存器（在接收上游时一次性锁存） =================
 	reg			is_break_r;
-    reg [31:0]	pc_r;
-    reg [31:0]  alu_result_r;
-    reg [31:0]  sext_imm_r;
-    reg [31:0]  rs1_data_r;
-    reg [31:0]  rs2_data_r;
-    reg [31:0]  rdata_csr_r;
 
     reg         irq_r;
     reg [7:0]   irq_no_r;
@@ -116,12 +105,14 @@ output is_load,
     reg         Csr_Write_r;
 	reg [3:0]	Gpr_Write_Addr_r;
 	reg [11:0]	Csr_Write_Addr_r;
-    reg [2:0]   Gpr_Write_RD_r;
-    reg [1:0]   Csr_Write_RD_r;
-
-    reg [7:0]   Mem_WMask_r;
-    reg [2:0]   Mem_RMask_r;
+    reg [1:0]   Gpr_Write_RD_r;
     reg [1:0]   sram_rw_r;
+
+	// 面积优化
+	reg [31:0]	wdata_gpr_r;
+	reg [31:0]	wdata_csr_r;
+
+	reg [2:0] 	Mem_Mask_r;
 
     // 访存锁存
     reg [31:0]	locked_addr;   // 地址锁存
@@ -169,7 +160,7 @@ output is_load,
 			case(state) 
 				// 空闲态：等待上游握手，锁存所有信号
 				S_IDLE: begin	// S_IDLE阶段用于锁存数据
-					locked_sram_read_write<=0;
+					locked_sram_read_write	<=0;
 					if(mem_out_valid == 1'b1 && mem_out_ready == 1'b1) begin
 						if(sram_read_write == 2'b00) begin
 							// 锁存地址和数据
@@ -180,7 +171,7 @@ output is_load,
 							locked_sram_read_write<=sram_read_write;
 							// 锁存地址和数据
 							locked_addr 	<= alu_result_M;
-							locked_data 	<= rs2_data_M;
+							locked_data 	<= wdata_gpr_M;
 							state			<= S_LOCK;		// 锁存地址和数据，准备发起 AXI 访问
 						end
 					end
@@ -191,9 +182,9 @@ output is_load,
 					if(locked_sram_read_write == 2'b01) begin
 						axi_araddr		<= locked_addr;	// 锁存的地址
 						// 传输需要读多少个字节
-						axi_arsize		<= 	(Mem_RMask_r == 0 || Mem_RMask_r == 1) ? 3'b000 :
-											(Mem_RMask_r == 2 || Mem_RMask_r == 3) ? 3'b001 :
-											(Mem_RMask_r == 4) ? 3'b010 : 3'b010;
+						axi_arsize		<= 	(Mem_Mask_r == 0 || Mem_Mask_r == 1) ? 3'b000 :
+											(Mem_Mask_r == 2 || Mem_Mask_r == 3) ? 3'b001 :
+											(Mem_Mask_r == 4) ? 3'b010 : 3'b010;
 						
 						axi_addr_suffix	<= locked_addr[1:0];
 
@@ -204,9 +195,9 @@ output is_load,
 						// WRITE
 						axi_awaddr		<= locked_addr;	// 锁存的地址
 						// 传输需要写多少个字节
-						axi_awsize		<= 	(Mem_WMask_r == 8'b00000001) ? 3'b000 :
-											(Mem_WMask_r == 8'b00000011) ? 3'b001 :
-											(Mem_WMask_r == 8'b00001111) ? 3'b010 : 3'b010;
+						axi_awsize		<= 	(Mem_Mask_r == 3'b000) ? 3'b000 :
+											(Mem_Mask_r == 3'b001) ? 3'b001 :
+											(Mem_Mask_r == 3'b011) ? 3'b010 : 3'b010;
 
 						// 地址和数据同时发送，这样效率最高
 						axi_awvalid		<= 1'b1;
@@ -215,16 +206,16 @@ output is_load,
 						axi_wlast		<= 1'b1;	// 说明是最后一组数据
 						// 写入掩码需要按照实际的指令以及写入的地址来变化
 						// 写掩码：按地址低位对齐
-						axi_wstrb		<= 	(Mem_WMask_r == 8'b00000001) ? 	// sb指令，存储一个字节
+						axi_wstrb		<= 	(Mem_Mask_r == 3'b000) ? 	// sb指令，存储一个字节
 												(	(locked_addr[1:0] == 2'b00) ? 4'b0001 : 
 													(locked_addr[1:0] == 2'b01) ? 4'b0010 :
 													(locked_addr[1:0] == 2'b10) ? 4'b0100 :
 													(locked_addr[1:0] == 2'b11) ? 4'b1000 : 4'b0000) :
-											(Mem_WMask_r == 8'b00000011) ?	// sh指令，存储两个字节
+											(Mem_Mask_r == 3'b001) ?	// sh指令，存储两个字节
 												(	(locked_addr[1:0] == 2'b00) ? 4'b0011 : 
 													(locked_addr[1:0] == 2'b01) ? 4'b0110 :
 													(locked_addr[1:0] == 2'b10) ? 4'b1100 : 4'b0000) :
-											(Mem_WMask_r == 8'b00001111) ?	// sh指令，存储两个字节
+											(Mem_Mask_r == 3'b011) ?	// sw指令，存储两个字节
 												(	(locked_addr[1:0] == 2'b00) ? 4'b1111 : 4'b0000) : 4'b0000;
 						state			<= WRITE_ADDR;
 					end else begin
@@ -312,18 +303,20 @@ output is_load,
 		end
 	end
 
-reg [31:0] npc_r;
+`ifdef VERILATOR_SIM
+	reg [31:0]	pc_r;
+	reg [31:0] npc_r;
+`endif
+
 	// 所存数据
 	always @(posedge clk) begin
 		if(reset)begin
 			// 本级寄存器复位
 			is_break_r      <= 1'b0; // 复位时不可能是ebreak指令
+
+`ifdef VERILATOR_SIM
             pc_r            <= 32'b0;
-            alu_result_r    <= 32'b0;
-            sext_imm_r      <= 32'b0;
-            rs1_data_r      <= 32'b0;
-            rs2_data_r      <= 32'b0;
-            rdata_csr_r     <= 32'b0;
+`endif
 
             irq_r           <= 1'b0;
             irq_no_r        <= 8'b0;
@@ -331,24 +324,12 @@ reg [31:0] npc_r;
             Csr_Write_r     <= 1'b0;
 			Gpr_Write_Addr_r<= 4'b0;
 			Csr_Write_Addr_r<= 12'b0;
-            Gpr_Write_RD_r  <= 3'b0;
-            Csr_Write_RD_r  <= 2'b0;
-
-            Mem_WMask_r     <= 8'b0;
-            Mem_RMask_r     <= 3'b0;
+            Gpr_Write_RD_r  <= 2'b0;
             sram_rw_r       <= 2'b00;
-
-			npc_r			<= 32'b0;
 		end else begin
 			if(state == S_IDLE)begin
 				// 锁存所有将要向下游传递的字段
 				is_break_r      <= is_break_i;
-				pc_r            <= pc_M;
-				alu_result_r    <= alu_result_M;
-				sext_imm_r      <= sext_imm_M;
-				rs1_data_r      <= rs1_data_M;
-				rs2_data_r      <= rs2_data_M;
-				rdata_csr_r     <= rdata_csr_M;
 
 				irq_r           <= irq_M;
 				irq_no_r        <= irq_no_M;
@@ -357,13 +338,18 @@ reg [31:0] npc_r;
 				Gpr_Write_Addr_r<= Gpr_Write_Addr_M;
 				Csr_Write_Addr_r<= Csr_Write_Addr_M;
 				Gpr_Write_RD_r  <= Gpr_Write_RD_M;
-				Csr_Write_RD_r  <= Csr_Write_RD_M;
 
-				Mem_WMask_r     <= Mem_WMask_M;
-				Mem_RMask_r     <= Mem_RMask_M;
 				sram_rw_r       <= sram_read_write;
 
+				wdata_gpr_r		<= wdata_gpr_M;
+				wdata_csr_r		<= wdata_csr_M;
+
+				Mem_Mask_r		<= Mem_Mask_M;
+
+`ifdef VERILATOR_SIM
+				pc_r            <= pc_M;
 				npc_r			<= npc_E;
+`endif
 			end
 		end
 	end
@@ -376,23 +362,22 @@ reg [31:0] npc_r;
 	assign is_load = (locked_sram_read_write == 2'b01); // 仅在读操作时为1
     // 向下游的数据（全部来源于本级锁存寄存器）
 	assign is_break_o      	= (state == S_IDLE) ? is_break_i : is_break_r;
-    assign pc_W            	= (state == S_IDLE) ? pc_M : pc_r;
-    assign sext_imm_W      	= (state == S_IDLE) ? sext_imm_M : sext_imm_r;
-    assign alu_result_W    	= (state == S_IDLE) ? alu_result_M : alu_result_r;
-    assign rs1_data_W      	= (state == S_IDLE) ? rs1_data_M : rs1_data_r;
-    assign rdata_csr_W     	= (state == S_IDLE) ? rdata_csr_M : rdata_csr_r;
 
     assign Gpr_Write_W     	= (state == S_IDLE) ? Gpr_Write_M : Gpr_Write_r;
     assign Csr_Write_W     	= (state == S_IDLE) ? Csr_Write_M : Csr_Write_r;
-    assign Gpr_Write_RD_W  	= (state == S_IDLE) ? Gpr_Write_RD_M : Gpr_Write_RD_r;
-    assign Csr_Write_RD_W  	= (state == S_IDLE) ? Csr_Write_RD_M : Csr_Write_RD_r;
+    wire [1:0] Gpr_Write_RD_W  	= (state == S_IDLE) ? Gpr_Write_RD_M : Gpr_Write_RD_r;
 	assign Gpr_Write_Addr_W	= (state == S_IDLE) ? Gpr_Write_Addr_M : Gpr_Write_Addr_r;
 	assign Csr_Write_Addr_W	= (state == S_IDLE) ? Csr_Write_Addr_M : Csr_Write_Addr_r;
-assign npc_M = (state == S_IDLE) ? npc_E : npc_r;
 
+`ifdef VERILATOR_SIM
+	assign pc_W            	= (state == S_IDLE) ? pc_M : pc_r;
+	assign npc_M			= (state == S_IDLE) ? npc_E : npc_r;	
+`endif
+
+	wire [31:0] Mem_rdata_extend;
     // 读取数据的扩展：使用已锁存的读掩码
     ysyx_24100006_MuxKey#(5,3,32) mem_rdata_extend_i(
-        Mem_rdata_extend, Mem_RMask_r, {
+        Mem_rdata_extend, Mem_Mask_r, {
             3'b000, {{24{axi_rdata[7]}},  	axi_rdata[7:0]},
             3'b001, {24'b0,  			axi_rdata[7:0]},
             3'b010, {{16{axi_rdata[15]}}, 	axi_rdata[15:0]},
@@ -405,6 +390,10 @@ assign npc_M = (state == S_IDLE) ? npc_E : npc_r;
 	wire   store_exc		= (axi_bvalid == 1 && axi_bresp != 0);
 	assign irq_W       		= irq_r || store_exc;
 	assign irq_no_W    		= store_exc ? 8'h7 : irq_no_r;	// 5号异常为load异常，7号异常为store异常，但是加载异常在xbar还是arbiter就会处理，报错
+
+	// 面积优化
+	assign wdata_gpr_W		= (Gpr_Write_RD_W == 2'b11) ? Mem_rdata_extend : ((state == S_IDLE) ? wdata_gpr_M : wdata_gpr_r);
+	assign wdata_csr_W		= (state == S_IDLE) ? wdata_csr_M : wdata_csr_r;
 
 	// 前递单元设计
 	reg [1:0] cnt;
@@ -422,12 +411,7 @@ assign npc_M = (state == S_IDLE) ? npc_E : npc_r;
 	end
 
 	assign exe_mem_is_load 	= (sram_read_write == 2'b01 && cnt != 0) ? 1'b1 : 1'b0;
-	assign mem_fw_data 	= 	(Gpr_Write_RD_W == 3'b000) ? sext_imm_W :
-							(Gpr_Write_RD_W == 3'b001) ? alu_result_W :
-							(Gpr_Write_RD_W == 3'b010) ? (pc_W + 32'd4) :
-							(Gpr_Write_RD_W == 3'b011) ? Mem_rdata_extend :
-							(Gpr_Write_RD_W == 3'b100) ? rdata_csr_W :
-							32'b0;
+	assign mem_fw_data 	= 	wdata_gpr_W;
 
 	// always @(posedge clk) begin
 	// 	if(axi_awaddr == 32'ha20913e8) begin

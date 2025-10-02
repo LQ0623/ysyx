@@ -7,7 +7,12 @@ module ysyx_24100006_idu(
 	input 			reset,
 	// from IFU
 	input [31:0] 	instruction,
+
+`ifdef VERILATOR_SIM
+    //调试使用
 	input [31:0] 	pc_D,
+    output [31:0] 	pc_E,
+`endif
 
     // === 新增：stall from hazard unit,防止数据冒险 ===
     input           stall_id,
@@ -34,45 +39,41 @@ module ysyx_24100006_idu(
     output          is_break, // 是否是ebreak指令
 
 	// to EXEU
-	output [31:0] 	pc_E,
-	// 位扩展的立即数
-	output [31:0] 	sext_imm,
-	// GPR寄存器取出的值
-	output [31:0] 	rs1_data,
-	output [31:0] 	rs2_data,
-	// CSR寄存器取出的值
-	output [31:0] 	rdata_csr,
-
 	// control signal
 	output 			is_fence_i, // 是否刷新icache
-	// output 			irq_E,
-	// 异常号
-	// output [7:0] 	irq_no,
 	output [3:0] 	aluop,
-	output 			AluSrcA,
-	output 			AluSrcB,
 	output 			Gpr_Write_E,
 	output 			Csr_Write_E,
     output [3:0]    Gpr_Write_Addr,
     output [11:0]   Csr_Write_Addr,
-	output [2:0] 	Gpr_Write_RD,
-	output [1:0] 	Csr_Write_RD,
-	output [3:0] 	Jump,
-	output [7:0] 	Mem_WMask,
-	output [2:0] 	Mem_RMask,
+	output [1:0] 	Gpr_Write_RD,
+	output [2:0] 	Jump,
 
 	output [1:0] 	sram_read_write,
 
 	// TO IFU
-	// CSR寄存器取出的异常PC
-	output [31:0] 	mtvec,
-	output [31:0] 	mepc
+	// CSR寄存器取出的异常PC,ecall指令使用的,mret指令直接在内部就会计算一个pc
+	output [31:0] 	mtvec
 
     // 异常处理相关
     ,input          irq_F
     ,input [7:0]    irq_no_F
     ,output         irq_D
     ,output [7:0]   irq_no_D
+
+    // 面积优化
+    ,output [31:0]  pc_j_m_e_n_D        // NO_JUMP/MRET/ECALL三种跳转的地址
+    ,output [31:0]  alu_a_data_D
+    ,output [31:0]  alu_b_data_D
+    ,output [31:0]  pc_add_imm_D
+
+    ,output [31:0]  wdata_csr_D
+    ,output [31:0]  wdata_gpr_D
+
+    ,output [2:0]   Mem_Mask
+
+    ,input  [31:0]  pc_add_4_i
+    ,output [31:0]  pc_add_4_o
 
     // 前递单元设计
     ,input [1:0]    forwardA
@@ -137,11 +138,11 @@ module ysyx_24100006_idu(
     wire [2:0]  ctrl_Gpr_Write_RD;
     wire        ctrl_Csr_Write;
     wire [1:0]  ctrl_Csr_Write_RD;
-    wire [3:0]  ctrl_Jump;
+    wire [2:0]  ctrl_Jump;
     wire        ctrl_AluSrcA;
     wire        ctrl_AluSrcB;
     wire [2:0]  ctrl_Mem_RMask;
-    wire [7:0]  ctrl_Mem_WMask;
+    wire [2:0]  ctrl_Mem_WMask;
     wire [1:0]  ctrl_sram_read_write;
     wire        ctrl_is_fence_i;
     wire        ctrl_irq;
@@ -189,34 +190,44 @@ module ysyx_24100006_idu(
 
 	
 	// ---------------- map combinational outputs ----------------
+
+`ifdef VERILATOR_SIM
+    // 调试使用
     assign pc_E        		= pc_D;
-    assign sext_imm    		= sext_imm_wire;
-    // assign rs1_data    		= rs1_data_comb;
-    // assign rs2_data    		= rs2_data_comb;
-    assign rs1_data    		= rs1_data_fw;
-    assign rs2_data    		= rs2_data_fw;
-    assign rdata_csr   		= rdata_csr_comb;
+`endif
+
     assign mtvec       		= mtvec_comb;
-    assign mepc        		= mepc_comb;
 
     assign aluop       		= ctrl_aluop;
-    assign AluSrcA     		= ctrl_AluSrcA;
-    assign AluSrcB     		= ctrl_AluSrcB;
     assign Gpr_Write_Addr   = instruction[10:7];
     assign Gpr_Write_E 		= ctrl_Gpr_Write;
-    assign Gpr_Write_RD		= ctrl_Gpr_Write_RD;
+    assign Gpr_Write_RD		= ctrl_Gpr_Write_RD[1:0];
     assign Csr_Write_Addr   = instruction[31:20];
     assign Csr_Write_E 		= ctrl_Csr_Write;
-    assign Csr_Write_RD		= ctrl_Csr_Write_RD;
     assign Jump        		= ctrl_Jump;
-    assign Mem_WMask   		= ctrl_Mem_WMask;
-    assign Mem_RMask   		= ctrl_Mem_RMask;
     assign sram_read_write 	= ctrl_sram_read_write;
     assign is_fence_i  		= ctrl_is_fence_i;
 
     // 异常处理相关
     assign irq_D       		= ctrl_irq | irq_F;
     assign irq_no_D    		= ctrl_irq ? ctrl_irq_no : irq_no_F;
+
+    // 面积优化
+    assign pc_add_4_o           =   pc_add_4_i;
+    wire [31:0] rs1_add_imm_D   =   (rs1_data_fw + sext_imm_wire) & (~32'b1);
+    assign pc_j_m_e_n_D         =   (instruction[6:0] == 7'b1100111) ? rs1_add_imm_D :               // JALR
+                                    (instruction[6:0] == 7'b1110011 && instruction[31:20] == 12'b001100000010) ? mepc_comb : pc_add_4_i;     // MRET，ECALL指令并不会产生跳转指令，因为属于异常处理
+
+    assign alu_a_data_D     = (ctrl_AluSrcA == 1'b0) ? rs1_data_fw : pc_D;
+    assign alu_b_data_D     = (ctrl_AluSrcB == 1'b0) ? rs2_data_fw : sext_imm_wire;
+    assign pc_add_imm_D     = pc_D + sext_imm_wire;
+
+    
+    assign wdata_gpr_D      = (ctrl_sram_read_write == 2'b10) ? rs2_data_fw : ((ctrl_Gpr_Write_RD[2] == 1'b1) ? rdata_csr_comb : ((ctrl_Gpr_Write_RD[1] == 1'b1) ? pc_add_4_i : sext_imm_wire));
+    assign wdata_csr_D      = (ctrl_Csr_Write_RD[1] == 1'b1) ? (rdata_csr_comb | rs1_data_fw) : ((ctrl_Csr_Write_RD[0] == 1'b1) ? rs1_data_fw : pc_D);
+
+    assign Mem_Mask         = (ctrl_sram_read_write == 2'b01) ? ctrl_Mem_RMask :    // load
+                                                                ctrl_Mem_WMask;     // write
 
     // TODO:如果透传出现问题，则需要使用下面的
     // -------------------- 握手逻辑 --------------------

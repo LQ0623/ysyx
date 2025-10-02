@@ -12,9 +12,9 @@
 `define ysyx_24100006_MEMW                  1
 `define ysyx_24100006_MEMNW                 0
 // 写多少字节的内存
-`define ysyx_24100006_WByte                 8'b00000001
-`define ysyx_24100006_WHWord                8'b00000011   // 半字
-`define ysyx_24100006_WWord                 8'b00001111
+`define ysyx_24100006_WByte                 3'b000
+`define ysyx_24100006_WHWord                3'b001   // 半字
+`define ysyx_24100006_WWord                 3'b011
 
 // MEM_READ
 `define ysyx_24100006_MEMR                  1
@@ -27,17 +27,17 @@
 `define ysyx_24100006_RWord                 4
 
 // pc跳转是否加imm
-`define ysyx_24100006_NJUMP                 0
+`define ysyx_24100006_NJUMP_MRET_JALR       0
 `define ysyx_24100006_JAL                   1
-`define ysyx_24100006_JALR                  2
-`define ysyx_24100006_JBEQ                  3
-`define ysyx_24100006_JBNE                  4
-`define ysyx_24100006_JBLT                  5
-`define ysyx_24100006_JBGE                  6
-`define ysyx_24100006_JBLTU                 7
-`define ysyx_24100006_JBGEU                 8
-`define ysyx_24100006_JUMPMRET              9
-`define ysyx_24100006_JUMPECALL             10
+// `define ysyx_24100006_JALR                  2
+`define ysyx_24100006_JBEQ                  2
+`define ysyx_24100006_JBNE                  3
+`define ysyx_24100006_JBLT                  4
+`define ysyx_24100006_JBGE                  5
+`define ysyx_24100006_JBLTU                 6
+`define ysyx_24100006_JBGEU                 7
+// `define ysyx_24100006_JUMPMRET              9
+// `define ysyx_24100006_JUMPECALL             10
 // 指令的imm的类型
 `define ysyx_24100006_I_TYPE_IMM            0
 `define ysyx_24100006_J_TYPE_IMM            1
