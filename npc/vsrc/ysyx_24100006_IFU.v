@@ -45,16 +45,18 @@ module ysyx_24100006_ifu(
 `endif
 
 	output reg [31:0] 	inst_F,
-	output [31:0]		pc_add_4_o,
+	output [31:0]		pc_add_4_o
 
+`ifdef VERILATOR_SIM
 	// Access Fault异常
-	input	[1:0]		Access_Fault
+	,input	[1:0]		Access_Fault
+`endif
 
 	// 异常相关
 	,input [31:0]		csr_mtvec
 	,input				EXC
 	,output				irq
-	,output [7:0]		irq_no
+	,output [3:0]		irq_no
 );
 
 	// 是否发送重定向
@@ -164,19 +166,29 @@ module ysyx_24100006_ifu(
 	assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : (is_jal ? jal_target : pc_add_4_o));
 	assign axi_araddr 	= pc_F;
 
-	ysyx_24100006_pc PC(
+// 	ysyx_24100006_pc PC(
+// 		.clk(clk),
+// 		.reset(reset),
+// 		.PCW((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC),		// 要么取指，要么重定向
+// `ifdef VERILATOR_SIM
+// 		.Access_Fault(Access_Fault),
+// `endif
+// 		.npc(npc_temp),
+// 		.pc(pc_F)
+// 	);
+
+	ysyx_24100006_Reg #(32,32'h30000000) pc1(
 		.clk(clk),
-		.reset(reset),
-		.PCW((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC),		// 要么取指，要么重定向
-		.Access_Fault(Access_Fault),
-		.npc(npc_temp),
-		.pc(pc_F)
+		.rst(reset),
+		.din(npc_temp),
+		.dout(pc_F),
+		.wen((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC)
 	);
 
 
 	// 异常相关
 	assign irq 		= (pc_F[1:0] != 2'b00) ? 1 : 0;	// 取指地址不对齐
-	assign irq_no	= (pc_F[1:0] != 2'b00) ? 8'h00 : 8'h0;	// 取指地址不对齐为0
+	assign irq_no	= (pc_F[1:0] != 2'b00) ? 4'b0 : 4'b0;	// 取指地址不对齐为0
 
 `ifdef VERILATOR_SIM
 	import "DPI-C" function void get_PCW(input bit PCW);

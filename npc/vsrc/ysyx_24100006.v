@@ -135,7 +135,7 @@ module ysyx_24100006(
 	wire		redirect_valid_E_F;
 	// WBU -> IDU
 	wire 		irq_WD;
-	wire [7:0] 	irq_no_WD;
+	wire [3:0] 	irq_no_WD;
 	wire [3:0] 	Gpr_Write_Addr_WD;
 	wire [11:0]	Csr_Write_Addr_WD;
 	wire 		Gpr_Write_WD;
@@ -160,12 +160,12 @@ module ysyx_24100006(
 
 	// IF阶段信号
 	wire		irq_F;
-	wire [7:0]	irq_no_F;
+	wire [3:0]	irq_no_F;
 	wire [31:0]	inst_F;					// IF阶段instruction
 
 	// IF_ID输出信号
 	wire		irq_F_D;			  	// IF->ID传递的中断标志
-	wire [7:0]	irq_no_F_D;		  		// IF->ID传递的中断号
+	wire [3:0]	irq_no_F_D;		  		// IF->ID传递的中断号
 	wire [31:0] instruction_F_D;      	// IF->ID传递的指令
 
 	// ID阶段信号
@@ -174,7 +174,7 @@ module ysyx_24100006(
 	wire [11:0]	Csr_Write_Addr_D;	  	// ID阶段CSR写寄存器的地址 
 	wire [1:0]  Gpr_Write_RD_D;       	// ID阶段GPR写寄存器
 	wire [2:0]  Jump_D;               	// ID阶段跳转控制
-	wire [7:0]  irq_no_D;             	// ID阶段中断号
+	wire [3:0]  irq_no_D;             	// ID阶段中断号
 	wire [31:0] mtvec_D;              	// ID阶段mtvec值
 	wire        is_fence_i_D;         	// ID阶段fence.i标志
 	wire        irq_D;                	// ID阶段中断标志
@@ -189,7 +189,7 @@ module ysyx_24100006(
 	wire [11:0]	Csr_Write_Addr_D_E;	  	// ID->EXE传递的CSR写寄存器的地址 
 	wire [1:0]  Gpr_Write_RD_D_E;     	// ID->EXE传递的GPR写寄存器
 	wire [2:0]  Jump_D_E;             	// ID->EXE传递的跳转控制
-	wire [7:0]  irq_no_D_E;           	// ID->EXE传递的中断号
+	wire [3:0]  irq_no_D_E;           	// ID->EXE传递的中断号
 	wire [31:0] mtvec_D_E;            	// ID->EXE传递的mtvec值
 	wire        is_fence_i_D_E;       	// ID->EXE传递的fence.i标志
 	wire        irq_D_E;             	// ID->EXE传递的中断标志
@@ -206,7 +206,7 @@ module ysyx_24100006(
 	wire [11:0]	Csr_Write_Addr_E;	  	// EXE级CSR写寄存器的地址 
 	wire [1:0]  Gpr_Write_RD_E;       	// EXE阶段GPR写寄存器
 	wire [1:0]  Csr_Write_RD_E;       	// EXE阶段CSR写寄存器
-	wire [7:0]  irq_no_E;             	// EXE阶段中断号
+	wire [3:0]  irq_no_E;             	// EXE阶段中断号
 	wire        irq_E;                	// EXE阶段中断标志
 	wire        Gpr_Write_E;          	// EXE阶段GPR写使能
 	wire        Csr_Write_E;          	// EXE阶段CSR写使能
@@ -219,7 +219,7 @@ module ysyx_24100006(
 	wire [11:0]	Csr_Write_Addr_E_M;	  	// EXE->MEM传递的CSR写寄存器的地址 
 	wire [1:0]  Gpr_Write_RD_E_M;     	// EXE->MEM传递的GPR写寄存器
 	wire [1:0]  Csr_Write_RD_E_M;     	// EXE->MEM传递的CSR写寄存器
-	wire [7:0]  irq_no_E_M;           	// EXE->MEM传递的中断号
+	wire [3:0]  irq_no_E_M;           	// EXE->MEM传递的中断号
 	wire        irq_E_M;              	// EXE->MEM传递的中断标志
 	wire        Gpr_Write_E_M;        	// EXE->MEM传递的GPR写使能
 	wire        Csr_Write_E_M;        	// EXE->MEM传递的CSR写使能
@@ -230,7 +230,7 @@ module ysyx_24100006(
 	wire [31:0] alu_result_M;         	// MEM阶段ALU结果
 	wire [3:0]	Gpr_Write_Addr_M;	  	// MEM级GPR写寄存器的地址
 	wire [11:0]	Csr_Write_Addr_M;	  	// MEM级CSR写寄存器的地址 
-	wire [7:0]  irq_no_M;             	// MEM阶段中断号
+	wire [3:0]  irq_no_M;             	// MEM阶段中断号
 	wire        irq_M;                	// MEM阶段中断标志
 	wire        Gpr_Write_M;          	// MEM阶段GPR写使能
 	wire        Csr_Write_M;          	// MEM阶段CSR写使能
@@ -239,7 +239,7 @@ module ysyx_24100006(
 	// MEM_WB输出信号
 	wire [3:0]	Gpr_Write_Addr_M_W;	  	// MEM->WB传递的GPR写寄存器的地址
 	wire [11:0]	Csr_Write_Addr_M_W;	  	// MEM->WB传递的CSR写寄存器的地址 
-	wire [7:0]  irq_no_M_W;           	// MEM->WB传递的中断号
+	wire [3:0]  irq_no_M_W;           	// MEM->WB传递的中断号
 	wire        irq_M_W;              	// MEM->WB传递的中断标志
 	wire        Gpr_Write_M_W;        	// MEM->WB传递的GPR写使能
 	wire        Csr_Write_M_W;        	// MEM->WB传递的CSR写使能
@@ -378,17 +378,17 @@ module ysyx_24100006(
     wire [31:0]   	clint_axi_rdata;
 	wire			clint_axi_rlast;
     // 写地址通道
-    wire         	clint_axi_awvalid;
-    wire          	clint_axi_awready;
-    wire [31:0]  	clint_axi_awaddr;
-    // 写数据通道
-    wire          	clint_axi_wvalid;
-    wire        	clint_axi_wready;
-    wire [31:0] 	clint_axi_wdata;
-    // 写响应通道
-    wire         	clint_axi_bvalid;
-    wire        	clint_axi_bready;
-    wire [1:0]  	clint_axi_bresp;
+    // wire         	clint_axi_awvalid;
+    // wire          	clint_axi_awready;
+    // wire [31:0]  	clint_axi_awaddr;
+    // // 写数据通道
+    // wire          	clint_axi_wvalid;
+    // wire        	clint_axi_wready;
+    // wire [31:0] 	clint_axi_wdata;
+    // // 写响应通道
+    // wire         	clint_axi_bvalid;
+    // wire        	clint_axi_bready;
+    // wire [1:0]  	clint_axi_bresp;
 
 	ysyx_24100006_clint clint(
 		.clk			(clock),
@@ -396,9 +396,9 @@ module ysyx_24100006(
 		
 		// axi 写入和读取地址
 		.axi_araddr		(clint_axi_araddr),
-		.axi_awaddr		(clint_axi_awaddr),
+		// .axi_awaddr		(clint_axi_awaddr),
 		// axi 写入数据和写入使用的掩码
-		.axi_wdata		(clint_axi_wdata),
+		// .axi_wdata		(clint_axi_wdata),
 		// axi控制信号
 		// read data addr
 		.axi_arvalid	(clint_axi_arvalid),
@@ -407,15 +407,15 @@ module ysyx_24100006(
 		.axi_rready		(clint_axi_rready),
 		.axi_rvalid		(clint_axi_rvalid),
 		// write data addr
-		.axi_awvalid	(clint_axi_awvalid),
-		.axi_awready	(clint_axi_awready),
-		// write data
-		.axi_wvalid		(clint_axi_wvalid),
-		.axi_wready		(clint_axi_wready),
-		// response
-		.axi_bready		(clint_axi_bready),
-		.axi_bvalid		(clint_axi_bvalid),
-		.axi_bresp		(clint_axi_bresp),
+		// .axi_awvalid	(clint_axi_awvalid),
+		// .axi_awready	(clint_axi_awready),
+		// // write data
+		// .axi_wvalid		(clint_axi_wvalid),
+		// .axi_wready		(clint_axi_wready),
+		// // response
+		// .axi_bready		(clint_axi_bready),
+		// .axi_bvalid		(clint_axi_bvalid),
+		// .axi_bresp		(clint_axi_bresp),
 
 		// axi读取的回应
 		.axi_rresp		(clint_axi_rresp),
@@ -541,7 +541,11 @@ module ysyx_24100006(
 	wire [2:0]		axi_arsize_icache;
 	wire [1:0]		axi_arburst_icache;
 	wire 			axi_rlast_icache;
+
+`ifdef VERILATOR_SIM
 	wire			icache_hit;
+`endif
+
 	Icache u_icache (
         .clk            (clock), 				// 系统时钟
         .rst            (reset),				// 系统复位
@@ -571,8 +575,11 @@ module ysyx_24100006(
         .axi_rready_o   (axi_rready_icache),    // Icache接收就绪
         .axi_rdata_i    (axi_rdata_icache),		// AXI返回的数据
 		.axi_rlast_i	(axi_rlast_icache),
-		.hit			(icache_hit),
 		.icache_flush_done(icache_flush_done_CE)
+
+`ifdef VERILATOR_SIM
+		,.hit			(icache_hit)
+`endif
     );
 
 
@@ -608,8 +615,11 @@ module ysyx_24100006(
 	wire [3:0]	m_axi_wstrb;
 	wire		m_axi_wlast;
 	wire [1:0]	m_axi_addr_suffix;
+
+`ifdef VERILATOR_SIM
 	// Access Fault异常信号
 	wire [1:0] 	Access_Fault;
+`endif
 
 	// AXI交叉开关仲裁器
 	ysyx_24100006_xbar_arbiter #(
@@ -705,15 +715,15 @@ module ysyx_24100006(
 	`endif
 
 		// ================== CLINT从设备 ==================
-		.clint_axi_awvalid (clint_axi_awvalid),
-		.clint_axi_awready (clint_axi_awready),
-		.clint_axi_awaddr  (clint_axi_awaddr),
-		.clint_axi_wvalid  (clint_axi_wvalid),
-		.clint_axi_wready  (clint_axi_wready),
-		.clint_axi_wdata   (clint_axi_wdata),
-		.clint_axi_bvalid  (clint_axi_bvalid),
-		.clint_axi_bready  (clint_axi_bready),
-		.clint_axi_bresp   (clint_axi_bresp),
+		// .clint_axi_awvalid (clint_axi_awvalid),
+		// .clint_axi_awready (clint_axi_awready),
+		// .clint_axi_awaddr  (clint_axi_awaddr),
+		// .clint_axi_wvalid  (clint_axi_wvalid),
+		// .clint_axi_wready  (clint_axi_wready),
+		// .clint_axi_wdata   (clint_axi_wdata),
+		// .clint_axi_bvalid  (clint_axi_bvalid),
+		// .clint_axi_bready  (clint_axi_bready),
+		// .clint_axi_bresp   (clint_axi_bresp),
 		.clint_axi_arvalid (clint_axi_arvalid),
 		.clint_axi_arready (clint_axi_arready),
 		.clint_axi_araddr  (clint_axi_araddr),
@@ -721,10 +731,12 @@ module ysyx_24100006(
 		.clint_axi_rready  (clint_axi_rready),
 		.clint_axi_rdata   (clint_axi_rdata),
 		.clint_axi_rresp   (clint_axi_rresp),
-		.clint_axi_rlast   (clint_axi_rlast),
+		.clint_axi_rlast   (clint_axi_rlast)
 
+`ifdef VERILATOR_SIM
 		// ================== 访问错误信号 ==================
-		.Access_Fault 		(Access_Fault)
+		,.Access_Fault 		(Access_Fault)
+`endif
 	);
 
 `ifndef NPC
@@ -1140,10 +1152,12 @@ module ysyx_24100006(
 		.if_in_ready		(if_in_ready),
 
 		.inst_F				(inst_F),
-		.pc_add_4_o			(pc_add_4_F),
+		.pc_add_4_o			(pc_add_4_F)
 
+`ifdef VERILATOR_SIM
 		// Access Fault异常
-		.Access_Fault		(Access_Fault)
+		,.Access_Fault		(Access_Fault)
+`endif
 
 		// 异常处理相关
 		,.csr_mtvec			(mtvec_D)
@@ -1383,6 +1397,8 @@ module ysyx_24100006(
 
 `ifdef VERILATOR_SIM
 		// 调试信息
+		.wb_in_valid		(wb_in_valid),
+		.wb_in_ready		(1),
 		.pc_w				(pc_M_W),
 		.mtvec				(mtvec_D),
 		.npc_M				(npc_M_W),
@@ -1400,8 +1416,6 @@ module ysyx_24100006(
 		
 		.wb_out_valid		(wb_out_valid),
 		.wb_out_ready		(wb_out_ready),
-		.wb_in_valid		(wb_in_valid),
-		.wb_in_ready		(1),
 
 		.irq_WD				(irq_WD),
 		.irq_no_WD			(irq_no_WD),

@@ -20,12 +20,16 @@ module ysyx_24100006_imm_sext(
 	assign immS = {{21{inst[31]}},inst[30:25],inst[11:7]};
 	assign immB = {{20{inst[31]}},inst[7],inst[30:25],inst[11:8],1'b0};
 
-    ysyx_24100006_MuxKey #(5,3,32) imm_mux(sext_imm,Imm_Type,{
-        3'b000,immI,
-		3'b001,immJ,
-		3'b010,immS,
-		3'b011,immB,
-		3'b100,immU
-    });
+    // ysyx_24100006_MuxKey #(5,3,32) imm_mux(sext_imm,Imm_Type,{
+    //     3'b000,immI,
+	// 	3'b001,immJ,
+	// 	3'b010,immS,
+	// 	3'b011,immB,
+	// 	3'b100,immU
+    // });
+	assign sext_imm = (Imm_Type[2] == 1'b1) ? immU : 
+						((Imm_Type[1:0] == 2'b00) ? immI: 
+						(Imm_Type[1:0] == 2'b01) ? immJ: 
+						(Imm_Type[1:0] == 2'b11) ? immB: immS);
 
 endmodule

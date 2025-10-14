@@ -19,7 +19,7 @@ module ysyx_24100006_idu(
 
 	// from WBU(一些从写回级来的信号，比如写入的数据是什么)
 	input 			irq_W,
-	input [7:0] 	irq_no_W,
+	input [3:0] 	irq_no_W,
 	input 			Gpr_Write_W,
 	input 			Csr_Write_W,
     input [3:0]     Gpr_Write_Addr_W,
@@ -57,9 +57,9 @@ module ysyx_24100006_idu(
 
     // 异常处理相关
     ,input          irq_F
-    ,input [7:0]    irq_no_F
+    ,input [3:0]    irq_no_F
     ,output         irq_D
-    ,output [7:0]   irq_no_D
+    ,output [3:0]   irq_no_D
 
     // 面积优化
     ,output [31:0]  pc_j_m_e_n_D        // NO_JUMP/MRET/ECALL三种跳转的地址
@@ -146,7 +146,7 @@ module ysyx_24100006_idu(
     wire [1:0]  ctrl_sram_read_write;
     wire        ctrl_is_fence_i;
     wire        ctrl_irq;
-    wire [7:0]  ctrl_irq_no;
+    wire [3:0]  ctrl_irq_no;
 
 	ysyx_24100006_controller_remake controller(
         .opcode(instruction[6:0]),

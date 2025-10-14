@@ -10,7 +10,7 @@
 // 是否发生异常
 `define ysyx_24100006_NIRQ                  0
 `define ysyx_24100006_IRQ                   1
-`define ysyx_24100006_MECALL                8'b00001011
+`define ysyx_24100006_MECALL                4'b1011
 /*----------exception---------------*/
 // GPR_WRITE
 `define ysyx_24100006_GPRW                  1
@@ -181,7 +181,7 @@ module ysyx_24100006_controller_remake(
 
     /* 是否发生中断 */
     output  irq,
-    output  [7:0] irq_no,
+    output  [3:0] irq_no,
     /* 操作类型 */
     output  [3:0]aluop,
     /* 写通用寄存器 */

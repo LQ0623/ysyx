@@ -113,17 +113,17 @@ module ysyx_24100006_xbar_arbiter #(
 `endif
 
     // CLINT从设备
-    output        clint_axi_awvalid,
-    input         clint_axi_awready,
-    output [31:0] clint_axi_awaddr,
+    // output        clint_axi_awvalid,
+    // input         clint_axi_awready,
+    // output [31:0] clint_axi_awaddr,
     
-    output        clint_axi_wvalid,
-    input         clint_axi_wready,
-    output [31:0] clint_axi_wdata,
+    // output        clint_axi_wvalid,
+    // input         clint_axi_wready,
+    // output [31:0] clint_axi_wdata,
     
-    input         clint_axi_bvalid,
-    output        clint_axi_bready,
-    input  [1:0]  clint_axi_bresp,
+    // input         clint_axi_bvalid,
+    // output        clint_axi_bready,
+    // input  [1:0]  clint_axi_bresp,
 
     output        clint_axi_arvalid,
     input         clint_axi_arready,
@@ -133,10 +133,12 @@ module ysyx_24100006_xbar_arbiter #(
     output        clint_axi_rready,
     input  [31:0] clint_axi_rdata,
     input  [1:0]  clint_axi_rresp,
-    input         clint_axi_rlast,
+    input         clint_axi_rlast
 
+`ifdef VERILATOR_SIM
     // Access Fault信号
-    output  [1:0]  Access_Fault
+    ,output  [1:0]  Access_Fault
+`endif
 );
 
     // 地址定义
@@ -232,10 +234,14 @@ module ysyx_24100006_xbar_arbiter #(
 
     // ================== 地址解码 ==================
 `ifndef NPC
-    wire sel_clint  =   (mem_axi_araddr >= CLINT_ADDR && mem_axi_araddr < (CLINT_ADDR + 32'h0000_ffff) && targeted_module == ARB_MEMU_READ);
-    wire sel_uart   =   (mem_axi_araddr >= UART_ADDR && mem_axi_araddr < (UART_ADDR + 32'h0000_1000) && targeted_module == ARB_MEMU_READ);
-    wire sel_spi    =   (mem_axi_araddr >= SPI_ADDR && mem_axi_araddr < (SPI_ADDR + 32'h0000_1000) && targeted_module == ARB_MEMU_READ) || 
-                        (ifu_axi_araddr >= SPI_ADDR && ifu_axi_araddr < (SPI_ADDR + 32'h0000_1000) && targeted_module == ARB_IFU_READ);
+    // wire sel_clint  =   (mem_axi_araddr >= CLINT_ADDR && mem_axi_araddr < (CLINT_ADDR + 32'h0000_ffff) && targeted_module == ARB_MEMU_READ);
+    // wire sel_uart   =   (mem_axi_araddr >= UART_ADDR && mem_axi_araddr < (UART_ADDR + 32'h0000_1000) && targeted_module == ARB_MEMU_READ);
+    // wire sel_spi    =   (mem_axi_araddr >= SPI_ADDR && mem_axi_araddr < (SPI_ADDR + 32'h0000_1000) && targeted_module == ARB_MEMU_READ) || 
+    //                     (ifu_axi_araddr >= SPI_ADDR && ifu_axi_araddr < (SPI_ADDR + 32'h0000_1000) && targeted_module == ARB_IFU_READ);
+    wire sel_clint  =   (mem_axi_araddr[31:16] == CLINT_ADDR[31:16] && targeted_module == ARB_MEMU_READ);
+    wire sel_uart   =   (mem_axi_araddr[31:12] == UART_ADDR[31:12] && targeted_module == ARB_MEMU_READ);
+    wire sel_spi    =   (mem_axi_araddr[31:12] == SPI_ADDR[31:12] && targeted_module == ARB_MEMU_READ) || 
+                        (ifu_axi_araddr[31:12] == SPI_ADDR[31:12] && targeted_module == ARB_IFU_READ);
     wire sel_sram   =    ~sel_clint;
 `else
     wire sel_uart   = (mem_axi_awaddr >= UART_ADDR && mem_axi_awaddr < (UART_ADDR + 32'h0000_0008) && targeted_module == ARB_MEMU_WRITE);
@@ -300,41 +306,43 @@ module ysyx_24100006_xbar_arbiter #(
     wire sram_wlast = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wlast : 1'b0;
 
     // ================== 读数据通道寄存器 ==================
-    reg [31:0] ifu_rdata_reg;
-    reg [31:0] mem_rdata_reg;
+    // reg [31:0] ifu_rdata_reg;
+    // reg [31:0] mem_rdata_reg;
 
     // 根据非对齐地址来进行选择读取内存的数据
-    assign real_sram_data = 
-        (sram_arsize == 3'b000) ? // lb / lbu指令，读取一个字节
-            ((sram_addr_suffix == 2'b00) ? {24'b0, sram_axi_rdata[7:0]} :
-             (sram_addr_suffix == 2'b01) ? {24'b0, sram_axi_rdata[15:8]} :
-             (sram_addr_suffix == 2'b10) ? {24'b0, sram_axi_rdata[23:16]} :
-             (sram_addr_suffix == 2'b11) ? {24'b0, sram_axi_rdata[31:24]} : 32'b0) :
-        (sram_arsize == 3'b001) ? // lh / lhu指令，读取两个字节
-            ((sram_addr_suffix == 2'b00) ? {16'b0, sram_axi_rdata[15:0]} :
-             (sram_addr_suffix == 2'b01) ? {16'b0, sram_axi_rdata[23:8]} :
-             (sram_addr_suffix == 2'b10) ? {16'b0, sram_axi_rdata[31:16]} : 32'b0) :
-        (sram_arsize == 3'b010) ? // lw指令，读取四个字节
-            ((sram_addr_suffix == 2'b00) ? sram_axi_rdata : 32'b0) : 32'b0;
+    // assign real_sram_data = 
+    //     (sram_arsize == 3'b000) ? // lb / lbu指令，读取一个字节
+    //         ((sram_addr_suffix == 2'b00) ? {24'b0, sram_axi_rdata[7:0]} :
+    //          (sram_addr_suffix == 2'b01) ? {24'b0, sram_axi_rdata[15:8]} :
+    //          (sram_addr_suffix == 2'b10) ? {24'b0, sram_axi_rdata[23:16]} :
+    //          (sram_addr_suffix == 2'b11) ? {24'b0, sram_axi_rdata[31:24]} : 32'b0) :
+    //     (sram_arsize == 3'b001) ? // lh / lhu指令，读取两个字节
+    //         ((sram_addr_suffix == 2'b00) ? {16'b0, sram_axi_rdata[15:0]} :
+    //          (sram_addr_suffix == 2'b01) ? {16'b0, sram_axi_rdata[23:8]} :
+    //          (sram_addr_suffix == 2'b10) ? {16'b0, sram_axi_rdata[31:16]} : 32'b0) :
+    //     (sram_arsize == 3'b010) ? // lw指令，读取四个字节
+    //         ((sram_addr_suffix == 2'b00) ? sram_axi_rdata : 32'b0) : 32'b0;
     
     // 真正读取的数据寄存
-    wire [31:0] real_read_data = (sel_clint) ? clint_axi_rdata : real_sram_data;
+    wire [31:0] real_read_data = (sel_clint) ? clint_axi_rdata : sram_axi_rdata;
 
-    always @(posedge clk) begin
-        if (reset) begin
-            ifu_rdata_reg <= 32'b0;
-            mem_rdata_reg <= 32'b0;
-        end else begin
-            if (targeted_module == ARB_IFU_READ && (sram_axi_rvalid || clint_axi_rvalid)) 
-                ifu_rdata_reg <= real_read_data;
-            if (targeted_module == ARB_MEMU_READ && (sram_axi_rvalid || clint_axi_rvalid)) 
-                mem_rdata_reg <= real_read_data;
-        end
-    end
+    // always @(posedge clk) begin
+    //     if (reset) begin
+    //         ifu_rdata_reg <= 32'b0;
+    //         mem_rdata_reg <= 32'b0;
+    //     end else begin
+    //         if (targeted_module == ARB_IFU_READ && (sram_axi_rvalid || clint_axi_rvalid)) 
+    //             ifu_rdata_reg <= real_read_data;
+    //         if (targeted_module == ARB_MEMU_READ && (sram_axi_rvalid || clint_axi_rvalid)) 
+    //             mem_rdata_reg <= real_read_data;
+    //     end
+    // end
 
     // 最终输出连接
-    assign ifu_axi_rdata = (targeted_module == ARB_IFU_READ && sram_axi_rvalid) ? real_read_data : ifu_rdata_reg;
-    assign mem_axi_rdata = (targeted_module == ARB_MEMU_READ && (sram_axi_rvalid || clint_axi_rvalid)) ? real_read_data : mem_rdata_reg;
+    // assign ifu_axi_rdata = (targeted_module == ARB_IFU_READ && sram_axi_rvalid) ? real_read_data : ifu_rdata_reg;
+    // assign mem_axi_rdata = (targeted_module == ARB_MEMU_READ && (sram_axi_rvalid || clint_axi_rvalid)) ? real_read_data : mem_rdata_reg;
+    assign ifu_axi_rdata = real_read_data;
+    assign mem_axi_rdata = real_read_data;
 
     // ================== 交叉开关逻辑 ==================
     // 写通道路由
@@ -354,13 +362,6 @@ module ysyx_24100006_xbar_arbiter #(
     assign uart_axi_wstrb = sel_uart ? mem_axi_wstrb : 4'h0;
     assign uart_axi_bready = sel_uart ? mem_axi_bready : 0;
 `endif
-
-    // CLINT
-    assign clint_axi_awvalid = 0;
-    assign clint_axi_awaddr = 32'h0;
-    assign clint_axi_wvalid = 0;
-    assign clint_axi_wdata = 32'h0;
-    assign clint_axi_bready = 0;
 
     // 读通道路由
     // SRAM
@@ -397,14 +398,10 @@ module ysyx_24100006_xbar_arbiter #(
     assign mem_axi_rlast = sel_sram ? mem_rlast : 
                           sel_clint ? clint_axi_rlast : 0;
 
-    assign mem_axi_awready = sel_sram ? mem_awready : 
-                            sel_clint ? clint_axi_awready : 0;
-    assign mem_axi_wready = sel_sram ? mem_wready : 
-                           sel_clint ? clint_axi_wready : 0;
-    assign mem_axi_bvalid = sel_sram ? mem_bvalid : 
-                           sel_clint ? clint_axi_bvalid : 0;
-    assign mem_axi_bresp = sel_sram ? sram_axi_bresp : 
-                          sel_clint ? clint_axi_bresp : 2'b00;
+    assign mem_axi_awready = sel_sram ? mem_awready : 0;
+    assign mem_axi_wready = sel_sram ? mem_wready : 0;
+    assign mem_axi_bvalid = sel_sram ? mem_bvalid : 0;
+    assign mem_axi_bresp = sel_sram ? sram_axi_bresp : 2'b00;
 `else
     // 响应合并（有NPC）
     assign ifu_axi_arready = sel_sram ? ifu_arready : 0;
@@ -426,17 +423,13 @@ module ysyx_24100006_xbar_arbiter #(
                           sel_clint ? clint_axi_rlast : 0;
 
     assign mem_axi_awready = sel_sram ? mem_awready : 
-                            sel_uart ? uart_axi_awready : 
-                            sel_clint ? clint_axi_awready : 0;
+                            sel_uart ? uart_axi_awready : 0;
     assign mem_axi_wready = sel_sram ? mem_wready : 
-                           sel_uart ? uart_axi_wready : 
-                           sel_clint ? clint_axi_wready : 0;
+                           sel_uart ? uart_axi_wready : 0;
     assign mem_axi_bvalid = sel_sram ? mem_bvalid : 
-                           sel_uart ? uart_axi_bvalid : 
-                           sel_clint ? clint_axi_bvalid : 0;
+                           sel_uart ? uart_axi_bvalid : 0;
     assign mem_axi_bresp = sel_sram ? sram_axi_bresp : 
-                          sel_uart ? uart_axi_bresp : 
-                          sel_clint ? clint_axi_bresp : 2'b00;
+                          sel_uart ? uart_axi_bresp : 2'b00;
 `endif
 
     // ================== AXI信号传递 ==================
@@ -447,8 +440,10 @@ module ysyx_24100006_xbar_arbiter #(
     assign sram_axi_wstrb = sram_wstrb;
     assign sram_axi_wlast = sram_wlast;
 
+`ifdef VERILATOR_SIM
     // Acess Fault信号
     assign Access_Fault = (sram_axi_rresp != 2'b00 || clint_axi_rresp != 2'b00) ? 2'b01 : 
-                         ((sram_axi_bresp != 2'b00 || clint_axi_bresp != 2'b00) ? 2'b10 : 2'b00);
+                         ((sram_axi_bresp != 2'b00) ? 2'b10 : 2'b00);
+`endif
 
 endmodule

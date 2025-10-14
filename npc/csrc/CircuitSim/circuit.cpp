@@ -23,6 +23,7 @@ double avg_cycle[5] = {0};
 
 static bool g_print_step = false;
 word_t pc, snpc, dnpc, inst, prev_pc, PCW, if_valid, wb_ready;
+word_t mtvec, mepc, mcause, mstatus;
 word_t pc_w, npc_w;
 uint64_t timer_start, timer_end,g_timer;	// 测试运行的时间的
 static uint8_t opcode;
@@ -37,16 +38,16 @@ void single_cycle(){  //  0 --> 0 > 1 --> 1 > 0 this is a cycle in cpu  _|-|_|-
 	cpu->clock=0;   //negedge 1->0 no
     cpu->eval();  //process 0->0 refresh combination logic and make them stable
 	#ifdef CONFIG_DUMP_WAVE
-	// if(pc >= 0x80056a94 && pc <= 0x80056a9c){
+	if(pc >= 0xa0000000){
 		dump_wave_inc();
-	// }
+	}
 	#endif
 	cpu->clock=1;   //posedge 0->1 refresh sequential logic
     cpu->eval();  //process 1->1 refresh sequential logic(sim)
 	#ifdef CONFIG_DUMP_WAVE
-	// if(pc >= 0x80056a94 && pc <= 0x80056a9c){
+	if(pc >= 0xa0000000){
 		dump_wave_inc();
-	// }
+	}
 	#endif
 }
 

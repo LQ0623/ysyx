@@ -1,9 +1,9 @@
-// 冲刷流水线就是将所有的存储的数据都置为0
-// TODO:PCW信号不用向外暴露了
+// 冲刷流水线：清空有效位即可；数据在 valid=0 时视为无效，不必清零（节省复位/冲刷多路选择器面积）
+// TODO: PCW信号不用向外暴露了（保持现有接口，不新增端口）
 module ysyx_24100006_IF_ID(
     input           clk,
     input           reset,
-    
+
     input           flush_i,
 
     // IFU  <----> IF_ID
@@ -24,83 +24,85 @@ module ysyx_24100006_IF_ID(
     ,input  [31:0]  pc_add_4_i
     ,output [31:0]  pc_add_4_o
     // 异常处理相关
-    ,input			irq_i
-	,input  [7:0]   irq_no_i
-    ,output			irq_o
-	,output [7:0]	irq_no_o
+    ,input          irq_i
+    ,input  [3:0]   irq_no_i
+    ,output         irq_o
+    ,output [3:0]   irq_no_o
 );
 
-    reg [31:0]      instruction_temp;
-    reg             valid_temp;
-    reg [31:0]      pc_add_4_temp;
+    // ================= Registers =================
+    reg             valid_q;
 
-    // 异常处理相关
-    reg			    irq_temp;
-	reg [7:0]	    irq_no_temp;
-
-    // 使用 assign 语句将临时寄存器赋值给输出信号
-    assign pc_add_4_o       = pc_add_4_temp;
-    assign instruction_o    = instruction_temp;
-
-    // 异常处理相关
-    assign irq_o            = irq_temp;
-    assign irq_no_o         = irq_no_temp;
-
-    assign out_valid        = valid_temp;
-    // 当没有有效存储时，或者当存储并且下游准备好时，可以接受新数据（可以滑动）
-    assign in_ready         = (!valid_temp) || (out_ready && valid_temp);
+    reg [31:0]      instruction_q;
+    reg [31:0]      pc_add_4_q;
+    reg             irq_q;
+    reg [3:0]       irq_no_q;
 
 `ifdef VERILATOR_SIM
-    reg [31:0]      pc_temp;
-    assign pc_o             = pc_temp;
+    reg [31:0]      pc_q;
 `endif
 
-    // 如果 in_valid==0 且 in_ready==1 -> 清除有效（已由 valid_r <= in_valid 完成）
+    // ================= Handshake =================
+    // 简化：in_ready = ~valid_q || out_ready
+    // 语义：若本级为空即可接收；或下游准备好时可滑动
+    assign in_ready   = (~valid_q) || out_ready;
+    assign out_valid  =  valid_q;
+
+    // ================= Outputs ===================
+    assign instruction_o = instruction_q;
+    assign pc_add_4_o    = pc_add_4_q;
+    assign irq_o         = irq_q;
+    assign irq_no_o      = irq_no_q;
+
+`ifdef VERILATOR_SIM
+    assign pc_o          = pc_q;
+`endif
+
+    // ================= Control ===================
+    // 接收新数据（同时满足：上游有效 且 我方可接收）
+    wire accept = in_valid && in_ready;
+    // 下游取走当前拍（本级持有有效 且 下游 ready）
+    wire send   = valid_q && out_ready;
+
+    // 有效位：flush/复位优先；其次依据 accept/send 自动进出栈
     always @(posedge clk) begin
         if (reset) begin
-            valid_temp                  <= 1'b0;
-
-`ifdef VERILATOR_SIM
-            pc_temp                     <= 32'h00000000;
-`endif
-
-            pc_add_4_temp               <= 32'b0;
-            instruction_temp            <= 32'b0;
-            // 异常处理相关
-            irq_temp                    <= 1'b0;
-            irq_no_temp                 <= 8'b0;
+            valid_q <= 1'b0;
+        end else if (flush_i) begin
+            valid_q <= 1'b0; // 冲刷：仅清有效位
         end else begin
-            if(flush_i)begin
-                valid_temp              <= 1'b0; // 冲刷流水线
-                irq_temp                <= 1'b0;
-
-`ifdef VERILATOR_SIM
-                pc_temp                 <= 32'b0;
-`endif
-
-                pc_add_4_temp           <= 32'b0;
-                instruction_temp        <= 32'b0;
-                // 异常处理相关
-                irq_no_temp             <= 8'b0;
-            end
-            
-            // 当允许接受新输入时
-            else if (in_ready) begin
-                valid_temp              <= in_valid;
-                if (in_valid)begin
-
-`ifdef VERILATOR_SIM
-                    pc_temp             <= pc_i;
-`endif
-                    pc_add_4_temp       <= pc_add_4_i;
-                    instruction_temp    <= instruction_i;
-                    // 异常处理相关
-                    irq_temp            <= irq_i;
-                    irq_no_temp         <= irq_no_i;
-                end 
-            end
-            // 没有新数据则一直保持数据
+            // 若同时 send 与 accept，保持 valid=1（换新不掉拍）
+            if (accept)
+                valid_q <= 1'b1;
+            else if (send)
+                valid_q <= 1'b0;
+            // 否则保持
         end
+    end
+
+    // 数据位：仅在真正接收新拍时写入（降低翻转/利于推导CE门控）
+    always @(posedge clk) begin
+        if (accept) begin
+            instruction_q <= instruction_i;
+            pc_add_4_q    <= pc_add_4_i;
+            irq_q         <= irq_i;
+            irq_no_q      <= irq_no_i;
+`ifdef VERILATOR_SIM
+            pc_q          <= pc_i;
+`endif
+        end
+// `ifdef VERILATOR_SIM
+//         else if (reset || flush_i) begin
+//             // 仅用于仿真波形可读性；综合时不需要清零，节省面积
+//             instruction_q <= 32'b0;
+//             pc_add_4_q    <= 32'b0;
+//             irq_q         <= 1'b0;
+//             irq_no_q      <= 4'b0;
+// `ifdef VERILATOR_SIM
+//             pc_q          <= 32'b0;
+// `endif
+//         end
+// `endif
     end
 
 endmodule

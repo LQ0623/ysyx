@@ -9,7 +9,7 @@ module ysyx_24100006_wbu(
 
     // control signal
     input           irq_W,
-    input [7:0]     irq_no_W,
+    input [3:0]     irq_no_W,
     input           Gpr_Write,
 	input           Csr_Write,
     input [3:0]     Gpr_Write_Addr,
@@ -18,11 +18,14 @@ module ysyx_24100006_wbu(
     // 握手机制使用
 	input           wb_out_valid,   // MEM_WB -> WBU   (上游 valid)
     output          wb_out_ready,   // WBU -> MEM_WB   (上游 ready)
+
+`ifdef VERILATOR_SIM
     output          wb_in_valid,    // WBU -> 下游      (下游 valid)
     input           wb_in_ready,    // 下游 -> WBU      (下游 ready)
+`endif
 
     output          irq_WD,
-    output [7:0]    irq_no_WD,
+    output [3:0]    irq_no_WD,
     output          Gpr_Write_WD,
 	output          Csr_Write_WD,
     output [3:0]    Gpr_Write_Addr_WD,
@@ -53,12 +56,13 @@ module ysyx_24100006_wbu(
 	reg state;
 
     // TAG:WBU总是就绪，因为写寄存器是单周期操作
-    // assign wb_out_ready = 1'b1;
+    assign wb_out_ready = 1'b1;
 
     // WBU通常能在一个周期内完成寄存器写入，所以通常总是就绪
     // 但为了支持标准握手协议，我们实现完整的valid/ready机制
+`ifdef VERILATOR_SIM
     reg wb_out_ready_reg;
-    assign wb_out_ready = wb_out_ready_reg;
+    // assign wb_out_ready = wb_out_ready_reg;
 
     // 用于跟踪是否正在处理数据
     reg processing;
@@ -82,10 +86,10 @@ module ysyx_24100006_wbu(
                 // 标记我们正在处理（虽然通常立即完成）
                 processing      <= 1'b1;
 
-`ifdef VERILATOR_SIM
+
                 // 一旦开始处理，WBU不再空闲，直到处理完成
                 npc_temp        <= irq_WD ? mtvec : npc_M; // 调试使用
-`endif
+
             end
             
             // 通常WBU在一个周期内完成，所以processing不会持续
@@ -96,7 +100,7 @@ module ysyx_24100006_wbu(
             end
         end
     end
-
+`endif
 
     assign irq_WD               = irq_W;
     assign irq_no_WD            = irq_no_W;

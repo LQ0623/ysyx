@@ -6,7 +6,7 @@
 // 是否发生异常
 `define ysyx_24100006_NIRQ                  0
 `define ysyx_24100006_IRQ                   1
-`define ysyx_24100006_MECALL                8'b00001011
+`define ysyx_24100006_MECALL                4'b1011
 /*----------exception---------------*/
 // GPR_WRITE
 `define ysyx_24100006_GPRW                  1

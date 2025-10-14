@@ -35,19 +35,19 @@ void get_reg(){
     // if(pc >= 0xa0000000){
     //     printf("pc is %08x,inst is %#x\n",pc,inst);
     // }
-    csr[0] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__CSR__DOT__rf[0];
-    csr[1] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__CSR__DOT__rf[1];
-    csr[2] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__CSR__DOT__rf[3];
-    csr[3] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__CSR__DOT__rf[2];
+    csr[0] = mstatus;
+    csr[1] = mtvec;
+    csr[2] = mepc;
+    csr[3] = mcause;
     //0:mstatus 1:mtvec 2:mepc 3:mcause
 #else
     for(int i = 0;i < REGNUM; i++){
         gpr[i] = cpu->rootp -> ysyx_24100006__DOT__ID__DOT__GPR__DOT__rf[i];
     }
-    csr[0] = cpu->rootp -> ysyx_24100006__DOT__ID__DOT__CSR__DOT__rf[0];
-    csr[1] = cpu->rootp -> ysyx_24100006__DOT__ID__DOT__CSR__DOT__rf[1];
-    csr[2] = cpu->rootp -> ysyx_24100006__DOT__ID__DOT__CSR__DOT__rf[3];
-    csr[3] = cpu->rootp -> ysyx_24100006__DOT__ID__DOT__CSR__DOT__rf[2];
+    csr[0] = mstatus;
+    csr[1] = mtvec;
+    csr[2] = mepc;
+    csr[3] = mcause;
     //0:mstatus 1:mtvec 2:mepc 3:mcause
 #endif
 }

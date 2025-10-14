@@ -14,7 +14,7 @@ module ysyx_24100006_GPR #(ADDR_WIDTH = 4, DATA_WIDTH = 32) (
   reg [DATA_WIDTH-1:0] rf [2**ADDR_WIDTH-1:0];
   
   always @(posedge clk) begin
-    if (wen)begin
+    if (wen && (waddr != {ADDR_WIDTH{1'b0}}))begin
       rf[waddr] <= wdata;
     end
     rf[0] <= 32'b0;

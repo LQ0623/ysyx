@@ -21,7 +21,7 @@ module ysyx_24100006_memu(
 
 	// control signal
 	input 				irq_M,
-	input [7:0] 		irq_no_M,
+	input [3:0] 		irq_no_M,
 	input 				Gpr_Write_M,
 	input 				Csr_Write_M,
 	input [3:0]     	Gpr_Write_Addr_M,
@@ -74,7 +74,7 @@ module ysyx_24100006_memu(
 	// to MEM_WB（下游）
 	// control signal to WBU（经 MEM_WB）
 	output 				irq_W,
-	output [7:0] 		irq_no_W,
+	output [3:0] 		irq_no_W,
 	output 				Gpr_Write_W,
 	output 				Csr_Write_W,
 	output [3:0]    	Gpr_Write_Addr_W,
@@ -100,13 +100,12 @@ module ysyx_24100006_memu(
 	reg			is_break_r;
 
     reg         irq_r;
-    reg [7:0]   irq_no_r;
+    reg [3:0]   irq_no_r;
     reg         Gpr_Write_r;
     reg         Csr_Write_r;
 	reg [3:0]	Gpr_Write_Addr_r;
 	reg [11:0]	Csr_Write_Addr_r;
     reg [1:0]   Gpr_Write_RD_r;
-    reg [1:0]   sram_rw_r;
 
 	// 面积优化
 	reg [31:0]	wdata_gpr_r;
@@ -118,19 +117,20 @@ module ysyx_24100006_memu(
     reg [31:0]	locked_addr;   // 地址锁存
     reg [31:0]  locked_data;   // 写数据锁存
 	reg	[1:0]	locked_sram_read_write;
+	reg [31:0]	locked_read_data;
 
 	// 握手机制
 	// ================= 状态机 =================
-    localparam  S_IDLE      = 4'd0,		// 只在该态将out_ready拉高
-                S_LOCK      = 4'd1,
-                READ_ADDR   = 4'd2,
-                READ_DATA   = 4'd3,
-                WRITE_ADDR  = 4'd4,
-                WRITE_DATA  = 4'd5,
-                WRITE_RESP  = 4'd6,
-                S_SEND      = 4'd7;   	// 只在该态对下游拉高 valid
+    localparam  S_IDLE      = 3'd0,		// 只在该态将out_ready拉高
+                S_LOCK      = 3'd1,
+                READ_ADDR   = 3'd2,
+                READ_DATA   = 3'd3,
+                WRITE_ADDR  = 3'd4,
+                // WRITE_DATA  = 3'd5,
+                WRITE_RESP  = 3'd6,
+                S_SEND      = 3'd7;   	// 只在该态对下游拉高 valid
 
-	reg [3:0] state;
+	reg [2:0] state;
 
 	// ----------------- 上下游握手信号（纯组合） -----------------
     assign mem_out_ready = (state == S_IDLE);   // 只有空闲时才接新指令
@@ -156,6 +156,7 @@ module ysyx_24100006_memu(
 			axi_addr_suffix<= 2'b0;
 			locked_sram_read_write<=0;
 			state		<= S_IDLE;
+			locked_read_data	<= 0;
 		end else begin
 			case(state) 
 				// 空闲态：等待上游握手，锁存所有信号
@@ -238,14 +239,13 @@ module ysyx_24100006_memu(
 				// axi 读数据有效
 				READ_DATA: begin
 					if(axi_rvalid == 1'b1) begin
+						locked_read_data<=axi_rdata;
 						axi_rready		<= 1'b0;
 						// Read data comes from external axi_rdata, extension is done in combinational logic
                         state       	<= S_SEND;
 
 						// 清理可选项
 						locked_sram_read_write<=0;
-                        axi_arsize  	<= 3'b000;
-                        axi_addr_suffix <= 2'b00;
 					end
 				end
 
@@ -265,15 +265,6 @@ module ysyx_24100006_memu(
 
 						state				<= WRITE_RESP;
 						
-						// state				<= WRITE_DATA;
-					end
-				end
-
-				WRITE_DATA: begin
-					if(axi_wready == 1'b1) begin
-						axi_wvalid			<= 1'b0;
-						axi_bready			<= 1'b1;
-						state				<= WRITE_RESP;
 					end
 				end
 
@@ -281,7 +272,6 @@ module ysyx_24100006_memu(
 					if(axi_bvalid == 1'b1) begin
 						axi_bready			<= 1'b0;
 						// 清理可选项
-                        axi_awsize  		<= 3'b010;
                         state       		<= S_SEND;
 					end
 				end
@@ -295,7 +285,7 @@ module ysyx_24100006_memu(
                         // 恢复一些缺省
                         axi_arsize       	<= 3'b010;
                         axi_awsize       	<= 3'b010;
-                        axi_addr_suffix  	<= 2'b00;
+                        // axi_addr_suffix  	<= 2'b00;
                     end
 				end
 				default: state <= S_IDLE;
@@ -319,13 +309,12 @@ module ysyx_24100006_memu(
 `endif
 
             irq_r           <= 1'b0;
-            irq_no_r        <= 8'b0;
+            irq_no_r        <= 4'b0;
             Gpr_Write_r     <= 1'b0;
             Csr_Write_r     <= 1'b0;
 			Gpr_Write_Addr_r<= 4'b0;
 			Csr_Write_Addr_r<= 12'b0;
             Gpr_Write_RD_r  <= 2'b0;
-            sram_rw_r       <= 2'b00;
 		end else begin
 			if(state == S_IDLE)begin
 				// 锁存所有将要向下游传递的字段
@@ -338,8 +327,6 @@ module ysyx_24100006_memu(
 				Gpr_Write_Addr_r<= Gpr_Write_Addr_M;
 				Csr_Write_Addr_r<= Csr_Write_Addr_M;
 				Gpr_Write_RD_r  <= Gpr_Write_RD_M;
-
-				sram_rw_r       <= sram_read_write;
 
 				wdata_gpr_r		<= wdata_gpr_M;
 				wdata_csr_r		<= wdata_csr_M;
@@ -376,22 +363,50 @@ module ysyx_24100006_memu(
 
 	wire [31:0] Mem_rdata_extend;
     // 读取数据的扩展：使用已锁存的读掩码
-    ysyx_24100006_MuxKey#(5,3,32) mem_rdata_extend_i(
-        Mem_rdata_extend, Mem_Mask_r, {
-            3'b000, {{24{axi_rdata[7]}},  	axi_rdata[7:0]},
-            3'b001, {24'b0,  			axi_rdata[7:0]},
-            3'b010, {{16{axi_rdata[15]}}, 	axi_rdata[15:0]},
-            3'b011, {16'b0,     		axi_rdata[15:0]},
-            3'b100, axi_rdata[31:0]
-        }
-    );
+    // ysyx_24100006_MuxKey#(5,3,32) mem_rdata_extend_i(
+    //     Mem_rdata_extend, Mem_Mask_r, {
+    //         3'b000, {{24{axi_rdata[7]}},  	axi_rdata[7:0]},
+    //         3'b001, {24'b0,  			axi_rdata[7:0]},
+    //         3'b010, {{16{axi_rdata[15]}}, 	axi_rdata[15:0]},
+    //         3'b011, {16'b0,     		axi_rdata[15:0]},
+    //         3'b100, axi_rdata[31:0]
+    //     }
+    // );
+	wire [31:0] mem_rdata;
+    assign mem_rdata = (axi_rvalid) ? axi_rdata : locked_read_data;
+	// assign Mem_rdata_extend  = 	(Mem_Mask_r == 3'b000) ? {{24{mem_rdata[7]}}, mem_rdata[7:0]} : 
+	// 							(Mem_Mask_r == 3'b010) ? {{16{mem_rdata[15]}}, mem_rdata[15:0]} : 
+	// 							mem_rdata;
+	
+	// 根据锁存的地址低两位，先抽取目标字节/半字
+	wire [7:0]  r_byte =
+		(axi_addr_suffix == 2'b00) ? mem_rdata[7:0]   :
+		(axi_addr_suffix == 2'b01) ? mem_rdata[15:8]  :
+		(axi_addr_suffix == 2'b10) ? mem_rdata[23:16] :
+									mem_rdata[31:24];
 
+	wire [15:0] r_half =
+		(axi_addr_suffix == 2'b00) ? mem_rdata[15:0]  :
+		(axi_addr_suffix == 2'b01) ? mem_rdata[23:8]  :
+		(axi_addr_suffix == 2'b10) ? mem_rdata[31:16] :
+									16'h0000; // 非法半字对齐(…11)时给0或按你异常策略处理
+
+	// 最终扩展（Mem_Mask_r 编码：000=LB, 001=LBU, 010=LH, 011=LHU, 100=LW）
+	wire [31:0] Mem_rdata_extend =
+		(Mem_Mask_r == 3'b000) ? {{24{r_byte[7]}},  r_byte}  : // LB
+		(Mem_Mask_r == 3'b001) ? {24'b0,            r_byte}  : // LBU
+		(Mem_Mask_r == 3'b010) ? {{16{r_half[15]}}, r_half}  : // LH
+		(Mem_Mask_r == 3'b011) ? {16'b0,            r_half}  : // LHU
+								mem_rdata;                  // LW (3'b100)
+
+	
 	// 异常处理相关
 	wire   store_exc		= (axi_bvalid == 1 && axi_bresp != 0);
 	assign irq_W       		= irq_r || store_exc;
-	assign irq_no_W    		= store_exc ? 8'h7 : irq_no_r;	// 5号异常为load异常，7号异常为store异常，但是加载异常在xbar还是arbiter就会处理，报错
+	assign irq_no_W    		= store_exc ? 4'd7 : irq_no_r;	// 5号异常为load异常，7号异常为store异常，但是加载异常在xbar还是arbiter就会处理，报错
 
 	// 面积优化
+	// 不能直接使用Gpr_Write_RD_r，因为Gpr_Write_RD_r可能缓存的还是上一拍的老数据（直通的情况就不能使用Gpr_Write_RD_r）
 	assign wdata_gpr_W		= (Gpr_Write_RD_W == 2'b11) ? Mem_rdata_extend : ((state == S_IDLE) ? wdata_gpr_M : wdata_gpr_r);
 	assign wdata_csr_W		= (state == S_IDLE) ? wdata_csr_M : wdata_csr_r;
 
