@@ -80,7 +80,6 @@ module ysyx_24100006_idu(
     ,input [1:0]    forwardB
     ,input [31:0]   exe_fw_data
     ,input [31:0]   mem_fw_data
-    ,input [31:0]   wb_fw_data
 );
 
 	// 握手机制
@@ -180,13 +179,11 @@ module ysyx_24100006_idu(
     wire [31:0] rs2_data_fw;
     assign rs1_data_fw = (forwardA == 2'b00) ? rs1_data_comb :
                         (forwardA == 2'b01) ? exe_fw_data :
-                        (forwardA == 2'b10) ? mem_fw_data :
-                        (forwardA == 2'b11) ? wb_fw_data : 32'b0;
+                        (forwardA == 2'b10) ? mem_fw_data : 32'b0;
 
     assign rs2_data_fw = (forwardB == 2'b00) ? rs2_data_comb :
                         (forwardB == 2'b01) ? exe_fw_data : 
-                        (forwardB == 2'b10) ? mem_fw_data :
-                        (forwardB == 2'b11) ? wb_fw_data : 32'b0;
+                        (forwardB == 2'b10) ? mem_fw_data : 32'b0;
 
 	
 	// ---------------- map combinational outputs ----------------
@@ -228,49 +225,5 @@ module ysyx_24100006_idu(
 
     assign Mem_Mask         = (ctrl_sram_read_write == 2'b01) ? ctrl_Mem_RMask :    // load
                                                                 ctrl_Mem_WMask;     // write
-
-    // TODO:如果透传出现问题，则需要使用下面的
-    // -------------------- 握手逻辑 --------------------
-    // reg valid_temp;
-    // assign id_in_valid  = valid_temp;
-    // assign id_out_ready = (!valid_temp) || (id_in_ready && valid_temp);
-
-    // always @(posedge clk) begin
-    //     if (reset) begin
-    //         valid_temp <= 1'b0;
-    //         pc_E <= 0; sext_imm <= 0; rs1_data <= 0; rs2_data <= 0; rdata_csr <= 0;
-    //         mtvec <= 0; mepc <= 0;
-    //         aluop <= 0; AluSrcA <= 0; AluSrcB <= 0; Gpr_Write_E <= 0; Gpr_Write_RD <= 0;
-    //         Csr_Write_E <= 0; Csr_Write_RD <= 0; Jump <= 0;
-    //         Mem_WMask <= 0; Mem_RMask <= 0; sram_read_write <= 0; is_fence_i <= 0;
-    //         irq_E <= 0; irq_no <= 0;
-    //     end else if (id_out_ready) begin
-    //         valid_temp <= id_out_valid;
-    //         if (id_out_valid) begin
-    //             pc_E        <= pc_D;
-    //             sext_imm    <= sext_imm_wire;
-    //             rs1_data    <= rs1_data_comb;
-    //             rs2_data    <= rs2_data_comb;
-    //             rdata_csr   <= rdata_csr_comb;
-    //             mtvec       <= mtvec_comb;
-    //             mepc        <= mepc_comb;
-
-    //             aluop       <= ctrl_aluop;
-    //             AluSrcA     <= ctrl_AluSrcA;
-    //             AluSrcB     <= ctrl_AluSrcB;
-    //             Gpr_Write_E <= ctrl_Gpr_Write;
-    //             Gpr_Write_RD<= ctrl_Gpr_Write_RD;
-    //             Csr_Write_E <= ctrl_Csr_Write;
-    //             Csr_Write_RD<= ctrl_Csr_Write_RD;
-    //             Jump        <= ctrl_Jump;
-    //             Mem_WMask   <= ctrl_Mem_WMask;
-    //             Mem_RMask   <= ctrl_Mem_RMask;
-    //             sram_read_write <= ctrl_sram_read_write;
-    //             is_fence_i  <= ctrl_is_fence_i;
-    //             irq_E       <= ctrl_irq;
-    //             irq_no      <= ctrl_irq_no;
-    //         end
-    //     end
-    // end
 
 endmodule

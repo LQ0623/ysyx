@@ -22,8 +22,6 @@ module Icache #(
     input               axi_arready_i,
     output [31:0]       axi_araddr_o,
     output [7:0]        axi_arlen_o,
-    output [2:0]        axi_arsize_o,
-    output [1:0]        axi_arburst_o,
 
     // AXI -> I$
     input               axi_rvalid_i,
@@ -113,8 +111,6 @@ module Icache #(
     assign axi_arvalid_o = arvalid_q;
     assign axi_araddr_o  = araddr_q;
     assign axi_arlen_o   = req_bypass ? 8'd0 : 8'd3; // 直通单拍；回填 4 拍
-    assign axi_arsize_o  = 3'b010;                   // 4 bytes
-    assign axi_arburst_o = 2'b01;                    // INCR
     assign axi_rready_o  = (state == S_MISS_R);
 
     // —— NEW：直通与回填完成条件分流 —— //

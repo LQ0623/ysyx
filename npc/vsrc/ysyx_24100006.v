@@ -377,18 +377,6 @@ module ysyx_24100006(
     wire [1:0]		clint_axi_rresp;
     wire [31:0]   	clint_axi_rdata;
 	wire			clint_axi_rlast;
-    // 写地址通道
-    // wire         	clint_axi_awvalid;
-    // wire          	clint_axi_awready;
-    // wire [31:0]  	clint_axi_awaddr;
-    // // 写数据通道
-    // wire          	clint_axi_wvalid;
-    // wire        	clint_axi_wready;
-    // wire [31:0] 	clint_axi_wdata;
-    // // 写响应通道
-    // wire         	clint_axi_bvalid;
-    // wire        	clint_axi_bready;
-    // wire [1:0]  	clint_axi_bresp;
 
 	ysyx_24100006_clint clint(
 		.clk			(clock),
@@ -396,9 +384,6 @@ module ysyx_24100006(
 		
 		// axi 写入和读取地址
 		.axi_araddr		(clint_axi_araddr),
-		// .axi_awaddr		(clint_axi_awaddr),
-		// axi 写入数据和写入使用的掩码
-		// .axi_wdata		(clint_axi_wdata),
 		// axi控制信号
 		// read data addr
 		.axi_arvalid	(clint_axi_arvalid),
@@ -406,22 +391,8 @@ module ysyx_24100006(
 		// read data
 		.axi_rready		(clint_axi_rready),
 		.axi_rvalid		(clint_axi_rvalid),
-		// write data addr
-		// .axi_awvalid	(clint_axi_awvalid),
-		// .axi_awready	(clint_axi_awready),
-		// // write data
-		// .axi_wvalid		(clint_axi_wvalid),
-		// .axi_wready		(clint_axi_wready),
-		// // response
-		// .axi_bready		(clint_axi_bready),
-		// .axi_bvalid		(clint_axi_bvalid),
-		// .axi_bresp		(clint_axi_bresp),
-
-		// axi读取的回应
-		.axi_rresp		(clint_axi_rresp),
 		// axi读取的数据
-		.axi_rdata		(clint_axi_rdata),
-		.axi_rlast		(clint_axi_rlast)
+		.axi_rdata		(clint_axi_rdata)
 	);
 
 `ifdef NPC
@@ -567,8 +538,6 @@ module ysyx_24100006(
         .axi_arready_i  (axi_arready_icache),   // AXI地址就绪
         .axi_araddr_o   (axi_araddr_icache),	// AXI取指地址
 		.axi_arlen_o	(axi_arlen_icache),
-		.axi_arsize_o	(axi_arsize_icache),
-		.axi_arburst_o	(axi_arburst_icache),
         
         // AXI -> Icache接口
         .axi_rvalid_i   (axi_rvalid_icache),    // AXI数据有效
@@ -636,10 +605,8 @@ module ysyx_24100006(
 		.ifu_axi_araddr  (axi_araddr_icache),
 		.ifu_axi_rvalid  (axi_rvalid_icache),
 		.ifu_axi_rready  (axi_rready_icache),
-		.ifu_axi_rresp   (axi_rresp_if),
 		.ifu_axi_rdata   (axi_rdata_icache),
 		.ifu_axi_arlen   (axi_arlen_icache),
-		.ifu_axi_arsize  (axi_arsize_icache),
 		.ifu_axi_rlast   (axi_rlast_icache),
 
 		// ================== MEMU接口 ==================
@@ -648,7 +615,6 @@ module ysyx_24100006(
 		.mem_axi_araddr   (axi_araddr_mem),
 		.mem_axi_rvalid   (axi_rvalid_mem),
 		.mem_axi_rready   (axi_rready_mem),
-		.mem_axi_rresp    (axi_rresp_mem),
 		.mem_axi_rdata    (axi_rdata_mem),
 		.mem_axi_awvalid  (axi_awvalid_mem),
 		.mem_axi_awready  (axi_awready_mem),
@@ -658,10 +624,8 @@ module ysyx_24100006(
 		.mem_axi_wdata    (axi_wdata_mem),
 		.mem_axi_bvalid   (axi_bvalid_mem),
 		.mem_axi_bready   (axi_bready_mem),
-		.mem_axi_bresp    (axi_bresp_mem),
 		.mem_axi_arlen    (axi_arlen_mem),
 		.mem_axi_arsize   (axi_arsize_mem),
-		.mem_axi_rlast    (axi_rlast_mem),
 		.mem_axi_awlen    (axi_awlen_mem),
 		.mem_axi_awsize   (axi_awsize_mem),
 		.mem_axi_wstrb    (axi_wstrb_mem),
@@ -677,14 +641,12 @@ module ysyx_24100006(
 		.sram_axi_wdata   (sram_axi_wdata),
 		.sram_axi_bvalid  (sram_axi_bvalid),
 		.sram_axi_bready  (sram_axi_bready),
-		.sram_axi_bresp   (sram_axi_bresp),
 		.sram_axi_arvalid (sram_axi_arvalid),
 		.sram_axi_arready (sram_axi_arready),
 		.sram_axi_araddr  (sram_axi_araddr),
 		.sram_axi_rvalid  (sram_axi_rvalid),
 		.sram_axi_rready  (sram_axi_rready),
 		.sram_axi_rdata   (sram_axi_rdata),
-		.sram_axi_rresp   (sram_axi_rresp),
 		.sram_axi_arlen   (sram_axi_arlen),
 		.sram_axi_arsize  (sram_axi_arsize),
 		.sram_axi_rlast   (sram_axi_rlast),
@@ -715,23 +677,12 @@ module ysyx_24100006(
 	`endif
 
 		// ================== CLINT从设备 ==================
-		// .clint_axi_awvalid (clint_axi_awvalid),
-		// .clint_axi_awready (clint_axi_awready),
-		// .clint_axi_awaddr  (clint_axi_awaddr),
-		// .clint_axi_wvalid  (clint_axi_wvalid),
-		// .clint_axi_wready  (clint_axi_wready),
-		// .clint_axi_wdata   (clint_axi_wdata),
-		// .clint_axi_bvalid  (clint_axi_bvalid),
-		// .clint_axi_bready  (clint_axi_bready),
-		// .clint_axi_bresp   (clint_axi_bresp),
 		.clint_axi_arvalid (clint_axi_arvalid),
 		.clint_axi_arready (clint_axi_arready),
 		.clint_axi_araddr  (clint_axi_araddr),
 		.clint_axi_rvalid  (clint_axi_rvalid),
 		.clint_axi_rready  (clint_axi_rready),
-		.clint_axi_rdata   (clint_axi_rdata),
-		.clint_axi_rresp   (clint_axi_rresp),
-		.clint_axi_rlast   (clint_axi_rlast)
+		.clint_axi_rdata   (clint_axi_rdata)
 
 `ifdef VERILATOR_SIM
 		// ================== 访问错误信号 ==================
@@ -766,7 +717,6 @@ module ysyx_24100006(
 		// 读数据通道
 		.axi_rvalid_o             (sram_axi_rvalid),
 		.axi_rready_i             (sram_axi_rready),
-		.axi_rresp_o              (sram_axi_rresp),
 		.axi_rdata_o              (sram_axi_rdata),
 		
 		// 写地址通道
@@ -783,7 +733,6 @@ module ysyx_24100006(
 		// 写响应通道
 		.axi_bvalid_o             (sram_axi_bvalid),
 		.axi_bready_i             (sram_axi_bready),
-		.axi_bresp_o              (sram_axi_bresp),
 		
 		// 突发配置
 		.axi_arlen_i              (sram_axi_arlen),
@@ -875,7 +824,7 @@ module ysyx_24100006(
 		.pc_o           	(pc_F_D),       	// 输出到ID阶段
 `endif
 
-		.flush_i        	(redirect_valid_E_F || irq_WD || (is_fence_i_D && !icache_flush_done_CE)),   // 当是跳转指令或者发生异常时冲刷
+		.flush_i        	(redirect_valid_E_F || irq_M || (is_fence_i_D && !icache_flush_done_CE)),   // 当是跳转指令或者发生异常时冲刷
 		.instruction_i  	(inst_F),			// IF阶段指令输入
 
 		.in_valid       	(if_in_valid),		// 来自IFU
@@ -907,7 +856,7 @@ module ysyx_24100006(
 		.pc_o           	(pc_D_E),
 `endif
 
-		.flush_i        	(redirect_valid_E_F || irq_WD),   // 当是跳转指令或者发生异常时冲刷
+		.flush_i        	(redirect_valid_E_F || irq_M),   // 当是跳转指令或者发生异常时冲刷
 		.is_break_i     	(is_break_D),     			// 是否是断点指令
 		.is_break_o     	(is_break_D_E),   			// 输出到EXEU
 
@@ -976,7 +925,7 @@ module ysyx_24100006(
 		.npc_M				(npc_E_M),
 `endif
 
-		.flush_i        	(irq_WD),   // 发生异常时需要冲刷流水线
+		.flush_i        	(irq_M),   // 发生异常时需要冲刷流水线
 		.is_break_i     	(is_break_E),     			// 是否是断点指令
 		.is_break_o     	(is_break_E_M),   			// 输出到MEMU
 		
@@ -1018,50 +967,6 @@ module ysyx_24100006(
 		,.Mem_Mask_i		(Mem_Mask_E)
 		,.Mem_Mask_o		(Mem_Mask_E_M)
 	);
-
-	// MEM_WB 模块实例化
-	ysyx_24100006_MEM_WB u_MEM_WB (
-		.clk            	(clock),
-		.reset          	(reset),
-
-`ifdef VERILATOR_SIM
-		// 调试信息
-		.pc_i           	(pc_M),
-		.pc_o           	(pc_M_W),
-		.npc_M				(npc_M),
-		.npc_W				(npc_M_W),
-`endif
-
-		.flush_i        	(irq_WD),   // 发生异常时需要冲刷流水线
-
-		.is_break_i     	(is_break_M),     			// 是否是断点指令
-		.is_break_o     	(is_break_M_W),   			// 输出到WBU
-
-		.in_valid       	(mem_in_valid),     // 来自MEMU
-		.in_ready       	(mem_in_ready),     // 输出到MEMU
-		
-		.Gpr_Write_Addr_i	(Gpr_Write_Addr_M),
-		.Csr_Write_Addr_i	(Csr_Write_Addr_M),
-		.irq_no_i       	(irq_no_M),
-		.irq_i          	(irq_M),
-		.Gpr_Write_i    	(Gpr_Write_M),
-		.Csr_Write_i    	(Csr_Write_M),
-
-		.out_valid      	(wb_out_valid),			// 输出到WBU
-		.out_ready      	(wb_out_ready),    		// 来自WBU
-		.Gpr_Write_Addr_o	(Gpr_Write_Addr_M_W),
-		.Csr_Write_Addr_o	(Csr_Write_Addr_M_W),
-		.irq_no_o       	(irq_no_M_W),
-		.irq_o          	(irq_M_W),
-		.Gpr_Write_o    	(Gpr_Write_M_W),
-		.Csr_Write_o    	(Csr_Write_M_W)
-
-		// 面积优化
-		,.wdata_gpr_i		(wdata_gpr_M)
-		,.wdata_csr_i		(wdata_csr_M)
-		,.wdata_gpr_o		(wdata_gpr_M_W)
-		,.wdata_csr_o		(wdata_csr_M_W)
-	);
 	
 	ysyx_24100006_hazard u_hazard(
 		// ID 当前指令寄存器号：使用 IF_ID 之后、IDU 看到的那条指令
@@ -1089,11 +994,6 @@ module ysyx_24100006(
 		.mem_stage_rd		(Gpr_Write_Addr_E_M),
 		.mem_in_valid		(mem_out_valid),
 		.mem_stage_out_valid(Gpr_Write_M),
-		// WB 阶段（忙判断：wb_out_valid | ~wb_out_ready）
-		.wb_out_valid   	(wb_in_valid),
-		.wb_out_ready   	(wb_in_ready),
-		.wb_rd         		(Gpr_Write_Addr_WD),
-		.wb_wen        		(Gpr_Write_WD),
 
 		.stall_id      		(stall_id)
 
@@ -1134,19 +1034,6 @@ module ysyx_24100006(
 		.axi_rvalid			(axi_rvalid_if),
 		.axi_rready			(axi_rready_if),
 		.axi_rdata			(axi_rdata_if),
-		// write data addr
-		.axi_awvalid		(axi_awvalid_if),
-		.axi_awready		(axi_awready_if),
-		// write data
-		.axi_wvalid			(axi_wvalid_if),
-		.axi_wready			(axi_wready_if),
-		// response
-		.axi_bvalid			(axi_bvalid_if),
-		.axi_bready			(axi_bready_if),
-		// 新增AXI信号
-		.axi_arlen			(axi_arlen_if),
-		.axi_arsize			(axi_arsize_if),
-		.axi_rlast			(axi_rlast_if),
 		// 模块握手信号
 		.if_in_valid	(if_in_valid),
 		.if_in_ready		(if_in_ready),
@@ -1161,7 +1048,7 @@ module ysyx_24100006(
 
 		// 异常处理相关
 		,.csr_mtvec			(mtvec_D)
-		,.EXC				(irq_WD)
+		,.EXC				(irq_M)
 		,.irq				(irq_F)
 		,.irq_no			(irq_no_F)
 	);
@@ -1179,14 +1066,14 @@ module ysyx_24100006(
 		.stall_id			(stall_id),
 
 		.instruction		(instruction_F_D),
-		.irq_W				(irq_WD),
-		.irq_no_W			(irq_no_WD),
-		.Gpr_Write_Addr_W	(Gpr_Write_Addr_WD),
-		.Csr_Write_Addr_W	(Csr_Write_Addr_WD),
-		.Gpr_Write_W		(Gpr_Write_WD),
-		.Csr_Write_W		(Csr_Write_WD),
-		.wdata_gpr_W		(wdata_gpr_WD),
-		.wdata_csr_W		(wdata_csr_WD),
+		.irq_W				(irq_M),
+		.irq_no_W			(irq_no_M),
+		.Gpr_Write_Addr_W	(Gpr_Write_Addr_M),
+		.Csr_Write_Addr_W	(Csr_Write_Addr_M),
+		.Gpr_Write_W		(Gpr_Write_M),
+		.Csr_Write_W		(Csr_Write_M),
+		.wdata_gpr_W		(wdata_gpr_M),
+		.wdata_csr_W		(wdata_csr_M),
 		
 		.id_out_valid		(id_out_valid),
 		.id_out_ready		(id_out_ready),
@@ -1219,7 +1106,6 @@ module ysyx_24100006(
 		,.forwardB			(forwardB)
 		,.exe_fw_data		(exe_fw_data)
 		,.mem_fw_data		(mem_fw_data)
-		,.wb_fw_data		(wdata_gpr_WD)
 		
 
 		// 面积优化相关
@@ -1352,11 +1238,9 @@ module ysyx_24100006(
 		// response
 		.axi_bvalid			(axi_bvalid_mem),
 		.axi_bready			(axi_bready_mem),
-		.axi_bresp			(axi_bresp_mem),
 		// 新增AXI信号
 		.axi_arlen			(axi_arlen_mem),
 		.axi_arsize			(axi_arsize_mem),
-		.axi_rlast			(axi_rlast_mem),
 		.axi_awlen			(axi_awlen_mem),
 		.axi_awsize			(axi_awsize_mem),
 		.axi_wstrb			(axi_wstrb_mem),
@@ -1367,7 +1251,7 @@ module ysyx_24100006(
 		.mem_out_valid		(mem_out_valid),
 		.mem_out_ready		(mem_out_ready),
 		.mem_in_valid		(mem_in_valid),
-		.mem_in_ready		(mem_in_ready),
+		.mem_in_ready		(1),
 		.is_load			(is_load),
 
 		.irq_W				(irq_M),
@@ -1391,52 +1275,24 @@ module ysyx_24100006(
 		,.Mem_Mask_M		(Mem_Mask_E_M)
 	);
 
-	ysyx_24100006_wbu WB(
-		.clk				(clock),
-		.reset				(reset),
 
 `ifdef VERILATOR_SIM
-		// 调试信息
-		.wb_in_valid		(wb_in_valid),
-		.wb_in_ready		(1),
-		.pc_w				(pc_M_W),
-		.mtvec				(mtvec_D),
-		.npc_M				(npc_M_W),
-		.npc_W				(npc_W),
+
+	reg 		diff;
+	reg [31:0]	diff_npc;
+	always@(posedge clock)begin
+		if(reset)begin
+			diff	<= 0;
+		end else if(mem_in_valid)begin
+			diff	<= 1;
+			diff_npc<= npc_M;
+		end else begin
+			diff	<= 0;
+		end
+	end
+
 `endif
 
-		.is_break_i			(is_break_M_W), // 是否是断点指令
-
-		.irq_W				(irq_M_W),
-		.irq_no_W			(irq_no_M_W),
-		.Gpr_Write			(Gpr_Write_M_W),
-		.Csr_Write			(Csr_Write_M_W),
-		.Gpr_Write_Addr		(Gpr_Write_Addr_M_W),
-		.Csr_Write_Addr		(Csr_Write_Addr_M_W),
-		
-		.wb_out_valid		(wb_out_valid),
-		.wb_out_ready		(wb_out_ready),
-
-		.irq_WD				(irq_WD),
-		.irq_no_WD			(irq_no_WD),
-		.Gpr_Write_WD		(Gpr_Write_WD),
-		.Csr_Write_WD		(Csr_Write_WD),
-		.Gpr_Write_Addr_WD	(Gpr_Write_Addr_WD),
-		.Csr_Write_Addr_WD	(Csr_Write_Addr_WD),
-		.wdata_gpr			(wdata_gpr_WD),
-		.wdata_csr			(wdata_csr_WD)
-
-		// 面积优化
-		,.wdata_gpr_W		(wdata_gpr_M_W)
-		,.wdata_csr_W		(wdata_csr_M_W)
-
-	);
-
-	// always @(*) begin
-	// 	if(instruction_F_D == 32'h00100073)begin
-	// 		$display(" %x %x %x",Jump_D_E,pc_F,instruction_F_D);
-	// 	end
-	// end
 
 	// TAG:一些仿真使用的参数:使用下面的方式需要将csrc/CircuitSim/dpi.cpp的函数取消注释，但是这样访问会拖慢仿真速度
 `ifdef VERILATOR_SIM
@@ -1452,9 +1308,9 @@ module ysyx_24100006(
 		get_pc(pc_F);
 		get_npc(npc_E_F);					// pc先不进行diff test，因为这个进行diff test找不到信号与之对应了
 		get_if_valid(if_in_valid);
-		get_wb_ready(wb_in_valid);			// 用于diff test，这个结合npc_temp信号刚好，因为wb_out_valid有效的时候还没有写入，所以需要使用wb_in_valid
+		get_wb_ready(diff);			// 用于diff test，这个结合npc_temp信号刚好，因为wb_out_valid有效的时候还没有写入，所以需要使用wb_in_valid
 		get_pc_w(pc_M_W);
-		get_npc_w(npc_W);
+		get_npc_w(diff_npc);
 	end
 `endif
 

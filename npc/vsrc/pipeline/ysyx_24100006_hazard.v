@@ -26,11 +26,6 @@ input is_load,
     input [3:0]    mem_stage_rd,    // 这才是真正的MEM阶段的rd，mem_rd其实是EXE阶段出来的，但是如果是load-use，那么mem_rd和mem_stage_rd不一样
     input          mem_in_valid,
     input          mem_stage_out_valid,     // 表示mem处理完总线请求时，存储的要写回的寄存器是否有效
-    // WB 阶段
-    input          wb_out_valid,
-    input          wb_out_ready,
-    input  [3:0]   wb_rd,
-    input          wb_wen,          // Gpr_Write_W
 
     output         stall_id
 
@@ -45,15 +40,12 @@ input is_load,
     // rd != x0
     wire ex_wen_v  = ex_wen  & (ex_rd  != 4'd0);
     wire mem_wen_v = mem_wen & (mem_rd != 4'd0);
-    wire wb_wen_v  = wb_wen  & (wb_rd  != 4'd0);
 
     // 与任一阶段 RAW 冲突
     wire raw_ex_rs1  = id_rs1_ren & ex_wen_v  & (id_rs1 == ex_rd);
     wire raw_ex_rs2  = id_rs2_ren & ex_wen_v  & (id_rs2 == ex_rd);
     wire raw_mem_rs1 = id_rs1_ren & mem_wen_v & (id_rs1 == mem_rd);
     wire raw_mem_rs2 = id_rs2_ren & mem_wen_v & (id_rs2 == mem_rd);
-    wire raw_wb_rs1  = id_rs1_ren & wb_wen_v  & (id_rs1 == wb_rd);
-    wire raw_wb_rs2  = id_rs2_ren & wb_wen_v  & (id_rs2 == wb_rd);
 
     // 前递单元设计(有冲突，且能够通过前递解决，在输出有效的时候就前递)
     // 优先级：EX > MEM > WB
@@ -62,16 +54,12 @@ input is_load,
     assign can_rs2_fw_exe = raw_ex_rs2 && (exe_is_load == 1'b0) && (id_out_valid == 1'b1);
     assign can_rs1_fw_mem = raw_mem_rs1&& (is_load == 1'b0 || mem_rvalid == 1) && (id_out_valid == 1'b1); // 如果MEM阶段是load指令，则不能前递
     assign can_rs2_fw_mem = raw_mem_rs2&& (is_load == 1'b0 || mem_rvalid == 1) && (id_out_valid == 1'b1);
-    assign can_rs1_fw_wb  = raw_wb_rs1 && (id_out_valid == 1'b1);
-    assign can_rs2_fw_wb  = raw_wb_rs2 && (id_out_valid == 1'b1);
     
     assign forwardA = can_rs1_fw_exe ? 2'b01 :
-                      can_rs1_fw_mem ? 2'b10 :
-                      can_rs1_fw_wb  ? 2'b11 : 2'b00;
+                      can_rs1_fw_mem ? 2'b10 : 2'b00;
 
     assign forwardB = can_rs2_fw_exe ? 2'b01 :
-                      can_rs2_fw_mem ? 2'b10 : 
-                      can_rs2_fw_wb  ? 2'b11 : 2'b00;
+                      can_rs2_fw_mem ? 2'b10 : 2'b00;
 
     // 当mem_out_ready == 1的时候检测是否有冲突，只需要一拍(当mem_out_ready刚为1的时候，所有的检测都没有效果了，因为EXE阶段的指令已经进入了MEM阶段，但是MEM阶段接收数据需要一个周期，这期间可能会有冲突)
     // 这里的mem_out_ready是指mem模块的out_ready信号，表示mem模块的输出可以被下一个模块接收

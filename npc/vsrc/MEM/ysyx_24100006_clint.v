@@ -9,9 +9,9 @@ module ysyx_24100006_clint (
     output              axi_arready,
     input               axi_rready,
     output              axi_rvalid,
-    output reg [31:0]   axi_rdata,
-    output [1:0]        axi_rresp,
-    output              axi_rlast
+    output reg [31:0]   axi_rdata
+    // output [1:0]        axi_rresp,
+    // output              axi_rlast
 );
 
 `ifndef NPC
@@ -73,7 +73,7 @@ module ysyx_24100006_clint (
     // assign axi_wready = 0;
     // assign axi_bvalid = 0;
     // assign axi_bresp = 0;
-    assign axi_rresp = 2'b0;
-    assign axi_rlast = 1'b1;  // 单次传输始终为1
+    // assign axi_rresp = 2'b0;
+    // assign axi_rlast = 1'b1;  // 单次传输始终为1
 
 endmodule

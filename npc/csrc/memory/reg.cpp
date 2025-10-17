@@ -20,8 +20,11 @@ const char *SysReg[] = {
 
 void get_reg(){
 #ifdef CONFIG_SOC
-    for(int i = 0;i < REGNUM; i++){
-        gpr[i] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__GPR__DOT__rf[i];
+    // 因为GPR中的寄存器改为了14个，所以直接访问能够得到的值也是那14个的，所以需要将0号寄存器单独进行赋值
+    // 后面-1是因为GPR中没有0号寄存器，因此所有的寄存器对应CPU内部时都应该-1
+    gpr[0] = 0;
+    for(int i = 1;i < REGNUM; i++){
+        gpr[i] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__GPR__DOT__rf[i-1];
     }
     // if(pc == 0xa0000114 && cnt == 100){
     //     printf("pc is %08x,inst is %#x\n",pc,inst);
@@ -41,8 +44,10 @@ void get_reg(){
     csr[3] = mcause;
     //0:mstatus 1:mtvec 2:mepc 3:mcause
 #else
-    for(int i = 0;i < REGNUM; i++){
-        gpr[i] = cpu->rootp -> ysyx_24100006__DOT__ID__DOT__GPR__DOT__rf[i];
+    // 因为GPR中的寄存器改为了14个，所以直接访问能够得到的值也是那14个的，所以需要将0号寄存器单独进行赋值
+    gpr[0] = 0;
+    for(int i = 1;i < REGNUM; i++){
+        gpr[i] = cpu->rootp -> ysyx_24100006__DOT__ID__DOT__GPR__DOT__rf[i-1];
     }
     csr[0] = mstatus;
     csr[1] = mtvec;

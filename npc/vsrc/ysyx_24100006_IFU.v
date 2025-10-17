@@ -21,20 +21,6 @@ module ysyx_24100006_ifu(
 	input 		 		axi_rvalid,
     output 	reg 		axi_rready,
 	input	[31:0]		axi_rdata,
-	// write addr
-	input 		 		axi_awready,
-	output 	reg 		axi_awvalid,
-	// write data
-	input 				axi_wready,
-	output 	reg 		axi_wvalid,
-	// response
-	input 				axi_bvalid,
-	output 	reg 		axi_bready,
-
-	// 新增AXI信号
-	output 	reg	[7:0]	axi_arlen,
-	output 	reg	[2:0]	axi_arsize,
-	input 				axi_rlast,
 
 	// 握手信号
 	output 	reg			if_in_valid,
@@ -100,13 +86,8 @@ module ysyx_24100006_ifu(
 			if_in_valid		<= 1'b0;
 			PCW				<= 1'b0;
 			axi_arvalid 	<= 1'b0;
-			axi_awvalid		<= 1'b0;
-			axi_wvalid		<= 1'b0;
-			axi_bready		<= 1'b0;
 			axi_rready		<= 1'b0;
 
-			axi_arlen		<= 8'b0;
-			axi_arsize		<= 3'b010;	// 一次传输四个字节
 		end else begin
 
 			// 当 icache 刷新完毕后，回到空闲状态
@@ -166,17 +147,8 @@ module ysyx_24100006_ifu(
 	assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : (is_jal ? jal_target : pc_add_4_o));
 	assign axi_araddr 	= pc_F;
 
-// 	ysyx_24100006_pc PC(
-// 		.clk(clk),
-// 		.reset(reset),
-// 		.PCW((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC),		// 要么取指，要么重定向
-// `ifdef VERILATOR_SIM
-// 		.Access_Fault(Access_Fault),
-// `endif
-// 		.npc(npc_temp),
-// 		.pc(pc_F)
-// 	);
 
+`ifndef NPC
 	ysyx_24100006_Reg #(32,32'h30000000) pc1(
 		.clk(clk),
 		.rst(reset),
@@ -184,6 +156,15 @@ module ysyx_24100006_ifu(
 		.dout(pc_F),
 		.wen((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC)
 	);
+`else
+	ysyx_24100006_Reg #(32,32'h80000000) pc1(
+		.clk(clk),
+		.rst(reset),
+		.din(npc_temp),
+		.dout(pc_F),
+		.wen((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC)
+	);
+`endif
 
 
 	// 异常相关

@@ -26,7 +26,6 @@ module ysyx_24100006_axi #(
     // 读数据通道
     output                          axi_rvalid_o,
     input                           axi_rready_i,
-    output  [AXI_RESP_WIDTH - 1:0]  axi_rresp_o,
     output  [AXI_DATA_WIDTH - 1:0]  axi_rdata_o,
     // 写地址通道
     input                           axi_awvalid_i,
@@ -40,7 +39,6 @@ module ysyx_24100006_axi #(
     // 写响应通道
     output                          axi_bvalid_o,
     input                           axi_bready_i,
-    output  [AXI_RESP_WIDTH - 1:0]  axi_bresp_o,
     
     // 突发配置
     input   [AXI_LEN_WIDTH  - 1:0]  axi_arlen_i,   // 读突发长度
@@ -113,7 +111,7 @@ module ysyx_24100006_axi #(
     assign io_master_arid_o    = 0;                     // 无对应信号，强制置零
     assign io_master_arlen_o   = axi_arlen_i;           // 读突发长度
     assign io_master_arsize_o  = axi_arsize_i;          // 读突发大小
-    assign io_master_arburst_o = 2'b01;                 // 无对应信号，强制置零
+    assign io_master_arburst_o = 2'b01;                 // 突发模式  INCR
 
     assign io_master_rready_o  = axi_rready_i;          // 读数据准备
 
@@ -121,10 +119,8 @@ module ysyx_24100006_axi #(
     assign axi_awready_o = io_master_awready_i;         // 写地址准备
     assign axi_wready_o  = io_master_wready_i;          // 写数据准备
     assign axi_bvalid_o  = io_master_bvalid_i;          // 写响应有效
-    assign axi_bresp_o   = io_master_bresp_i;           // 写响应状态
     assign axi_arready_o = io_master_arready_i;         // 读地址准备
     assign axi_rvalid_o  = io_master_rvalid_i;          // 读数据有效
-    assign axi_rresp_o   = io_master_rresp_i;           // 读响应状态
     assign axi_rdata_o   = io_master_rdata_i;           // 读数据总线
     assign axi_rlast_o   = io_master_rlast_i;           // 读传输结束
 
