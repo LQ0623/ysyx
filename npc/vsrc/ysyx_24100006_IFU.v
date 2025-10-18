@@ -41,8 +41,6 @@ module ysyx_24100006_ifu(
 	// 异常相关
 	,input [31:0]		csr_mtvec
 	,input				EXC
-	,output				irq
-	,output [3:0]		irq_no
 );
 
 	// 是否发送重定向
@@ -166,10 +164,6 @@ module ysyx_24100006_ifu(
 	);
 `endif
 
-
-	// 异常相关
-	assign irq 		= (pc_F[1:0] != 2'b00) ? 1 : 0;	// 取指地址不对齐
-	assign irq_no	= (pc_F[1:0] != 2'b00) ? 4'b0 : 4'b0;	// 取指地址不对齐为0
 
 `ifdef VERILATOR_SIM
 	import "DPI-C" function void get_PCW(input bit PCW);

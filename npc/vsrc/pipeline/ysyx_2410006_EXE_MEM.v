@@ -23,7 +23,6 @@ module ysyx_24100006_EXE_MEM(
     input [3:0]     Gpr_Write_Addr_i,
     input [11:0]    Csr_Write_Addr_i,
     input [1:0]     Gpr_Write_RD_i,
-    input [3:0]     irq_no_i,
 
     // 控制信号
     input           irq_i,
@@ -40,7 +39,6 @@ module ysyx_24100006_EXE_MEM(
     output [3:0]    Gpr_Write_Addr_o,
     output [11:0]   Csr_Write_Addr_o,
     output [1:0]    Gpr_Write_RD_o,
-    output [3:0]    irq_no_o,
 
     // 控制信号
     output          irq_o,
@@ -70,7 +68,6 @@ module ysyx_24100006_EXE_MEM(
     reg [3:0]       Gpr_Write_Addr_temp;
     reg [11:0]      Csr_Write_Addr_temp;
     reg [1:0]       Gpr_Write_RD_temp;
-    reg [3:0]       irq_no_temp;
     reg             irq_temp;
     reg             Gpr_Write_temp;
     reg             Csr_Write_temp;
@@ -99,7 +96,6 @@ module ysyx_24100006_EXE_MEM(
     assign Gpr_Write_Addr_o     = Gpr_Write_Addr_temp;
     assign Csr_Write_Addr_o     = Csr_Write_Addr_temp;
     assign Gpr_Write_RD_o       = Gpr_Write_RD_temp;
-    assign irq_no_o             = irq_no_temp;
     assign irq_o                = irq_temp;
     assign Gpr_Write_o          = Gpr_Write_temp;
     assign Csr_Write_o          = Csr_Write_temp;
@@ -131,7 +127,6 @@ module ysyx_24100006_EXE_MEM(
             Gpr_Write_Addr_temp     <= 4'b0;
             Csr_Write_Addr_temp     <= 12'b0;
             Gpr_Write_RD_temp       <= 2'd0;
-            irq_no_temp             <= 4'b0;
             irq_temp                <= 1'd0;
             Gpr_Write_temp          <= 1'd0;
             Csr_Write_temp          <= 1'd0;
@@ -161,7 +156,6 @@ module ysyx_24100006_EXE_MEM(
                     Gpr_Write_Addr_temp     <= Gpr_Write_Addr_i;
                     Csr_Write_Addr_temp     <= Csr_Write_Addr_i;
                     Gpr_Write_RD_temp       <= Gpr_Write_RD_i;
-                    irq_no_temp             <= irq_no_i;
                     irq_temp                <= irq_i;
                     Gpr_Write_temp          <= Gpr_Write_i;
                     Csr_Write_temp          <= Csr_Write_i;

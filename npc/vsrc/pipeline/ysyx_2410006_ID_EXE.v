@@ -21,7 +21,6 @@ module ysyx_24100006_ID_EXE(
     input [11:0]    Csr_Write_Addr_i,
     input [1:0]     Gpr_Write_RD_i,
     input [2:0]     Jump_i,
-    input [3:0]     irq_no_i,
 
     // 控制信号
     input           is_fence_i_i,
@@ -39,8 +38,7 @@ module ysyx_24100006_ID_EXE(
     output [3:0]    Gpr_Write_Addr_o,
     output [11:0]   Csr_Write_Addr_o,
     output [1:0]    Gpr_Write_RD_o,
-    output [2:0]    Jump_o,
-    output [3:0]    irq_no_o
+    output [2:0]    Jump_o
         
     // 面积优化
     ,input  [31:0]  pc_j_m_e_n_i
@@ -85,7 +83,6 @@ module ysyx_24100006_ID_EXE(
     reg [2:0]       Jump_temp;
     reg [2:0]       Mem_WMask_temp;
     reg [2:0]       Mem_RMask_temp;
-    reg [3:0]       irq_no_temp;
     reg             is_fence_i_temp;
     reg             irq_temp;
     reg             Gpr_Write_temp;
@@ -127,7 +124,6 @@ module ysyx_24100006_ID_EXE(
     assign Csr_Write_Addr_o     = Csr_Write_Addr_temp;
     assign Gpr_Write_RD_o       = Gpr_Write_RD_temp;
     assign Jump_o               = Jump_temp;
-    assign irq_no_o             = irq_no_temp;
     assign is_fence_i_o         = is_fence_i_temp;
     assign irq_o                = irq_temp;
     assign Gpr_Write_o          = Gpr_Write_temp;
@@ -155,7 +151,6 @@ module ysyx_24100006_ID_EXE(
             Csr_Write_Addr_temp         <= 12'b0;
             Gpr_Write_RD_temp           <= 2'd0;
             Jump_temp                   <= 3'd0;
-            irq_no_temp                 <= 4'b0;
             is_fence_i_temp             <= 1'd0;
             irq_temp                    <= 1'd0;
             Gpr_Write_temp              <= 1'd0;
@@ -178,7 +173,6 @@ module ysyx_24100006_ID_EXE(
                 Csr_Write_Addr_temp     <= 12'b0;
                 Gpr_Write_RD_temp       <= 2'd0;
                 Jump_temp               <= 3'd0;
-                irq_no_temp             <= 4'b0;
                 is_fence_i_temp         <= 1'd0;
                 Gpr_Write_temp          <= 1'd0;
                 Csr_Write_temp          <= 1'd0;
@@ -200,7 +194,6 @@ module ysyx_24100006_ID_EXE(
                     Csr_Write_Addr_temp     <= Csr_Write_Addr_i;
                     Gpr_Write_RD_temp       <= Gpr_Write_RD_i;
                     Jump_temp               <= Jump_i;
-                    irq_no_temp             <= irq_no_i;
                     is_fence_i_temp         <= is_fence_i_i;
                     irq_temp                <= irq_i;
                     Gpr_Write_temp          <= Gpr_Write_i;

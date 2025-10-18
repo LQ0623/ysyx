@@ -21,7 +21,6 @@ module ysyx_24100006_memu(
 
     // control signal
     input               irq_M,
-    input [3:0]         irq_no_M,
     input               Gpr_Write_M,
     input               Csr_Write_M,
     input [3:0]         Gpr_Write_Addr_M,
@@ -72,7 +71,6 @@ module ysyx_24100006_memu(
     // to MEM_WB（下游）
     // control signal to WBU（经 MEM_WB）
     output              irq_W,
-    output [3:0]        irq_no_W,
     output              Gpr_Write_W,
     output              Csr_Write_W,
     output [3:0]        Gpr_Write_Addr_W,
@@ -95,7 +93,6 @@ module ysyx_24100006_memu(
     reg         is_break_r;
 
     reg         irq_r;
-    reg [3:0]   irq_no_r;
     reg         Gpr_Write_r;
     reg         Csr_Write_r;
     reg [3:0]   Gpr_Write_Addr_r;
@@ -278,7 +275,6 @@ module ysyx_24100006_memu(
 `endif
 
             irq_r           <= 1'b0;
-            irq_no_r        <= 4'b0;
             Gpr_Write_r     <= 1'b0;
             Csr_Write_r     <= 1'b0;
             Gpr_Write_Addr_r<= 4'b0;
@@ -290,7 +286,6 @@ module ysyx_24100006_memu(
                 is_break_r      <= is_break_i;
 
                 irq_r           <= irq_M;
-                irq_no_r        <= irq_no_M;
                 Gpr_Write_r     <= Gpr_Write_M;
                 Csr_Write_r     <= Csr_Write_M;
                 Gpr_Write_Addr_r<= Gpr_Write_Addr_M;
@@ -333,25 +328,28 @@ module ysyx_24100006_memu(
     wire [31:0] mem_rdata;
     assign mem_rdata = (axi_rvalid) ? axi_rdata : locked_read_data;
 
-    wire [31:0] r_byte = (mem_rdata >> ({axi_addr_suffix,3'b0}));
+    // ---------------- Read align (barrel shift) + sign/zero extend ----------------
+    // axi_addr_suffix == ARADDR[1:0]，以字节为单位右移 0/8/16/24
+    wire [4:0]  shamt8      = {axi_addr_suffix, 3'b000};
+    wire [31:0] shift_data  = (mem_rdata >> shamt8);
 
-    wire [15:0] r_half =
-        (axi_addr_suffix == 2'b00) ? mem_rdata[15:0]  :
-        (axi_addr_suffix == 2'b01) ? mem_rdata[23:8]  :
-        (axi_addr_suffix == 2'b10) ? mem_rdata[31:16] :
-                                    16'h0000; // 非法半字对齐(…11)时给0或按你异常策略处理
+    // Byte: 目标字节对齐到 bit[7:0]
+    wire [7:0]  r_byte = shift_data[7:0];
 
+    // Half: 目标半字对齐到 bit[15:0]；当 suffix==2'b11（半字越界）按你的策略置 0
+    wire [15:0] r_half = (axi_addr_suffix == 2'b11) ? 16'h0000 : shift_data[15:0];
+
+    // 最终扩展（Mem_Mask_r: 000=LB, 001=LBU, 010=LH, 011=LHU, 100=LW）
     wire [31:0] Mem_rdata_extend =
-        (Mem_Mask_r == 3'b000) ? {{24{r_byte[7]}},  r_byte[7:0]}  : // LB
-        (Mem_Mask_r == 3'b001) ? {24'b0,            r_byte[7:0]}  : // LBU
-        (Mem_Mask_r == 3'b010) ? {{16{r_half[15]}}, r_half}  : // LH
-        (Mem_Mask_r == 3'b011) ? {16'b0,            r_half}  : // LHU
-                                mem_rdata;                  // LW (3'b100)
+        (Mem_Mask_r == 3'b000) ? {{24{r_byte[7]}},  r_byte} :  // LB
+        (Mem_Mask_r == 3'b001) ? {24'b0,            r_byte} :  // LBU
+        (Mem_Mask_r == 3'b010) ? {{16{r_half[15]}}, r_half} :  // LH
+        (Mem_Mask_r == 3'b011) ? {16'b0,            r_half} :  // LHU
+                                mem_rdata;                   // LW(3'b100)，其他保留
+
 
     // 异常处理相关（保持原样，未使用 axi_bresp）
     assign irq_W            = irq_r;
-    assign irq_no_W         = irq_no_r;
-
     // 面积优化
     assign wdata_gpr_W      = (Gpr_Write_RD_W[0] & Gpr_Write_RD_W[1]) ? Mem_rdata_extend
                                                         : ((state[0] == 1'b0) ? wdata_gpr_M : wdata_gpr_r);

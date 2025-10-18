@@ -111,7 +111,6 @@ module ysyx_24100006_xbar_arbiter #(
 
 
     output        clint_axi_arvalid,
-    input         clint_axi_arready,
     output [31:0] clint_axi_araddr,
     
     input         clint_axi_rvalid,
@@ -336,7 +335,7 @@ module ysyx_24100006_xbar_arbiter #(
     assign ifu_axi_rlast = sel_sram ? ifu_rlast : 0;
 
     assign mem_axi_arready = sel_sram ? mem_arready : 
-                            sel_clint ? clint_axi_arready : 0;
+                            sel_clint ? 1'b1 : 0;
     assign mem_axi_rvalid = sel_sram ? mem_rvalid : 
                            sel_clint ? clint_axi_rvalid : 0;
 
@@ -351,7 +350,7 @@ module ysyx_24100006_xbar_arbiter #(
 
     assign mem_axi_arready = sel_sram ? mem_arready : 
                             sel_uart ? uart_axi_arready : 
-                            sel_clint ? clint_axi_arready : 0;
+                            sel_clint ? 1'b1 : 0;
     assign mem_axi_rvalid = sel_sram ? mem_rvalid : 
                            sel_uart ? uart_axi_rvalid : 
                            sel_clint ? clint_axi_rvalid : 0;

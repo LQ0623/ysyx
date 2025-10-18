@@ -181,7 +181,7 @@ module ysyx_24100006_controller_remake(
 
     /* 是否发生中断 */
     output  irq,
-    output  [3:0] irq_no,
+    // output  [3:0] irq_no,
     /* 操作类型 */
     output  [3:0]aluop,
     /* 写通用寄存器 */
@@ -242,7 +242,7 @@ module ysyx_24100006_controller_remake(
     //TAG 这样写有一个问题，ebreak如何跳转到结束，加了，但是不确定正确
 
     assign irq = (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_IRQ : `ysyx_24100006_NIRQ;
-    assign irq_no = (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_MECALL : 0;    //  只有ecall语句会使用这个信号
+    // assign irq_no = (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_MECALL : 0;    //  只有ecall语句会使用这个信号
     
     // ALU操作类型
     assign aluop = 

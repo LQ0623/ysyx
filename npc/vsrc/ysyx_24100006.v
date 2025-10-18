@@ -387,9 +387,6 @@ module ysyx_24100006(
 		// axi控制信号
 		// read data addr
 		.axi_arvalid	(clint_axi_arvalid),
-		.axi_arready	(clint_axi_arready),
-		// read data
-		.axi_rready		(clint_axi_rready),
 		.axi_rvalid		(clint_axi_rvalid),
 		// axi读取的数据
 		.axi_rdata		(clint_axi_rdata)
@@ -678,7 +675,6 @@ module ysyx_24100006(
 
 		// ================== CLINT从设备 ==================
 		.clint_axi_arvalid (clint_axi_arvalid),
-		.clint_axi_arready (clint_axi_arready),
 		.clint_axi_araddr  (clint_axi_araddr),
 		.clint_axi_rvalid  (clint_axi_rvalid),
 		.clint_axi_rready  (clint_axi_rready),
@@ -835,10 +831,10 @@ module ysyx_24100006(
 		.instruction_o  	(instruction_F_D)	// 输出到ID阶段
 
 		// 异常处理相关
-		,.irq_i				(irq_F)
-		,.irq_no_i			(irq_no_F)
-    	,.irq_o				(irq_F_D)
-		,.irq_no_o			(irq_no_F_D)
+		// ,.irq_i				(irq_F)
+		// ,.irq_no_i			(irq_no_F)
+    	// ,.irq_o				(irq_F_D)
+		// ,.irq_no_o			(irq_no_F_D)
 
 		// 面积优化相关
 		,.pc_add_4_i		(pc_add_4_F)
@@ -866,7 +862,7 @@ module ysyx_24100006(
 		.Csr_Write_Addr_i	(Csr_Write_Addr_D),
 		.Gpr_Write_RD_i 	(Gpr_Write_RD_D),
 		.Jump_i         	(Jump_D),
-		.irq_no_i       	(irq_no_D),
+		// .irq_no_i       	(irq_no_D),
 		.is_fence_i_i   	(is_fence_i_D),
 		.irq_i          	(irq_D),
 		.Gpr_Write_i    	(Gpr_Write_D),
@@ -883,7 +879,7 @@ module ysyx_24100006(
 		.Csr_Write_Addr_o	(Csr_Write_Addr_D_E),
 		.Gpr_Write_RD_o 	(Gpr_Write_RD_D_E),
 		.Jump_o         	(Jump_D_E),
-		.irq_no_o       	(irq_no_D_E),
+		// .irq_no_o       	(irq_no_D_E),
 		.is_fence_i_o   	(is_fence_i_D_E),
 		.irq_o          	(irq_D_E),
 		.Gpr_Write_o    	(Gpr_Write_D_E),
@@ -935,7 +931,7 @@ module ysyx_24100006(
 		.Gpr_Write_Addr_i	(Gpr_Write_Addr_E),
 		.Csr_Write_Addr_i	(Csr_Write_Addr_E),
 		.Gpr_Write_RD_i 	(Gpr_Write_RD_E),
-		.irq_no_i       	(irq_no_E),
+		// .irq_no_i       	(irq_no_E),
 		.irq_i          	(irq_E),
 		.Gpr_Write_i    	(Gpr_Write_E),
 		.Csr_Write_i    	(Csr_Write_E),
@@ -952,7 +948,7 @@ module ysyx_24100006(
 		.Gpr_Write_Addr_o	(Gpr_Write_Addr_E_M),
 		.Csr_Write_Addr_o	(Csr_Write_Addr_E_M),
 		.Gpr_Write_RD_o 	(Gpr_Write_RD_E_M),
-		.irq_no_o       	(irq_no_E_M),
+		// .irq_no_o       	(irq_no_E_M),
 		.irq_o          	(irq_E_M),
 		.Gpr_Write_o    	(Gpr_Write_E_M),
 		.Csr_Write_o    	(Csr_Write_E_M),
@@ -1049,8 +1045,8 @@ module ysyx_24100006(
 		// 异常处理相关
 		,.csr_mtvec			(mtvec_D)
 		,.EXC				(irq_M)
-		,.irq				(irq_F)
-		,.irq_no			(irq_no_F)
+		// ,.irq				(irq_F)
+		// ,.irq_no			(irq_no_F)
 	);
 	
 	ysyx_24100006_idu ID(
@@ -1067,7 +1063,7 @@ module ysyx_24100006(
 
 		.instruction		(instruction_F_D),
 		.irq_W				(irq_M),
-		.irq_no_W			(irq_no_M),
+		// .irq_no_W			(irq_no_M),
 		.Gpr_Write_Addr_W	(Gpr_Write_Addr_M),
 		.Csr_Write_Addr_W	(Csr_Write_Addr_M),
 		.Gpr_Write_W		(Gpr_Write_M),
@@ -1096,10 +1092,10 @@ module ysyx_24100006(
 		.mtvec				(mtvec_D)
 
 		// 异常处理相关
-		,.irq_F				(irq_F_D)
-		,.irq_no_F			(irq_no_F_D)
+		// ,.irq_F				(irq_F_D)
+		// ,.irq_no_F			(irq_no_F_D)
 		,.irq_D				(irq_D)
-		,.irq_no_D			(irq_no_D)
+		// ,.irq_no_D			(irq_no_D)
 
 		// 前递单元设计
 		,.forwardA			(forwardA)
@@ -1139,7 +1135,7 @@ module ysyx_24100006(
 		
 		.is_fence_i			(is_fence_i_D_E),
 		.irq_E				(irq_D_E),
-		.irq_no_E			(irq_no_D_E),
+		// .irq_no_E			(irq_no_D_E),
 		.aluop				(alu_op_D_E),
 
 		.Jump				(Jump_D_E),
@@ -1162,7 +1158,7 @@ module ysyx_24100006(
 		.alu_result			(alu_result_E),
 
 		.irq_M				(irq_E),
-		.irq_no_M			(irq_no_E),
+		// .irq_no_M			(irq_no_E),
 		.Gpr_Write_M		(Gpr_Write_E),
 		.Csr_Write_M		(Csr_Write_E),
 		.Gpr_Write_Addr_M	(Gpr_Write_Addr_E),
@@ -1210,7 +1206,7 @@ module ysyx_24100006(
 		.sram_read_write	(sram_read_write_E_M),
 		.alu_result_M		(alu_result_E_M),
 		.irq_M				(irq_E_M),
-		.irq_no_M			(irq_no_E_M),
+		// .irq_no_M			(irq_no_E_M),
 		.Gpr_Write_M		(Gpr_Write_E_M),
 		.Csr_Write_M		(Csr_Write_E_M),
 		.Gpr_Write_Addr_M	(Gpr_Write_Addr_E_M),
@@ -1255,7 +1251,7 @@ module ysyx_24100006(
 		.is_load			(is_load),
 
 		.irq_W				(irq_M),
-		.irq_no_W			(irq_no_M),
+		// .irq_no_W			(irq_no_M),
 		.Gpr_Write_W		(Gpr_Write_M),
 		.Csr_Write_W		(Csr_Write_M),
 		.Gpr_Write_Addr_W	(Gpr_Write_Addr_M),

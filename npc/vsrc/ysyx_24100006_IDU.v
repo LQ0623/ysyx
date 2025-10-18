@@ -19,7 +19,7 @@ module ysyx_24100006_idu(
 
 	// from WBU(一些从写回级来的信号，比如写入的数据是什么)
 	input 			irq_W,
-	input [3:0] 	irq_no_W,
+	// input [3:0] 	irq_no_W,
 	input 			Gpr_Write_W,
 	input 			Csr_Write_W,
     input [3:0]     Gpr_Write_Addr_W,
@@ -56,10 +56,7 @@ module ysyx_24100006_idu(
 	output [31:0] 	mtvec
 
     // 异常处理相关
-    ,input          irq_F
-    ,input [3:0]    irq_no_F
     ,output         irq_D
-    ,output [3:0]   irq_no_D
 
     // 面积优化
     ,output [31:0]  pc_j_m_e_n_D        // NO_JUMP/MRET/ECALL三种跳转的地址
@@ -112,7 +109,7 @@ module ysyx_24100006_idu(
     ysyx_24100006_CSR CSR(
         .clk(clk),
         .irq(irq_W),
-        .irq_no(irq_no_W),
+        // .irq_no(irq_no_W),
         .wdata(wdata_csr_W),
         .waddr(Csr_Write_Addr_W),
         .wen(Csr_Write_W),
@@ -145,7 +142,6 @@ module ysyx_24100006_idu(
     wire [1:0]  ctrl_sram_read_write;
     wire        ctrl_is_fence_i;
     wire        ctrl_irq;
-    wire [3:0]  ctrl_irq_no;
 
 	ysyx_24100006_controller_remake controller(
         .opcode(instruction[6:0]),
@@ -158,7 +154,6 @@ module ysyx_24100006_idu(
         .is_ebreak(is_break), // 是否是ebreak指令
 
         .irq(ctrl_irq),
-        .irq_no(ctrl_irq_no),
         .aluop(ctrl_aluop),
         .Gpr_Write(ctrl_Gpr_Write),
         .Gpr_Write_RD(ctrl_Gpr_Write_RD),
@@ -206,8 +201,7 @@ module ysyx_24100006_idu(
     assign is_fence_i  		= ctrl_is_fence_i;
 
     // 异常处理相关
-    assign irq_D       		= ctrl_irq | irq_F;
-    assign irq_no_D    		= ctrl_irq ? ctrl_irq_no : irq_no_F;
+    assign irq_D       		= ctrl_irq;
 
     // 面积优化
     assign pc_add_4_o           =   pc_add_4_i;

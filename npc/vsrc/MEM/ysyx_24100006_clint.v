@@ -6,12 +6,8 @@ module ysyx_24100006_clint (
     // AXI-Lite 接口
     input  [31:0]       axi_araddr,
     input               axi_arvalid,
-    output              axi_arready,
-    input               axi_rready,
     output              axi_rvalid,
     output reg [31:0]   axi_rdata
-    // output [1:0]        axi_rresp,
-    // output              axi_rlast
 );
 
 `ifndef NPC
@@ -34,7 +30,6 @@ module ysyx_24100006_clint (
     end
 
     // AXI 控制信号默认值
-    assign axi_arready = (state == S_WAIT_ARV);
     assign axi_rvalid  = (state == S_WAIT_RR);
 
     // 状态机与数据处理
@@ -45,7 +40,7 @@ module ysyx_24100006_clint (
         end else begin
             case (state)
                 S_WAIT_ARV: begin
-                    if (axi_arvalid && axi_arready) begin
+                    if (axi_arvalid) begin
                         state       <= S_WAIT_RR;
                         
                         `ifdef VERILATOR_SIM
@@ -53,27 +48,17 @@ module ysyx_24100006_clint (
                         `endif
 
                         // 根据地址选择数据
-                        axi_rdata   <= (axi_araddr == BASE_ADDR) 
+                        axi_rdata   <= (axi_araddr[11:2] == BASE_ADDR[11:2]) 
                                         ? mtime[31:0] 
                                         : mtime[63:32];
                     end
                 end
                 
                 S_WAIT_RR: begin
-                    if (axi_rready && axi_rvalid) begin
-                        state       <= S_WAIT_ARV;
-                    end
+                    state       <= S_WAIT_ARV;
                 end
             endcase
         end
     end
-
-    // 移除未使用的写接口信号
-    // assign axi_awready = 0;
-    // assign axi_wready = 0;
-    // assign axi_bvalid = 0;
-    // assign axi_bresp = 0;
-    // assign axi_rresp = 2'b0;
-    // assign axi_rlast = 1'b1;  // 单次传输始终为1
 
 endmodule

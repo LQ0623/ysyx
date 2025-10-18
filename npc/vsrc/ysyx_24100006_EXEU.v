@@ -22,7 +22,6 @@ module ysyx_24100006_exeu(
 	input 			is_fence_i,	// 是否刷新icache
 
 	input 			irq_E,
-	input [3:0] 	irq_no_E,
     input [3:0] 	aluop,
     input [2:0] 	Jump,
 	input 			Gpr_Write_E,
@@ -47,7 +46,6 @@ module ysyx_24100006_exeu(
 
 	// control signal
 	output 			irq_M,
-	output [3:0] 	irq_no_M,
 	output 			Gpr_Write_M,
 	output 			Csr_Write_M,
 	output [3:0]    Gpr_Write_Addr_M,
@@ -129,7 +127,6 @@ module ysyx_24100006_exeu(
 	assign alu_result			= alu_result_temp;
 
     assign irq_M           		= irq_E;
-    assign irq_no_M        		= irq_no_E;
     assign Gpr_Write_M     		= Gpr_Write_E;
     assign Csr_Write_M     		= Csr_Write_E;
     assign Gpr_Write_RD_M  		= Gpr_Write_RD_E;

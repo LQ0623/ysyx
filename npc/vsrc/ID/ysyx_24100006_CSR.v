@@ -20,7 +20,7 @@ module ysyx_24100006_CSR #(
 )(
   input                       clk,
   input                       irq,
-  input       [3:0]           irq_no,          // 中断号（低 8 位）
+  // input       [3:0]           irq_no,          // 中断号（低 8 位）
   input       [DATA_WIDTH-1:0] wdata,
   input       [ADDR_WIDTH-1:0] waddr,
   input                       wen,
@@ -43,7 +43,7 @@ module ysyx_24100006_CSR #(
   always @(posedge clk) begin
     if (irq) begin
       // 中断到来：记录中断原因与返回地址
-      mcause <= irq_no; // 高位清零，低 8 位为 irq_no
+      mcause <= 4'hb; // 高位清零，低 8 位为 irq_no
       mepc   <= wdata;                             // 与原实现一致：irq 时 mepc <- wdata
     end
     else if (wen) begin

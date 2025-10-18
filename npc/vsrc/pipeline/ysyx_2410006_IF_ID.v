@@ -23,11 +23,6 @@ module ysyx_24100006_IF_ID(
 
     ,input  [31:0]  pc_add_4_i
     ,output [31:0]  pc_add_4_o
-    // 异常处理相关
-    ,input          irq_i
-    ,input  [3:0]   irq_no_i
-    ,output         irq_o
-    ,output [3:0]   irq_no_o
 );
 
     // ================= Registers =================
@@ -35,8 +30,6 @@ module ysyx_24100006_IF_ID(
 
     reg [31:0]      instruction_q;
     reg [31:0]      pc_add_4_q;
-    reg             irq_q;
-    reg [3:0]       irq_no_q;
 
 `ifdef VERILATOR_SIM
     reg [31:0]      pc_q;
@@ -51,8 +44,6 @@ module ysyx_24100006_IF_ID(
     // ================= Outputs ===================
     assign instruction_o = instruction_q;
     assign pc_add_4_o    = pc_add_4_q;
-    assign irq_o         = irq_q;
-    assign irq_no_o      = irq_no_q;
 
 `ifdef VERILATOR_SIM
     assign pc_o          = pc_q;
@@ -85,8 +76,6 @@ module ysyx_24100006_IF_ID(
         if (accept) begin
             instruction_q <= instruction_i;
             pc_add_4_q    <= pc_add_4_i;
-            irq_q         <= irq_i;
-            irq_no_q      <= irq_no_i;
 `ifdef VERILATOR_SIM
             pc_q          <= pc_i;
 `endif
