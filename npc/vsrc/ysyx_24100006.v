@@ -587,7 +587,115 @@ module ysyx_24100006(
 	wire [1:0] 	Access_Fault;
 `endif
 
+`ifndef NPC
+
+	// 没有的axi信号全部强制置零
+	assign io_master_awid    	= 0;                     // 无对应信号，强制置零
+	assign io_master_awburst 	= 0;                     // 无对应信号，强制置零
+	assign io_master_arid    	= 0;                     // 无对应信号，强制置零
+	assign io_master_arburst 	= 2'b01;                 // 突发模式  INCR
+
 	// AXI交叉开关仲裁器
+	ysyx_24100006_xbar_arbiter #(
+		.SRAM_ADDR(32'h8000_0000),  // 设置SRAM基地址
+		.SPI_ADDR(32'h1000_1000)    // 设置SPI基地址
+	) u_xbar_arbiter (
+		// 时钟和复位
+		.clk		(clock),
+		.reset        	(reset),
+		
+		// ================== IFU接口 ==================
+		.ifu_axi_arvalid (axi_arvalid_icache),
+		.ifu_axi_arready (axi_arready_icache),
+		.ifu_axi_araddr  (axi_araddr_icache),
+		.ifu_axi_rvalid  (axi_rvalid_icache),
+		.ifu_axi_rready  (axi_rready_icache),
+		.ifu_axi_rdata   (axi_rdata_icache),
+		.ifu_axi_arlen   (axi_arlen_icache),
+		.ifu_axi_rlast   (axi_rlast_icache),
+
+		// ================== MEMU接口 ==================
+		.mem_axi_arvalid  (axi_arvalid_mem),
+		.mem_axi_arready  (axi_arready_mem),
+		.mem_axi_araddr   (axi_araddr_mem),
+		.mem_axi_rvalid   (axi_rvalid_mem),
+		.mem_axi_rready   (axi_rready_mem),
+		.mem_axi_rdata    (axi_rdata_mem),
+		.mem_axi_awvalid  (axi_awvalid_mem),
+		.mem_axi_awready  (axi_awready_mem),
+		.mem_axi_awaddr   (axi_awaddr_mem),
+		.mem_axi_wvalid   (axi_wvalid_mem),
+		.mem_axi_wready   (axi_wready_mem),
+		.mem_axi_wdata    (axi_wdata_mem),
+		.mem_axi_bvalid   (axi_bvalid_mem),
+		.mem_axi_bready   (axi_bready_mem),
+		.mem_axi_arlen    (axi_arlen_mem),
+		.mem_axi_arsize   (axi_arsize_mem),
+		.mem_axi_awlen    (axi_awlen_mem),
+		.mem_axi_awsize   (axi_awsize_mem),
+		.mem_axi_wstrb    (axi_wstrb_mem),
+		.mem_axi_wlast    (axi_wlast_mem),
+		.mem_axi_addr_suffix (axi_addr_suffix_mem),
+
+		// ================== SRAM从设备 ==================
+		.sram_axi_awvalid (io_master_awvalid),
+		.sram_axi_awready (io_master_awready),
+		.sram_axi_awaddr  (io_master_awaddr),
+		.sram_axi_wvalid  (io_master_wvalid),
+		.sram_axi_wready  (io_master_wready),
+		.sram_axi_wdata   (io_master_wdata),
+		.sram_axi_bvalid  (io_master_bvalid),
+		.sram_axi_bready  (io_master_bready),
+		.sram_axi_arvalid (io_master_arvalid),
+		.sram_axi_arready (io_master_arready),
+		.sram_axi_araddr  (io_master_araddr),
+		.sram_axi_rvalid  (io_master_rvalid),
+		.sram_axi_rready  (io_master_rready),
+		.sram_axi_rdata   (io_master_rdata),
+		.sram_axi_arlen   (io_master_arlen),
+		.sram_axi_arsize  (io_master_arsize),
+		.sram_axi_rlast   (io_master_rlast),
+		.sram_axi_awlen   (io_master_awlen),
+		.sram_axi_awsize  (io_master_awsize),
+		.sram_axi_wstrb   (io_master_wstrb),
+		.sram_axi_wlast   (io_master_wlast),
+
+		// ================== UART从设备 ==================
+	`ifdef NPC
+		.uart_axi_awvalid (uart_axi_awvalid),
+		.uart_axi_awready (uart_axi_awready),
+		.uart_axi_awaddr  (uart_axi_awaddr),
+		.uart_axi_wvalid  (uart_axi_wvalid),
+		.uart_axi_wready  (uart_axi_wready),
+		.uart_axi_wdata   (uart_axi_wdata),
+		.uart_axi_wstrb   (uart_axi_wstrb),
+		.uart_axi_bvalid  (uart_axi_bvalid),
+		.uart_axi_bready  (uart_axi_bready),
+		.uart_axi_bresp   (uart_axi_bresp),
+		.uart_axi_arvalid (uart_axi_arvalid),
+		.uart_axi_arready (uart_axi_arready),
+		.uart_axi_araddr  (uart_axi_araddr),
+		.uart_axi_rvalid  (uart_axi_rvalid),
+		.uart_axi_rready  (uart_axi_rready),
+		.uart_axi_rdata   (uart_axi_rdata),
+		.uart_axi_rresp   (uart_axi_rresp),
+	`endif
+
+		// ================== CLINT从设备 ==================
+		.clint_axi_arvalid (clint_axi_arvalid),
+		.clint_axi_araddr  (clint_axi_araddr),
+		.clint_axi_rvalid  (clint_axi_rvalid),
+		.clint_axi_rready  (clint_axi_rready),
+		.clint_axi_rdata   (clint_axi_rdata)
+
+`ifdef VERILATOR_SIM
+		// ================== 访问错误信号 ==================
+		,.Access_Fault 		(Access_Fault)
+`endif
+	);
+
+`else
+		// AXI交叉开关仲裁器
 	ysyx_24100006_xbar_arbiter #(
 		.SRAM_ADDR(32'h8000_0000),  // 设置SRAM基地址
 		.SPI_ADDR(32'h1000_1000)    // 设置SPI基地址
@@ -686,102 +794,105 @@ module ysyx_24100006(
 `endif
 	);
 
-`ifndef NPC
-	// YSYXSOC使用的axi模块
-	ysyx_24100006_axi #(
-		.AXI_DATA_WIDTH    (32),
-		.AXI_ADDR_WIDTH    (32),
-		.AXI_ID_WIDTH      (4),
-		.AXI_STRB_WIDTH    (4),
-		.AXI_RESP_WIDTH    (2),
-		.AXI_LEN_WIDTH     (8),
-		.AXI_SIZE_WIDTH    (3),
-		.AXI_BURST_WIDTH   (2)
-	) axi4_inst (
-		// 全局信号
-		.clk                      (clock),
-		.reset                    (reset),
-		
-		//-----------------------------
-		// 用户侧接口 (CPU侧)
-		//-----------------------------
-		// 读地址通道
-		.axi_arvalid_i            (sram_axi_arvalid),
-		.axi_arready_o            (sram_axi_arready),
-		.axi_araddr_i             (sram_axi_araddr),
-		
-		// 读数据通道
-		.axi_rvalid_o             (sram_axi_rvalid),
-		.axi_rready_i             (sram_axi_rready),
-		.axi_rdata_o              (sram_axi_rdata),
-		
-		// 写地址通道
-		.axi_awvalid_i            (sram_axi_awvalid),
-		.axi_awready_o            (sram_axi_awready),
-		.axi_awaddr_i             (sram_axi_awaddr),
-		
-		// 写数据通道
-		.axi_wvalid_i             (sram_axi_wvalid),
-		.axi_wready_o             (sram_axi_wready),
-		.axi_wdata_i              (sram_axi_wdata),
-		.axi_wstrb_i              (sram_axi_wstrb),
-		
-		// 写响应通道
-		.axi_bvalid_o             (sram_axi_bvalid),
-		.axi_bready_i             (sram_axi_bready),
-		
-		// 突发配置
-		.axi_arlen_i              (sram_axi_arlen),
-		.axi_awlen_i              (sram_axi_awlen),
-		.axi_arsize_i             (sram_axi_arsize),
-		.axi_awsize_i             (sram_axi_awsize),
-		.axi_rlast_o              (sram_axi_rlast),
-		.axi_wlast_o              (sram_axi_wlast),
-		
-		//-----------------------------
-		// AXI4主设备接口 (物理总线侧)
-		//-----------------------------
-		// 写地址通道
-		.io_master_awready_i      (io_master_awready),
-		.io_master_awvalid_o      (io_master_awvalid),
-		.io_master_awaddr_o       (io_master_awaddr),
-		.io_master_awid_o         (io_master_awid),          	// 无对应信号，强制置零
-		.io_master_awlen_o        (io_master_awlen),
-		.io_master_awsize_o       (io_master_awsize),
-		.io_master_awburst_o      (io_master_awburst),			// 无对应信号，强制置零
-		
-		// 写数据通道
-		.io_master_wready_i       (io_master_wready),
-		.io_master_wvalid_o       (io_master_wvalid),
-		.io_master_wdata_o        (io_master_wdata),
-		.io_master_wstrb_o        (io_master_wstrb),
-		.io_master_wlast_o        (io_master_wlast),
-		
-		// 写响应通道
-		.io_master_bready_o       (io_master_bready),
-		.io_master_bvalid_i       (io_master_bvalid),
-		.io_master_bresp_i        (io_master_bresp),
-		.io_master_bid_i          (io_master_bid),          	// 无对应信号，强制置零
-		
-		// 读地址通道
-		.io_master_arready_i      (io_master_arready),
-		.io_master_arvalid_o      (io_master_arvalid),
-		.io_master_araddr_o       (io_master_araddr),
-		.io_master_arid_o         (io_master_arid),          	// 无对应信号，强制置零
-		.io_master_arlen_o        (io_master_arlen),
-		.io_master_arsize_o       (io_master_arsize),
-		.io_master_arburst_o      (io_master_arburst),          // 无对应信号，强制置零
-		
-		// 读数据通道
-		.io_master_rready_o       (io_master_rready),
-		.io_master_rvalid_i       (io_master_rvalid),
-		.io_master_rresp_i        (io_master_rresp),
-		.io_master_rdata_i        (io_master_rdata),
-		.io_master_rlast_i        (io_master_rlast),
-		.io_master_rid_i          (io_master_rid)           	// 无对应信号，强制置零
-	);
 
 `endif
+
+// `ifndef NPC
+// 	// YSYXSOC使用的axi模块
+// 	ysyx_24100006_axi #(
+// 		.AXI_DATA_WIDTH    (32),
+// 		.AXI_ADDR_WIDTH    (32),
+// 		.AXI_ID_WIDTH      (4),
+// 		.AXI_STRB_WIDTH    (4),
+// 		.AXI_RESP_WIDTH    (2),
+// 		.AXI_LEN_WIDTH     (8),
+// 		.AXI_SIZE_WIDTH    (3),
+// 		.AXI_BURST_WIDTH   (2)
+// 	) axi4_inst (
+// 		// 全局信号
+// 		.clk                      (clock),
+// 		.reset                    (reset),
+		
+// 		//-----------------------------
+// 		// 用户侧接口 (CPU侧)
+// 		//-----------------------------
+// 		// 读地址通道
+// 		.axi_arvalid_i            (sram_axi_arvalid),
+// 		.axi_arready_o            (sram_axi_arready),
+// 		.axi_araddr_i             (sram_axi_araddr),
+		
+// 		// 读数据通道
+// 		.axi_rvalid_o             (sram_axi_rvalid),
+// 		.axi_rready_i             (sram_axi_rready),
+// 		.axi_rdata_o              (sram_axi_rdata),
+		
+// 		// 写地址通道
+// 		.axi_awvalid_i            (sram_axi_awvalid),
+// 		.axi_awready_o            (sram_axi_awready),
+// 		.axi_awaddr_i             (sram_axi_awaddr),
+		
+// 		// 写数据通道
+// 		.axi_wvalid_i             (sram_axi_wvalid),
+// 		.axi_wready_o             (sram_axi_wready),
+// 		.axi_wdata_i              (sram_axi_wdata),
+// 		.axi_wstrb_i              (sram_axi_wstrb),
+		
+// 		// 写响应通道
+// 		.axi_bvalid_o             (sram_axi_bvalid),
+// 		.axi_bready_i             (sram_axi_bready),
+		
+// 		// 突发配置
+// 		.axi_arlen_i              (sram_axi_arlen),
+// 		.axi_awlen_i              (sram_axi_awlen),
+// 		.axi_arsize_i             (sram_axi_arsize),
+// 		.axi_awsize_i             (sram_axi_awsize),
+// 		.axi_rlast_o              (sram_axi_rlast),
+// 		.axi_wlast_o              (sram_axi_wlast),
+		
+// 		//-----------------------------
+// 		// AXI4主设备接口 (物理总线侧)
+// 		//-----------------------------
+// 		// 写地址通道
+// 		.io_master_awready_i      (io_master_awready),
+// 		.io_master_awvalid_o      (io_master_awvalid),
+// 		.io_master_awaddr_o       (io_master_awaddr),
+// 		.io_master_awid_o         (io_master_awid),          	// 无对应信号，强制置零
+// 		.io_master_awlen_o        (io_master_awlen),
+// 		.io_master_awsize_o       (io_master_awsize),
+// 		.io_master_awburst_o      (io_master_awburst),			// 无对应信号，强制置零
+		
+// 		// 写数据通道
+// 		.io_master_wready_i       (io_master_wready),
+// 		.io_master_wvalid_o       (io_master_wvalid),
+// 		.io_master_wdata_o        (io_master_wdata),
+// 		.io_master_wstrb_o        (io_master_wstrb),
+// 		.io_master_wlast_o        (io_master_wlast),
+		
+// 		// 写响应通道
+// 		.io_master_bready_o       (io_master_bready),
+// 		.io_master_bvalid_i       (io_master_bvalid),
+// 		.io_master_bresp_i        (io_master_bresp),
+// 		.io_master_bid_i          (io_master_bid),          	// 无对应信号，强制置零
+		
+// 		// 读地址通道
+// 		.io_master_arready_i      (io_master_arready),
+// 		.io_master_arvalid_o      (io_master_arvalid),
+// 		.io_master_araddr_o       (io_master_araddr),
+// 		.io_master_arid_o         (io_master_arid),          	// 无对应信号，强制置零
+// 		.io_master_arlen_o        (io_master_arlen),
+// 		.io_master_arsize_o       (io_master_arsize),
+// 		.io_master_arburst_o      (io_master_arburst),          // 无对应信号，强制置零
+		
+// 		// 读数据通道
+// 		.io_master_rready_o       (io_master_rready),
+// 		.io_master_rvalid_i       (io_master_rvalid),
+// 		.io_master_rresp_i        (io_master_rresp),
+// 		.io_master_rdata_i        (io_master_rdata),
+// 		.io_master_rlast_i        (io_master_rlast),
+// 		.io_master_rid_i          (io_master_rid)           	// 无对应信号，强制置零
+// 	);
+
+// `endif
 
 `ifdef VERILATOR_SIM
 	// 这是为了diff test而加的npc信号
@@ -1031,7 +1142,7 @@ module ysyx_24100006(
 		.axi_rready			(axi_rready_if),
 		.axi_rdata			(axi_rdata_if),
 		// 模块握手信号
-		.if_in_valid	(if_in_valid),
+		.if_in_valid		(if_in_valid),
 		.if_in_ready		(if_in_ready),
 
 		.inst_F				(inst_F),

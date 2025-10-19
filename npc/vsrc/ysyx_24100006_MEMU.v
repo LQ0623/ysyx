@@ -150,7 +150,7 @@ module ysyx_24100006_memu(
                 S_IDLE: begin
                     locked_sram_read_write <= 2'b00;
                     if (mem_out_valid && mem_out_ready) begin
-                        if (sram_read_write == 2'b00) begin
+                        if (sram_read_write[0] == 1'b0 && sram_read_write[1] == 1'b0) begin
                             // 无访存，直接进入发送
                             locked_addr  <= 32'h0;
                             locked_data  <= 32'h0;
@@ -162,7 +162,7 @@ module ysyx_24100006_memu(
                             locked_data  <= wdata_gpr_M;
 
                             // 直接在此拍发起 AXI 访问，下一拍转 S_ACCESS
-                            if (sram_read_write == 2'b01) begin
+                            if (sram_read_write[0] == 1'b1) begin
                                 // READ
                                 axi_araddr   <= alu_result_M;
                                 axi_arsize   <= (Mem_Mask_M==3'b000 || Mem_Mask_M==3'b001) ? 3'b000 :
@@ -205,7 +205,7 @@ module ysyx_24100006_memu(
 
                 // ================== S_ACCESS（读写统一） ==================
                 S_ACCESS: begin
-                    if (locked_sram_read_write == 2'b01) begin
+                    if (locked_sram_read_write[0] == 1'b1) begin
                         // ---- READ PATH ----
                         if (axi_arvalid && axi_arready) begin
                             axi_arvalid <= 1'b0;
@@ -217,7 +217,7 @@ module ysyx_24100006_memu(
                             locked_sram_read_write <= 2'b00; // 本次读完成
                             state       <= S_SEND;
                         end
-                    end else if (locked_sram_read_write == 2'b10) begin
+                    end else if (locked_sram_read_write[1] == 1'b1) begin
                         // ---- WRITE PATH ----
                         if (axi_awready) begin
                             axi_awvalid <= 1'b0;
@@ -307,7 +307,7 @@ module ysyx_24100006_memu(
     
 
     // ================== 对外输出（保持原样） ==================
-    assign is_load = (locked_sram_read_write == 2'b01); // 仅在读操作时为1
+    assign is_load = (locked_sram_read_write[0] == 1'b1); // 仅在读操作时为1
 
     assign is_break_o       = is_break_r;
 
@@ -361,7 +361,7 @@ module ysyx_24100006_memu(
         if(reset) begin
             cnt <= 2'b0;
         end else begin
-            if(mem_out_ready == 1'b1 && sram_read_write == 2'b01)begin
+            if(mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)begin
                 cnt <= cnt + 1'b1;
             end
             if(axi_rvalid == 1'b1) begin
@@ -370,7 +370,7 @@ module ysyx_24100006_memu(
         end
     end
 
-    assign exe_mem_is_load  = (sram_read_write == 2'b01 && cnt != 0) ? 1'b1 : 1'b0;
+    assign exe_mem_is_load  = (sram_read_write[0] == 1'b1 && cnt != 0) ? 1'b1 : 1'b0;
     assign mem_fw_data      = wdata_gpr_W;
 
 `ifdef VERILATOR_SIM

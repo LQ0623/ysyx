@@ -122,11 +122,28 @@ module ysyx_24100006_idu(
 	// immediate sign-extend (combinational)
     wire [2:0] Imm_Type;
     wire [31:0] sext_imm_wire;
-    ysyx_24100006_imm_sext imm_sext(
-        .inst(instruction),
-        .Imm_Type(Imm_Type),
-        .sext_imm(sext_imm_wire)
-    );
+    // ysyx_24100006_imm_sext imm_sext(
+    //     .inst(instruction),
+    //     .Imm_Type(Imm_Type),
+    //     .sext_imm(sext_imm_wire)
+    // );
+
+    wire [31:0]immI;
+	wire [31:0]immU;
+	wire [31:0]immJ;
+	wire [31:0]immS;
+	wire [31:0]immB;
+
+    assign immI = {{21{instruction[31]}},instruction[30:20]};
+	assign immU = {instruction[31:12],12'b0};
+	assign immJ = {{12{instruction[31]}},instruction[19:12],instruction[20],instruction[30:21],1'b0};
+	assign immS = {{21{instruction[31]}},instruction[30:25],instruction[11:7]};
+	assign immB = {{20{instruction[31]}},instruction[7],instruction[30:25],instruction[11:8],1'b0};
+
+	assign sext_imm_wire = (Imm_Type[2] == 1'b1) ? immU : 
+						((Imm_Type[1:0] == 2'b00) ? immI: 
+						(Imm_Type[1:0] == 2'b01) ? immJ: 
+						(Imm_Type[1:0] == 2'b11) ? immB: immS);
 
 	// controller_remake
     wire [3:0]  ctrl_aluop;

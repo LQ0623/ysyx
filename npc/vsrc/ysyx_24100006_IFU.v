@@ -134,15 +134,16 @@ module ysyx_24100006_ifu(
 `endif
 
 	// 判断指令是否为jal指令，并计算跳转的位置
-	wire [31:0] jal_target;
-	wire 		is_jal;
-	assign is_jal 		= (inst_F[6:0] == 7'b1101111) ? 1'b1 : 1'b0;
-	assign jal_target 	= pc_F + {{12{inst_F[31]}},inst_F[19:12],inst_F[20],inst_F[30:21],1'b0};
+	// wire [31:0] jal_target;
+	// wire 		is_jal;
+	// assign is_jal 		= (inst_F[6:0] == 7'b1101111) ? 1'b1 : 1'b0;
+	// assign jal_target 	= pc_F + {{12{inst_F[31]}},inst_F[19:12],inst_F[20],inst_F[30:21],1'b0};
 
 
 	wire [31:0] npc_temp;
 	assign pc_add_4_o 	= pc_F + 4;
-	assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : (is_jal ? jal_target : pc_add_4_o));
+	// assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : (is_jal ? jal_target : pc_add_4_o));
+	assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : pc_add_4_o);
 	assign axi_araddr 	= pc_F;
 
 

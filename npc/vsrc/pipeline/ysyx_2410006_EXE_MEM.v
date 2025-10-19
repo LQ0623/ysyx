@@ -111,11 +111,26 @@ module ysyx_24100006_EXE_MEM(
     assign npc_M                = npc_temp_old;
 `endif
 
+    always@(posedge clk)begin
+        if(reset)begin
+            valid_temp <= 1'b0;
+        end else begin
+            // flush的时候，将有效位清除
+            if(flush_i)begin
+                valid_temp  <= 1'b0;
+            end
+            // 当允许接受新输入时
+            else if (in_ready) begin
+                valid_temp <= in_valid;
+            end
+            // 否则保持不变
+        end
+    end
+
     // 如果 in_valid==0 且 in_ready==1 -> 清除有效（已由 valid_r <= in_valid 完成）
     always @(posedge clk) begin
         if (reset) begin
             // 复位逻辑 - 所有临时寄存器赋值为0
-            valid_temp              <= 1'b0;
 
 `ifdef VERILATOR_SIM
             pc_temp                 <= 32'h00000000;
@@ -146,9 +161,8 @@ module ysyx_24100006_EXE_MEM(
         end
         else begin
             // 当允许接受新输入时
-            if (in_ready) begin
-                valid_temp                  <= in_valid;
-                if (in_valid)begin
+            if (in_ready & in_valid) begin
+                // if (in_valid)begin
                     // 非复位逻辑 - 将输入信号赋值给临时寄存器
                     npc_temp                <= npc_i;
                     redirect_valid_temp     <= redirect_valid_i;
@@ -174,6 +188,8 @@ module ysyx_24100006_EXE_MEM(
             end
             // 没有新数据则一直保持数据
         end
-    end
+    // end
 
 endmodule
+
+// TAGS:原版面积更小

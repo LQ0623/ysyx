@@ -46,11 +46,6 @@ module ysyx_24100006_clint (
                         `ifdef VERILATOR_SIM
                             skip();
                         `endif
-
-                        // 根据地址选择数据
-                        axi_rdata   <= (axi_araddr[11:2] == BASE_ADDR[11:2]) 
-                                        ? mtime[31:0] 
-                                        : mtime[63:32];
                     end
                 end
                 
@@ -59,6 +54,13 @@ module ysyx_24100006_clint (
                 end
             endcase
         end
+    end
+
+    always@(posedge clk)begin
+        // 根据地址选择数据
+        axi_rdata   <= (state == S_WAIT_ARV && axi_araddr[11:2] == BASE_ADDR[11:2]) 
+                        ? mtime[31:0] 
+                        : mtime[63:32];
     end
 
 endmodule

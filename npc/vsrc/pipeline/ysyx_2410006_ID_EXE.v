@@ -135,11 +135,26 @@ module ysyx_24100006_ID_EXE(
     // 当没有有效存储时，或者当存储并且下游准备好时，可以接受新数据（可以滑动）
     assign in_ready             = (!valid_temp) || (out_ready && valid_temp);
 
+    always@(posedge clk)begin
+        if(reset)begin
+            valid_temp <= 1'b0;
+        end else begin
+            // flush的时候，将有效位清除
+            if(flush_i)begin
+                valid_temp <= 1'b0;
+            end
+            // 当允许接受新输入时
+            else if (in_ready) begin
+                valid_temp <= in_valid;
+            end
+            // 否则保持不变
+        end
+    end
+
     // 如果 in_valid==0 且 in_ready==1 -> 清除有效（已由 valid_r <= in_valid 完成）
     always @(posedge clk) begin
         if (reset) begin
             // 复位逻辑 - 所有临时寄存器赋值为0
-            valid_temp                  <= 1'b0;
 
 `ifdef VERILATOR_SIM
             // 调试使用
@@ -160,7 +175,6 @@ module ysyx_24100006_ID_EXE(
         end else begin
             // flush的时候，将所有的数据都清除，不然会导致错误的指令被执行
             if(flush_i)begin
-                valid_temp              <= 1'b0; // 冲刷流水线
                 irq_temp                <= 1'b0; // 冲刷流水线时清除中断信号
 
 `ifdef VERILATOR_SIM
@@ -180,9 +194,8 @@ module ysyx_24100006_ID_EXE(
                 sram_read_write_temp    <= 2'd0;
             end
             // 当允许接受新输入时
-            else if (in_ready) begin
-                valid_temp                  <= in_valid;
-                if (in_valid)begin
+            else if (in_ready & in_valid) begin
+                // if (in_valid)begin
                     // 非复位逻辑 - 将输入信号赋值给临时寄存器
 
 `ifdef VERILATOR_SIM
@@ -213,7 +226,7 @@ module ysyx_24100006_ID_EXE(
                     Mem_Mask_temp           <= Mem_Mask_i;
 
                     pc_add_4_temp           <= pc_add_4_i;
-                end 
+                // end 
             end
             // 没有新数据则一直保持数据
         end

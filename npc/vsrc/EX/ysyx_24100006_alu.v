@@ -2,10 +2,10 @@ module ysyx_24100006_alu (
     input  [31:0] rs_data,
     input  [31:0] rt_data,
     input  [3:0]  aluop,
-    output [31:0] result,
-    output        of,
-    output        cf,
-    output        zf
+    output [31:0] result
+    // ,output        of
+    // ,output        cf
+    ,output        zf
 );
     // opcode
     localparam OP_ADD  = 4'b0000;
@@ -73,8 +73,8 @@ module ysyx_24100006_alu (
 
     // cf/of 只在 add/sub 导出，其他置 0，利于上游剪枝
     wire is_addsub = (aluop == OP_ADD) | (aluop == OP_SUB);
-    assign cf = is_addsub ? cf_raw : 1'b0;
-    assign of = is_addsub ? of_raw : 1'b0;
+    // assign cf = is_addsub ? cf_raw : 1'b0;
+    // assign of = is_addsub ? of_raw : 1'b0;
 
     // ===== 工具函数（Verilog-2001 兼容） =====
     function [31:0] rshift_var;
