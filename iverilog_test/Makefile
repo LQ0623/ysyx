@@ -1,27 +1,27 @@
 # ===== 基本配置 =====
-VERILOG_DIR := verilog        # 你的 RTL 和 testbench 所在目录（可含子目录）
+VERILOG_DIR := verilog
 BUILD       := build
-TOP_TB      := testbench      # 你的 testbench 顶层模块名
+TOP_TB      := testbench
 
-# 源码与 include 目录（递归收集）
+# 源码与 include 目录
 VSRCS  := $(shell find $(VERILOG_DIR) -type f \( -name "*.v" -o -name "*.sv" \))
 INCDIR := $(shell find $(VERILOG_DIR) -type d)
 INCS   := $(addprefix -I, $(INCDIR))
 
-# ELF文件搜索目录（用于 run/run-all/list）
-# $(DIR) ?= ELF/cpu-test
-# $(ELF) ?= ELF/cpu-test/dummy-riscv32e-npc.elf
-
-# 预处理宏：默认打开 NPC（你 RTL 里有 `ifndef NPC`）
+# 预处理宏
 NPC ?= 1
 DEFINES :=
 ifeq ($(NPC),1)
   DEFINES += -DNPC -DVERILATOR_SIM
 endif
 
-# RISC-V 工具 & 平移基址（与你内存 BASE_ADDR=0x80000000 对应）
+# RISC-V 工具
 OBJCOPY  ?= riscv64-unknown-elf-objcopy
+NM       ?= riscv64-unknown-elf-nm
 VMA_BASE ?= 0x80000000
+
+# mainargs 参数（可选，默认为空）
+mainargs ?=
 
 # iverilog 输出
 VVP := $(BUILD)/sim.vvp
@@ -30,13 +30,25 @@ VVP := $(BUILD)/sim.vvp
 
 help:
 	@echo "用法："
-	@echo "  make run DIR=out/             # 在 out/ 里递归查找最新 .elf，转换并运行一次"
-	@echo "  make run ELF=out/foo.elf      # 指定某个 .elf 运行一次"
-	@echo "  make run-all DIR=out/         # 在 out/ 里递归查找所有 .elf，逐个转换并运行"
-	@echo "  make list DIR=out/            # 列出找到的 .elf（按时间倒序）"
-	@echo "  make clean                    # 清理构建产物"
+	@echo "  make run DIR=out/                    # 运行最新程序（兼容模式）"
+	@echo "  make run ELF=out/foo.elf             # 指定 ELF 运行"
+	@echo "  make run ELF=out/foo.elf mainargs=t  # 带参数运行（支持参数的程序）"
+	@echo "  make run-all DIR=out/                # 批量运行"
+	@echo "  make list DIR=out/                   # 列出 ELF 文件"
+	@echo "  make clean                           # 清理"
 	@echo ""
-	@echo "可选：NPC=0 关闭 -DNPC；VMA_BASE=0x80000000 调整 objcopy 平移基址"
+	@echo "mainargs 选项（仅适用于支持参数的程序）："
+	@echo "  t: real-time clock test"
+	@echo "  h: hello"
+	@echo "  H: help message"
+	@echo "  i: interrupt/yield test"
+	@echo "  d: scan devices"
+	@echo "  m: multiprocessor test"
+	@echo "  k: readkey test"
+	@echo "  v: display test"
+	@echo "  a: audio test"
+	@echo "  p: x86 virtual memory test"
+	@echo "  r: reada"
 
 list:
 	@if [ -z "$(DIR)" ]; then echo "[ERR] 请指定 DIR，例如：make list DIR=out/"; exit 1; fi; \
@@ -44,7 +56,7 @@ list:
 	echo "[INFO] 在目录中搜索 ELF：$(DIR)"; \
 	find "$(DIR)" -type f -name '*.elf' 2>/dev/null | xargs -r ls -lht 2>/dev/null || true
 
-# 只编译一次仿真（RTL 变化时才会触发）
+# 编译仿真
 build-sim: $(VVP)
 
 $(VVP): $(VSRCS) | $(BUILD)
@@ -54,7 +66,7 @@ $(VVP): $(VSRCS) | $(BUILD)
 $(BUILD):
 	@mkdir -p $@
 
-# 单个运行：指定 ELF=... 或 DIR=...（自动选最新）
+# 单个运行：兼容模式 + 可选参数支持
 run: build-sim
 	@set -e; \
 	if [ -n "$(ELF)" ]; then target="$(ELF)"; \
@@ -67,16 +79,43 @@ run: build-sim
 	base="$$(basename "$$target" .elf)"; \
 	hex="$(BUILD)/$$base.hex"; \
 	echo "[HEX] $$target -> $$hex"; \
-	$(OBJCOPY) -O verilog --adjust-vma -$(VMA_BASE) "$$target" "$$hex"; \
-	echo "[RUN] $$base  (cd $(BUILD) && vvp sim.vvp +img=$$base.hex)"; \
-	( cd $(BUILD) && vvp sim.vvp +img="$$base.hex" ); \
-	if [ -f "$(BUILD)/wave.vcd" ]; then \
-	  echo "[WAVE] $(BUILD)/wave.vcd 已生成/覆盖"; \
+	# 使用与原来相同的 objcopy 命令 \
+	$(OBJCOPY) -O verilog \
+		--set-section-flags .bss=alloc,load,contents \
+		--adjust-vma -$(VMA_BASE) \
+		"$$target" "$$hex"; \
+	# 检查生成的 hex 文件大小 \
+	hex_size=$$(wc -c < "$$hex"); \
+	echo "[INFO] Generated hex file size: $$hex_size bytes"; \
+	\
+	# 如果有指定 mainargs，则尝试提取符号地址 \
+	if [ -n "$(mainargs)" ]; then \
+	  symfile="$(BUILD)/$$base.sym"; \
+	  echo "[SYM] Extracting mainargs address from $$target"; \
+	  $(NM) "$$target" | grep -w mainargs > "$$symfile" 2>/dev/null || true; \
+	  if [ -s "$$symfile" ]; then \
+	    mainargs_addr=$$(awk '{print "0x"$$1}' "$$symfile"); \
+	    echo "[INFO] Found mainargs at $$mainargs_addr, using parameter '$(mainargs)'"; \
+	    echo "[RUN] $$base with parameter '$(mainargs)'"; \
+	    ( cd $(BUILD) && vvp sim.vvp +img="$$base.hex" +mainargs="$(mainargs)" +mainargs_addr="$$mainargs_addr" ); \
+	  else \
+	    echo "[WARN] mainargs symbol not found in $$base, running in compatibility mode"; \
+	    echo "[RUN] $$base (compatibility mode)"; \
+	    ( cd $(BUILD) && vvp sim.vvp +img="$$base.hex" ); \
+	  fi; \
 	else \
-	  echo "[WARN] 未发现 wave.vcd（检查 testbench 的 \$dumpfile(\"wave.vcd\")）"; \
+	  # 没有指定 mainargs，使用兼容模式 \
+	  echo "[RUN] $$base (compatibility mode)"; \
+	  ( cd $(BUILD) && vvp sim.vvp +img="$$base.hex" ); \
+	fi; \
+	\
+	if [ -f "$(BUILD)/wave.vcd" ]; then \
+	  echo "[WAVE] $(BUILD)/wave.vcd 已生成"; \
+	else \
+	  echo "[WARN] 未发现 wave.vcd"; \
 	fi
 
-# 批量运行：DIR 下所有 .elf
+# 批量运行：保持原有兼容性
 run-all: build-sim
 	@if [ -z "$(DIR)" ]; then echo "[ERR] 请指定 DIR，例如：make run-all DIR=out/"; exit 1; fi; \
 	if [ ! -d "$(DIR)" ]; then echo "[ERR] 目录不存在: $(DIR)"; exit 1; fi; \
@@ -89,12 +128,12 @@ run-all: build-sim
 	  echo ""; \
 	  echo "[HEX] $$elf -> $$hex"; \
 	  $(OBJCOPY) -O verilog --adjust-vma -$(VMA_BASE) "$$elf" "$$hex"; \
-	  echo "[RUN] $$base  (cd $(BUILD) && vvp sim.vvp +img=$$base.hex)"; \
+	  echo "[RUN] $$base (compatibility mode)"; \
 	  ( cd $(BUILD) && vvp sim.vvp +img="$$base.hex" ); \
 	  if [ -f "$(BUILD)/wave.vcd" ]; then \
 	    echo "[WAVE] $(BUILD)/wave.vcd 已生成/覆盖"; \
 	  else \
-	    echo "[WARN] 未发现 wave.vcd（检查 testbench 的 \$dumpfile(\"wave.vcd\")）"; \
+	    echo "[WARN] 未发现 wave.vcd"; \
 	  fi; \
 	done
 

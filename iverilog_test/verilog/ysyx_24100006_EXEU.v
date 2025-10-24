@@ -135,7 +135,7 @@ module ysyx_24100006_exeu(
 
 	// 当是跳转指令且目标地址与pc+4不同时，才重定向
 	// 若是 jal 指令不需要要重定向，因为前面已经计算好了 npc
-	assign redirect_valid = (exe_out_valid == 1 && npc_temp[31:2] != pc_add_4[31:2]) ? 1'b1 : 1'b0;
+	assign redirect_valid = (exe_out_valid == 1 && Jump != 1 && npc_temp[31:2] != pc_add_4[31:2]) ? 1'b1 : 1'b0;
 
 	// 直接透传到 EXE_MEM（它会寄存）
 `ifdef VERILATOR_SIM

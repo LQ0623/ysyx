@@ -63,7 +63,7 @@ module ysyx_24100006_ifu(
 			if (axi_arvalid && axi_arready) begin
 				req_epoch <= cur_epoch;
 			end
-			if (redirect_flag == 2'b01 || exc_flag == 2'b01) begin
+			if (( redirect_valid == 1 && redirect_flag == 2'b00) || (EXC == 1 && exc_flag == 2'b00)) begin
 				cur_epoch <= cur_epoch + 1;
 			end
 		end

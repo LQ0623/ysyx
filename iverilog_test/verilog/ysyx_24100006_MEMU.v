@@ -356,21 +356,22 @@ module ysyx_24100006_memu(
     assign wdata_csr_W      = (state[0] == 1'b0) ? wdata_csr_M : wdata_csr_r;
 
     // 前递单元设计（保持原样）
-    reg [1:0] cnt;
+    reg cnt;
     always @(posedge clk) begin
         if(reset) begin
-            cnt <= 2'b0;
+            cnt <= 1'b0;
         end else begin
-            if(mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)begin
-                cnt <= cnt + 1'b1;
+            if(mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)begin
+                cnt <= 1'b1;
             end
-            if(axi_rvalid == 1'b1) begin
-                cnt <= cnt - 1'b1;
+            if((mem_out_ready == 1'b1 && mem_out_valid == 1'b1 && sram_read_write[0] == 1'b0) || (mem_out_valid == 0 && axi_rvalid == 1)) begin
+                cnt <= 1'b0;
             end
         end
     end
 
-    assign exe_mem_is_load  = (sram_read_write[0] == 1'b1 && cnt != 0) ? 1'b1 : 1'b0;
+    // (mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)这个是为了判断mem_out_valid == 1'b1时是否需要阻塞
+    assign exe_mem_is_load  = ((sram_read_write[0] == 1'b1 && cnt != 0) || (mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)) ? 1'b1 : 1'b0;
     assign mem_fw_data      = wdata_gpr_W;
 
 `ifndef __ICARUS__
