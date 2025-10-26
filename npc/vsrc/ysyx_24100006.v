@@ -98,6 +98,33 @@ module ysyx_24100006(
     output wire [3:0]  io_slave_rid       // 事务 ID
 	
 `endif
+
+// 网表仿真的时候将uart接出去
+`ifndef VERILATOR_SIM
+	`ifdef NPC
+		,output        	uart_axi_arvalid,
+		input       	uart_axi_arready,
+		output [31:0]	uart_axi_araddr,
+		// 读数据通道
+		input          	uart_axi_rvalid,
+		output         	uart_axi_rready,
+		input  [1:0]	uart_axi_rresp,
+		input  [31:0]	uart_axi_rdata,
+		// 写地址通道
+		output			uart_axi_awvalid,
+		input			uart_axi_awready,
+		output [31:0]	uart_axi_awaddr,
+		// 写数据通道
+		output			uart_axi_wvalid,
+		input         	uart_axi_wready,
+		output [31:0] 	uart_axi_wdata,
+		output [3:0]   	uart_axi_wstrb,
+		// 写响应通道
+		input          	uart_axi_bvalid,
+		output         	uart_axi_bready,
+		input  [1:0]  	uart_axi_bresp
+	`endif
+`endif
 );
 
 `ifndef NPC
@@ -144,10 +171,11 @@ module ysyx_24100006(
 	wire [31:0] wdata_csr_WD;
 
 
-`ifdef VERILATOR_SIM
+
 	// 调试使用
 	wire [31:0] pc_F;                 	// IF阶段PC
 	wire [31:0] pc_F_D;               	// IF->ID传递的PC
+`ifdef VERILATOR_SIM
 	wire [31:0] pc_D;                 	// ID阶段PC
 	wire [31:0] pc_D_E;               	// ID->EXE传递的PC
 	wire [31:0] pc_E;                 	// EXE阶段PC
@@ -394,6 +422,7 @@ module ysyx_24100006(
 
 `ifdef NPC
 // TAG:NPC使用的ram
+`ifdef VERILATOR_SIM
 	ysyx_24100006_mem u_mem (
         // 系统时钟和复位
         .clk              (clock),
@@ -495,6 +524,7 @@ module ysyx_24100006(
 		// axi读取的数据
 		.axi_rdata		(uart_axi_rdata)
 	);
+`endif
 
 `endif
 
@@ -925,11 +955,9 @@ module ysyx_24100006(
 		.clk            	(clock),
 		.reset          	(reset),
 
-`ifdef VERILATOR_SIM
 		// 调试信息
 		.pc_i           	(pc_F),         	// IF阶段PC输入
 		.pc_o           	(pc_F_D),       	// 输出到ID阶段
-`endif
 
 		.flush_i        	(redirect_valid_E_F || irq_M || (is_fence_i_D && !icache_flush_done_CE)),   // 当是跳转指令或者发生异常时冲刷
 		.instruction_i  	(inst_F),			// IF阶段指令输入
@@ -948,8 +976,8 @@ module ysyx_24100006(
 		// ,.irq_no_o			(irq_no_F_D)
 
 		// 面积优化相关
-		,.pc_add_4_i		(pc_add_4_F)
-		,.pc_add_4_o		(pc_add_4_F_D)
+		// ,.pc_add_4_i		(pc_add_4_F)
+		// ,.pc_add_4_o		(pc_add_4_F_D)
 	);
 
 	// ID_EXE 模块实例化
@@ -1115,14 +1143,12 @@ module ysyx_24100006(
 
 
 
-	ysyx_24100006_ifu IF(
+	ysyx_24100006_ifu u_IF(
 		.clk				(clock),
 		.reset				(reset),
 
-`ifdef VERILATOR_SIM
 		// 调试信息
 		.pc_F				(pc_F),
-`endif
 
 		// 直接将 hazard 的 stall 信号给 IFU：
 		.stall_id			(stall_id),
@@ -1145,8 +1171,8 @@ module ysyx_24100006(
 		.if_in_valid		(if_in_valid),
 		.if_in_ready		(if_in_ready),
 
-		.inst_F				(inst_F),
-		.pc_add_4_o			(pc_add_4_F)
+		.inst_F				(inst_F)
+		// .pc_add_4_o			(pc_add_4_F)
 
 `ifdef VERILATOR_SIM
 		// Access Fault异常
@@ -1160,13 +1186,14 @@ module ysyx_24100006(
 		// ,.irq_no			(irq_no_F)
 	);
 	
-	ysyx_24100006_idu ID(
+	ysyx_24100006_idu u_ID(
 		.clk				(clock),
 		.reset				(reset),
 
-`ifdef VERILATOR_SIM
+
 		// 调试信息
 		.pc_D				(pc_F_D),
+`ifdef VERILATOR_SIM
 		.pc_E				(pc_D),
 `endif
 
@@ -1226,11 +1253,11 @@ module ysyx_24100006(
 		,.wdata_gpr_D		(wdata_gpr_D)
 		,.wdata_csr_D		(wdata_csr_D)
 
-		,.pc_add_4_i		(pc_add_4_F_D)
+		// ,.pc_add_4_i		(pc_add_4_F_D)
 		,.pc_add_4_o		(pc_add_4_D)
 	);
 
-	ysyx_24100006_exeu EXE(
+	ysyx_24100006_exeu u_EXE(
 		.clk				(clock),
 		.reset				(reset),
 
@@ -1299,7 +1326,7 @@ module ysyx_24100006(
 		,.pc_add_4			(pc_add_4_D_E)
 	);
 
-	ysyx_24100006_memu MEM(
+	ysyx_24100006_memu u_MEM(
 		.clk				(clock),
 		.reset				(reset),
 
@@ -1358,7 +1385,7 @@ module ysyx_24100006(
 		.mem_out_valid		(mem_out_valid),
 		.mem_out_ready		(mem_out_ready),
 		.mem_in_valid		(mem_in_valid),
-		.mem_in_ready		(1),
+		.mem_in_ready		(1'b1),
 		.is_load			(is_load),
 
 		.irq_W				(irq_M),

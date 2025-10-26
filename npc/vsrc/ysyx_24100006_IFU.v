@@ -26,12 +26,12 @@ module ysyx_24100006_ifu(
 	output 	reg			if_in_valid,
 	input 				if_in_ready,
 
-`ifdef VERILATOR_SIM
-    output 	[31:0] 		pc_F,
-`endif
 
-	output reg [31:0] 	inst_F,
-	output [31:0]		pc_add_4_o
+    output reg	[31:0]  pc_F,
+
+
+	output reg [31:0] 	inst_F
+	// output [31:0]		pc_add_4_o
 
 `ifdef VERILATOR_SIM
 	// Access Fault异常
@@ -46,12 +46,12 @@ module ysyx_24100006_ifu(
 	// 是否发送重定向
 	reg [1:0] redirect_flag;	// 检测上升沿
 	always @(posedge clk) begin
-		redirect_flag = {redirect_flag[0],redirect_valid};
+		redirect_flag <= {redirect_flag[0],redirect_valid};
 	end
 	// 异常处理机制
 	reg [1:0] exc_flag;	// 检测上升沿
 	always @(posedge clk) begin
-		exc_flag = {exc_flag[0],EXC};
+		exc_flag <= {exc_flag[0],EXC};
 	end
 	reg [1:0] req_epoch;
 	reg [1:0] cur_epoch;
@@ -63,7 +63,7 @@ module ysyx_24100006_ifu(
 			if (axi_arvalid && axi_arready) begin
 				req_epoch <= cur_epoch;
 			end
-			if (redirect_flag == 2'b01 || exc_flag == 2'b01) begin
+			if (( redirect_valid == 1 && redirect_flag == 2'b00) || (EXC == 1 && exc_flag == 2'b00)) begin
 				cur_epoch <= cur_epoch + 1;
 			end
 		end
@@ -129,40 +129,48 @@ module ysyx_24100006_ifu(
 	end
 
 // 如果不是仿真的话,那么pc_F是没有定义的
-`ifndef VERILATOR_SIM
-	wire [31:0] pc_F;
-`endif
+// `ifndef VERILATOR_SIM
+// 	wire [31:0] pc_F;
+// `endif
 
 	// 判断指令是否为jal指令，并计算跳转的位置
-	// wire [31:0] jal_target;
-	// wire 		is_jal;
-	// assign is_jal 		= (inst_F[6:0] == 7'b1101111) ? 1'b1 : 1'b0;
-	// assign jal_target 	= pc_F + {{12{inst_F[31]}},inst_F[19:12],inst_F[20],inst_F[30:21],1'b0};
+	wire [31:0] jal_target;
+	wire 		is_jal;
+	assign is_jal 		= (inst_F[6:0] == 7'b1101111) ? 1'b1 : 1'b0;
+	assign jal_target 	= pc_F + {{12{inst_F[31]}},inst_F[19:12],inst_F[20],inst_F[30:21],1'b0};
 
 
 	wire [31:0] npc_temp;
-	assign pc_add_4_o 	= pc_F + 4;
-	// assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : (is_jal ? jal_target : pc_add_4_o));
-	assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : pc_add_4_o);
+	// assign pc_add_4_o 	= pc_F + 4;
+	assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : (is_jal ? jal_target : pc_F + 4));
+	// assign npc_temp 	= EXC ? csr_mtvec : (redirect_valid ? npc : pc_add_4_o);
 	assign axi_araddr 	= pc_F;
 
 
 `ifndef NPC
-	ysyx_24100006_Reg #(32,32'h30000000) pc1(
-		.clk(clk),
-		.rst(reset),
-		.din(npc_temp),
-		.dout(pc_F),
-		.wen((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC)
-	);
+	// ysyx_24100006_Reg #(32,32'h30000000) pc1(
+	// 	.clk(clk),
+	// 	.rst(reset),
+	// 	.din(npc_temp),
+	// 	.dout(pc_F),
+	// 	.wen((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC)
+	// );
+	always @(posedge clk) begin
+		if (reset) pc_F <= 32'h30000000;
+		else if ((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC) pc_F <= npc_temp;
+	end
 `else
-	ysyx_24100006_Reg #(32,32'h80000000) pc1(
-		.clk(clk),
-		.rst(reset),
-		.din(npc_temp),
-		.dout(pc_F),
-		.wen((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC)
-	);
+	// ysyx_24100006_Reg #(32,32'h80000000) pc1(
+	// 	.clk(clk),
+	// 	.rst(reset),
+	// 	.din(npc_temp),
+	// 	.dout(pc_F),
+	// 	.wen((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC)
+	// );
+	always @(posedge clk) begin
+		if (reset) pc_F <= 32'h80000000;
+		else if ((if_in_valid == 1 && if_in_ready == 1) || redirect_valid || EXC) pc_F <= npc_temp;
+	end
 `endif
 
 

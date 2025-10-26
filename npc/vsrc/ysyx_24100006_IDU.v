@@ -8,9 +8,10 @@ module ysyx_24100006_idu(
 	// from IFU
 	input [31:0] 	instruction,
 
-`ifdef VERILATOR_SIM
+
     //调试使用
 	input [31:0] 	pc_D,
+`ifdef VERILATOR_SIM
     output [31:0] 	pc_E,
 `endif
 
@@ -69,7 +70,7 @@ module ysyx_24100006_idu(
 
     ,output [2:0]   Mem_Mask
 
-    ,input  [31:0]  pc_add_4_i
+    // ,input  [31:0]  pc_add_4_i
     ,output [31:0]  pc_add_4_o
 
     // 前递单元设计
@@ -215,26 +216,26 @@ module ysyx_24100006_idu(
     assign Csr_Write_E 		= ctrl_Csr_Write;
     assign Jump        		= ctrl_Jump;
     assign sram_read_write 	= ctrl_sram_read_write;
-    assign is_fence_i  		= ctrl_is_fence_i;
+    assign is_fence_i  		= (reset == 1 || id_out_valid == 0) ? 0 : ctrl_is_fence_i;
 
     // 异常处理相关
     assign irq_D       		= ctrl_irq;
 
     // 面积优化
-    assign pc_add_4_o           =   pc_add_4_i;
+    assign pc_add_4_o           =   pc_D + 4;
     wire [31:0] rs1_add_imm_D   =   (rs1_data_fw + sext_imm_wire) & (~32'b1);
     assign pc_j_m_e_n_D         =   (instruction[6:0] == 7'b1100111) ? rs1_add_imm_D :               // JALR
-                                    (instruction[6:0] == 7'b1110011 && instruction[31:20] == 12'b001100000010) ? mepc_comb : pc_add_4_i;     // MRET，ECALL指令并不会产生跳转指令，因为属于异常处理
+                                    (instruction[6:0] == 7'b1110011 && instruction[31:20] == 12'b001100000010) ? mepc_comb : pc_add_4_o;     // MRET，ECALL指令并不会产生跳转指令，因为属于异常处理
 
     assign alu_a_data_D     = (ctrl_AluSrcA == 1'b0) ? rs1_data_fw : pc_D;
     assign alu_b_data_D     = (ctrl_AluSrcB == 1'b0) ? rs2_data_fw : sext_imm_wire;
     assign pc_add_imm_D     = pc_D + sext_imm_wire;
 
     
-    assign wdata_gpr_D      = (ctrl_sram_read_write == 2'b10) ? rs2_data_fw : ((ctrl_Gpr_Write_RD[2] == 1'b1) ? rdata_csr_comb : ((ctrl_Gpr_Write_RD[1] == 1'b1) ? pc_add_4_i : sext_imm_wire));
+    assign wdata_gpr_D      = (ctrl_sram_read_write[1] == 1'b1) ? rs2_data_fw : ((ctrl_Gpr_Write_RD[2] == 1'b1) ? rdata_csr_comb : ((ctrl_Gpr_Write_RD[1] == 1'b1) ? pc_add_4_o : sext_imm_wire));
     assign wdata_csr_D      = (ctrl_Csr_Write_RD[1] == 1'b1) ? (rdata_csr_comb | rs1_data_fw) : ((ctrl_Csr_Write_RD[0] == 1'b1) ? rs1_data_fw : pc_D);
 
-    assign Mem_Mask         = (ctrl_sram_read_write == 2'b01) ? ctrl_Mem_RMask :    // load
+    assign Mem_Mask         = (ctrl_sram_read_write[0] == 1'b1) ? ctrl_Mem_RMask :    // load
                                                                 ctrl_Mem_WMask;     // write
 
 endmodule

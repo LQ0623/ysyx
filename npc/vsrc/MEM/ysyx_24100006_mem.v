@@ -44,10 +44,31 @@ module ysyx_24100006_mem(
     
 );
 
-    
+`ifdef __ICARUS__
+    // ------------------------------
+    // Icarus: 纯 Verilog 行为内存
+    // ------------------------------
+    localparam BASE_ADDR = 32'h8000_0000;
+    localparam MEM_BYTES = 256*1024*1024;   // 16MB
+    reg [7:0] mem [0:MEM_BYTES-1];         // 字节寻址
+
+    // 运行时通过 +img=xxx.hex 指定镜像；默认 "program.hex"
+    string IMG;
+    initial begin
+        if (!$value$plusargs("img=%s", IMG)) IMG = "program.hex";
+        $display("[mem] loading image: %0s", IMG);
+        // 注意：objcopy 需 --adjust-vma -0x80000000 让地址从 0 开始
+        $readmemh(IMG, mem);
+    end
+
+    // 内部信号用于直接内存访问
+    reg [31:0] mem_read_data;
+    reg [31:0] mem_idx;
+`else
     import "DPI-C" function int pmem_read(input int raddr);
     import "DPI-C" function void pmem_write(input int waddr, input int wdata,input byte wmask);
-    
+`endif
+
     parameter   S_IDLE          = 0,
                 S_READ_ADDR     = 1, 
                 S_READ_DATA     = 2, 
@@ -100,8 +121,17 @@ module ysyx_24100006_mem(
                         burst_counter   <= 8'b0;
                         
                         axi_rvalid      <= 1'b1;
+`ifdef __ICARUS__
+                        if (axi_araddr >= BASE_ADDR && axi_araddr < BASE_ADDR + MEM_BYTES - 3) begin
+                            mem_idx = axi_araddr - BASE_ADDR;
+                            axi_rdata <= {mem[mem_idx+3], mem[mem_idx+2], mem[mem_idx+1], mem[mem_idx+0]};
+                        end else begin
+                            axi_rdata <= 32'h0;
+                        end
+`else
                         // 读取第一个数据
                         axi_rdata       <= pmem_read(axi_araddr);
+`endif
                         // 检查是否是单次传输
                         if (axi_arlen == 8'b0) begin
                             axi_rlast   <= 1'b1;
@@ -125,9 +155,18 @@ module ysyx_24100006_mem(
                             // 递增地址 (假设递增突发)
                             current_raddr   <= current_raddr + 4; // 4字节递增
                             
+`ifdef __ICARUS__
+                            if (current_raddr + 4 >= BASE_ADDR && current_raddr + 4 < BASE_ADDR + MEM_BYTES - 3) begin
+                                mem_idx = current_raddr + 4 - BASE_ADDR;
+                                axi_rdata <= {mem[mem_idx+3], mem[mem_idx+2], mem[mem_idx+1], mem[mem_idx+0]};
+                            end else begin
+                                axi_rdata <= 32'h0;
+                            end
+`else
                             // 读取下一个数据
                             axi_rdata       <= pmem_read(current_raddr + 4);
-                            
+`endif
+
                             // 检查是否是最后一个数据
                             if (burst_counter == burst_length - 1) begin
                                 axi_rlast   <= 1'b1;
@@ -140,8 +179,18 @@ module ysyx_24100006_mem(
                     axi_awready         <= 1'b0;
                     axi_wready          <= 1'b0;
                     if(axi_awvalid == 1'b1 && axi_awready == 1'b1 && axi_wvalid == 1'b1 && axi_wready == 1'b1) begin
+`ifdef __ICARUS__
+                        if (axi_awaddr >= BASE_ADDR && axi_awaddr < BASE_ADDR + MEM_BYTES - 3) begin
+                            mem_idx = axi_awaddr - BASE_ADDR;
+                            if (axi_wstrb[0]) mem[mem_idx+0] <= axi_wdata[7:0];
+                            if (axi_wstrb[1]) mem[mem_idx+1] <= axi_wdata[15:8];
+                            if (axi_wstrb[2]) mem[mem_idx+2] <= axi_wdata[23:16];
+                            if (axi_wstrb[3]) mem[mem_idx+3] <= axi_wdata[31:24];
+                        end
+`else
                         // 写入数据
                         pmem_write(axi_awaddr,axi_wdata,{4'b0, axi_wstrb});
+`endif
                         axi_bvalid      <= 1'b1;
                         axi_bresp       <= 2'b00;
                         state           <= S_WRITE_RESP;

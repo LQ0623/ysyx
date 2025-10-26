@@ -148,14 +148,13 @@ module ysyx_24100006_EXE_MEM(
             is_break_temp           <= 1'b0; // 复位时不可能是ebreak指令
             sram_read_write_temp    <= 2'd0;
 
+
         end
         // 若果当前输出被接受且有跳转指令，则清除当前的有效位，防止错误执行
         else if(out_ready && redirect_valid_temp)begin 
-            valid_temp              <=0;
             redirect_valid_temp     <=0;
         end
         else if(flush_i == 1)begin
-            valid_temp              <=0;
             irq_temp                <= 1'b0;
             redirect_valid_temp     <=0;
         end

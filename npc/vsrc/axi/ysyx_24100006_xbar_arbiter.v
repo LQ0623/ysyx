@@ -138,9 +138,9 @@ module ysyx_24100006_xbar_arbiter #(
                 ARB_MEMU_READ   = 3'b010,
                 ARB_MEMU_WRITE  = 3'b100;
 
-    parameter   IDLE = 0, BUSY = 1;
+    parameter   IDLE = 1'b0, BUSY = 1'b1;
 
-    reg [1:0] axi_state;
+    reg         axi_state;
     reg [2:0] targeted_module;
     wire [31:0] real_sram_data;
 

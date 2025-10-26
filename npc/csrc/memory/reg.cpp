@@ -47,7 +47,7 @@ void get_reg(){
     // 因为GPR中的寄存器改为了14个，所以直接访问能够得到的值也是那14个的，所以需要将0号寄存器单独进行赋值
     gpr[0] = 0;
     for(int i = 1;i < REGNUM; i++){
-        gpr[i] = cpu->rootp -> ysyx_24100006__DOT__ID__DOT__GPR__DOT__rf[i-1];
+        gpr[i] = cpu->rootp -> ysyx_24100006__DOT__u_ID__DOT__GPR__DOT__rf[i-1];
     }
     csr[0] = mstatus;
     csr[1] = mtvec;

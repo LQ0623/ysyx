@@ -16,24 +16,24 @@ module ysyx_24100006_IF_ID(
     input           out_ready,
     output  [31:0]  instruction_o
 
-`ifdef VERILATOR_SIM
+
     ,input  [31:0]  pc_i,
     output  [31:0]  pc_o
-`endif
 
-    ,input  [31:0]  pc_add_4_i
-    ,output [31:0]  pc_add_4_o
+
+    // ,input  [31:0]  pc_add_4_i
+    // ,output [31:0]  pc_add_4_o
 );
 
     // ================= Registers =================
     reg             valid_q;
 
     reg [31:0]      instruction_q;
-    reg [31:0]      pc_add_4_q;
+    // reg [31:0]      pc_add_4_q;
 
-`ifdef VERILATOR_SIM
+
     reg [31:0]      pc_q;
-`endif
+
 
     // ================= Handshake =================
     // 简化：in_ready = ~valid_q || out_ready
@@ -43,11 +43,11 @@ module ysyx_24100006_IF_ID(
 
     // ================= Outputs ===================
     assign instruction_o = instruction_q;
-    assign pc_add_4_o    = pc_add_4_q;
+    // assign pc_add_4_o    = pc_add_4_q;
 
-`ifdef VERILATOR_SIM
+
     assign pc_o          = pc_q;
-`endif
+
 
     // ================= Control ===================
     // 接收新数据（同时满足：上游有效 且 我方可接收）
@@ -75,10 +75,10 @@ module ysyx_24100006_IF_ID(
     always @(posedge clk) begin
         if (accept) begin
             instruction_q <= instruction_i;
-            pc_add_4_q    <= pc_add_4_i;
-`ifdef VERILATOR_SIM
+            // pc_add_4_q    <= pc_add_4_i;
+
             pc_q          <= pc_i;
-`endif
+
         end
 // `ifdef VERILATOR_SIM
 //         else if (reset || flush_i) begin

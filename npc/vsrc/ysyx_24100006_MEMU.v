@@ -30,22 +30,22 @@ module ysyx_24100006_memu(
     // AXI-Lite接口
     // read_addr
     output  reg [31:0]  axi_araddr,
-    input   reg         axi_arready,
+    input               axi_arready,
     output  reg         axi_arvalid,
     // read data
-    input   reg [31:0]  axi_rdata,
-    input   reg         axi_rvalid,
+    input   [31:0]      axi_rdata,
+    input               axi_rvalid,
     output  reg         axi_rready,
     // write addr
     output  reg [31:0]  axi_awaddr,
-    input   reg         axi_awready,
+    input               axi_awready,
     output  reg         axi_awvalid,
     // write data
-    input   reg         axi_wready,
+    input               axi_wready,
     output  reg [31:0]  axi_wdata,
     output  reg         axi_wvalid,
     // response
-    input   reg         axi_bvalid,
+    input               axi_bvalid,
     output  reg         axi_bready,
 
     // 新增AXI信号
@@ -106,8 +106,6 @@ module ysyx_24100006_memu(
     reg [2:0]   Mem_Mask_r;
 
     // 访存锁存
-    reg [31:0]  locked_addr;   // 地址锁存
-    reg [31:0]  locked_data;   // 写数据锁存
     reg [1:0]   locked_sram_read_write;
     reg [31:0]  locked_read_data;
 
@@ -152,14 +150,10 @@ module ysyx_24100006_memu(
                     if (mem_out_valid && mem_out_ready) begin
                         if (sram_read_write[0] == 1'b0 && sram_read_write[1] == 1'b0) begin
                             // 无访存，直接进入发送
-                            locked_addr  <= 32'h0;
-                            locked_data  <= 32'h0;
                             state        <= S_SEND;
                         end else begin
                             // 锁存本次操作类型/地址/写数据
                             locked_sram_read_write <= sram_read_write;
-                            locked_addr  <= alu_result_M;
-                            locked_data  <= wdata_gpr_M;
 
                             // 直接在此拍发起 AXI 访问，下一拍转 S_ACCESS
                             if (sram_read_write[0] == 1'b1) begin
@@ -324,7 +318,6 @@ module ysyx_24100006_memu(
 `endif
 
 
-    wire [31:0] Mem_rdata_extend;
     wire [31:0] mem_rdata;
     assign mem_rdata = (axi_rvalid) ? axi_rdata : locked_read_data;
 
@@ -356,21 +349,22 @@ module ysyx_24100006_memu(
     assign wdata_csr_W      = (state[0] == 1'b0) ? wdata_csr_M : wdata_csr_r;
 
     // 前递单元设计（保持原样）
-    reg [1:0] cnt;
+    reg cnt;
     always @(posedge clk) begin
         if(reset) begin
-            cnt <= 2'b0;
+            cnt <= 1'b0;
         end else begin
-            if(mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)begin
-                cnt <= cnt + 1'b1;
+            if(mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)begin
+                cnt <= 1'b1;
             end
-            if(axi_rvalid == 1'b1) begin
-                cnt <= cnt - 1'b1;
+            if((mem_out_ready == 1'b1 && mem_out_valid == 1'b1 && sram_read_write[0] == 1'b0) || (mem_out_valid == 0 && axi_rvalid == 1)) begin
+                cnt <= 1'b0;
             end
         end
     end
 
-    assign exe_mem_is_load  = (sram_read_write[0] == 1'b1 && cnt != 0) ? 1'b1 : 1'b0;
+    // (mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)这个是为了判断mem_out_valid == 1'b1时是否需要阻塞
+    assign exe_mem_is_load  = ((sram_read_write[0] == 1'b1 && cnt != 0) || (mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)) ? 1'b1 : 1'b0;
     assign mem_fw_data      = wdata_gpr_W;
 
 `ifdef VERILATOR_SIM
