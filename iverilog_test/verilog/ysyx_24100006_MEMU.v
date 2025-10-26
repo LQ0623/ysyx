@@ -33,7 +33,7 @@ module ysyx_24100006_memu(
     input               axi_arready,
     output  reg         axi_arvalid,
     // read data
-    input       [31:0]  axi_rdata,
+    input   [31:0]      axi_rdata,
     input               axi_rvalid,
     output  reg         axi_rready,
     // write addr
@@ -106,8 +106,6 @@ module ysyx_24100006_memu(
     reg [2:0]   Mem_Mask_r;
 
     // 访存锁存
-    reg [31:0]  locked_addr;   // 地址锁存
-    reg [31:0]  locked_data;   // 写数据锁存
     reg [1:0]   locked_sram_read_write;
     reg [31:0]  locked_read_data;
 
@@ -152,14 +150,10 @@ module ysyx_24100006_memu(
                     if (mem_out_valid && mem_out_ready) begin
                         if (sram_read_write[0] == 1'b0 && sram_read_write[1] == 1'b0) begin
                             // 无访存，直接进入发送
-                            // locked_addr  <= 32'h0;
-                            // locked_data  <= 32'h0;
                             state        <= S_SEND;
                         end else begin
                             // 锁存本次操作类型/地址/写数据
                             locked_sram_read_write <= sram_read_write;
-                            // locked_addr  <= alu_result_M;
-                            // locked_data  <= wdata_gpr_M;
 
                             // 直接在此拍发起 AXI 访问，下一拍转 S_ACCESS
                             if (sram_read_write[0] == 1'b1) begin
@@ -324,7 +318,6 @@ module ysyx_24100006_memu(
 `endif
 
 
-    // wire [31:0] Mem_rdata_extend;
     wire [31:0] mem_rdata;
     assign mem_rdata = (axi_rvalid) ? axi_rdata : locked_read_data;
 
