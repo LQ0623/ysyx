@@ -8,7 +8,7 @@
 // - 命中路径保留 1 拍等待（S_HIT_WAIT），便于与同步RAM等价时序；也可直接去掉以减1拍
 // ============================================================
 
-module Icache #(
+module ysyx_24100006_Icache #(
     parameter SRAM_BASE_ADDR = 32'h0f00_0000,
     parameter SRAM_SIZE      = 32'h00ff_ffff
 )(

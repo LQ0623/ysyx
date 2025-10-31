@@ -7,12 +7,12 @@
 */
 `timescale 1ns/1ps
 
-`define MSTATUS   12'h300
-`define MTVEC     12'h305
-`define MCAUSE    12'h342
-`define MEPC      12'h341
-`define MVENDORID 12'hF11   // 厂商 ID（Vendor ID）
-`define MARCHID   12'hF12   // 架构 ID（Architecture ID）
+`define ysyx_24100006_MSTATUS   12'h300
+`define ysyx_24100006_MTVEC     12'h305
+`define ysyx_24100006_MCAUSE    12'h342
+`define ysyx_24100006_MEPC      12'h341
+`define ysyx_24100006_MVENDORID 12'hF11   // 厂商 ID（Vendor ID）
+`define ysyx_24100006_MARCHID   12'hF12   // 架构 ID（Architecture ID）
 
 module ysyx_24100006_CSR #(
   parameter ADDR_WIDTH = 12,
@@ -20,7 +20,6 @@ module ysyx_24100006_CSR #(
 )(
   input                       clk,
   input                       irq,
-  // input       [3:0]           irq_no,          // 中断号（低 8 位）
   input       [DATA_WIDTH-1:0] wdata,
   input       [ADDR_WIDTH-1:0] waddr,
   input                       wen,
@@ -36,22 +35,17 @@ module ysyx_24100006_CSR #(
   localparam [DATA_WIDTH-1:0] MVENDORID_CONST = 32'h79737978; // 'ysyx'
   localparam [DATA_WIDTH-1:0] MARCHID_CONST   = 32'd24100006; // 工程 ID
 
-  // ===== 可写 CSR（最小集合）：MTVEC、MEPC、MCAUSE =====
-  reg [3:0] mcause;
-
   // ===== 写入与中断处理（合并为一个时序块；irq 优先） =====
   always @(posedge clk) begin
     if (irq) begin
-      // 中断到来：记录中断原因与返回地址
-      mcause <= 4'hb; // 高位清零，低 8 位为 irq_no
+      // 中断到来：记录中断返回地址
       mepc   <= wdata;                             // 与原实现一致：irq 时 mepc <- wdata
     end
     else if (wen) begin
       // 普通 CSR 写：仅允许写 MTVEC/MEPC/MCAUSE
       case (waddr)
-        `MTVEC:  mtvec  <= wdata;
-        `MEPC:   mepc   <= wdata;
-        `MCAUSE: mcause <= wdata[3:0];
+        `ysyx_24100006_MTVEC:  mtvec  <= wdata;
+        `ysyx_24100006_MEPC:   mepc   <= wdata;
         default: ; // 其他 CSR 忽略写（MSTATUS/MVENDORID/MARCHID 为只读/常量）
       endcase
     end
@@ -60,12 +54,12 @@ module ysyx_24100006_CSR #(
   // ===== CSR 读：组合译码 =====
   always @* begin
     case (raddr)
-      `MSTATUS:   rdata = MSTATUS_CONST;    // 只读常量
-      `MTVEC:     rdata = mtvec;            // 可写寄存器
-      `MCAUSE:    rdata = { 28'b0, mcause};           // 可写寄存器
-      `MEPC:      rdata = mepc;             // 可写寄存器
-      `MVENDORID: rdata = MVENDORID_CONST;  // 只读常量
-      `MARCHID:   rdata = MARCHID_CONST;    // 只读常量
+      `ysyx_24100006_MSTATUS:   rdata = MSTATUS_CONST;    // 只读常量
+      `ysyx_24100006_MTVEC:     rdata = mtvec;            // 可写寄存器
+      `ysyx_24100006_MCAUSE:    rdata = 32'hb;           // 可写寄存器
+      `ysyx_24100006_MEPC:      rdata = mepc;             // 可写寄存器
+      `ysyx_24100006_MVENDORID: rdata = MVENDORID_CONST;  // 只读常量
+      `ysyx_24100006_MARCHID:   rdata = MARCHID_CONST;    // 只读常量
       default:    rdata = {DATA_WIDTH{1'b0}};
     endcase
   end
@@ -78,7 +72,7 @@ import "DPI-C" function void get_csr(
 	input int mepc
 );
   always @(*) begin
-    get_csr(32'h00001800, mtvec, {28'b0,mcause}, mepc);
+    get_csr(32'h00001800, mtvec, 32'hb, mepc);
   end
 
 `endif

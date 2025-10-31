@@ -156,7 +156,6 @@ module ysyx_24100006_EXE_MEM(
         end
         else if(flush_i == 1)begin
             irq_temp                <= 1'b0;
-            redirect_valid_temp     <=0;
         end
         else begin
             // 当允许接受新输入时

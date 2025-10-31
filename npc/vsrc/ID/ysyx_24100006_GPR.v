@@ -15,13 +15,6 @@ module ysyx_24100006_GPR #(
   localparam DEPTH = 16;
   reg [DATA_WIDTH-1:0] rf [1:DEPTH-1];
   
-  // 初始化x0为0，其他寄存器可以保持未初始化或初始化为0
-  // integer i;
-  // initial begin
-  //   rf[0] = 0;
-  //   // for (i = 1; i < DEPTH; i = i + 1) rf[i] = 0; // 可选：初始化所有寄存器
-  // end
-
   // 同步写：简化写法
   always @(posedge clk) begin
     if (wen && waddr != 0) begin

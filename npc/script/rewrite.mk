@@ -8,7 +8,7 @@ CPPFLAGS += -I$(NPC_HOME)/csrc/include
 CPPFLAGS += -I$(NVBOARD_HOME)/usr/include
 
 # 是否开启波形生成
-ENABLE_WAVE ?= 1
+ENABLE_WAVE ?= 0
 ifeq ($(ENABLE_WAVE), 1)
     CPPFLAGS += -DCONFIG_DUMP_WAVE
 endif
@@ -39,7 +39,7 @@ ifeq ($(ENABLE_FTRACE), 1)
 endif
 
 # 是否开启mtrace
-ENABLE_MTRACE ?= 1
+ENABLE_MTRACE ?= 0
 ifeq ($(ENABLE_MTRACE), 1)
     CPPFLAGS += -DCONFIG_MTRACE
 endif

@@ -182,51 +182,44 @@ module ysyx_24100006_ID_EXE(
                 pc_temp                 <= 32'h00000000;
 `endif
 
-                alu_op_temp             <= 4'd0;
-                Gpr_Write_Addr_temp     <= 4'b0;
-                Csr_Write_Addr_temp     <= 12'b0;
-                Gpr_Write_RD_temp       <= 2'd0;
                 Jump_temp               <= 3'd0;
                 is_fence_i_temp         <= 1'd0;
                 Gpr_Write_temp          <= 1'd0;
                 Csr_Write_temp          <= 1'd0;
                 is_break_temp           <= 1'b0;        // 复位时不是ebreak状态
-                sram_read_write_temp    <= 2'd0;
             end
             // 当允许接受新输入时
             else if (in_ready & in_valid) begin
-                // if (in_valid)begin
-                    // 非复位逻辑 - 将输入信号赋值给临时寄存器
+                // 非复位逻辑 - 将输入信号赋值给临时寄存器
 
 `ifdef VERILATOR_SIM
-                    // 调试使用
-                    pc_temp                 <= pc_i;
+                // 调试使用
+                pc_temp                 <= pc_i;
 `endif
-                    alu_op_temp             <= alu_op_i;
-                    Gpr_Write_Addr_temp     <= Gpr_Write_Addr_i;
-                    Csr_Write_Addr_temp     <= Csr_Write_Addr_i;
-                    Gpr_Write_RD_temp       <= Gpr_Write_RD_i;
-                    Jump_temp               <= Jump_i;
-                    is_fence_i_temp         <= is_fence_i_i;
-                    irq_temp                <= irq_i;
-                    Gpr_Write_temp          <= Gpr_Write_i;
-                    Csr_Write_temp          <= Csr_Write_i;
-                    is_break_temp           <= is_break_i;
-                    sram_read_write_temp    <= sram_read_write_i;
+                alu_op_temp             <= alu_op_i;
+                Gpr_Write_Addr_temp     <= Gpr_Write_Addr_i;
+                Csr_Write_Addr_temp     <= Csr_Write_Addr_i;
+                Gpr_Write_RD_temp       <= Gpr_Write_RD_i;
+                Jump_temp               <= Jump_i;
+                is_fence_i_temp         <= is_fence_i_i;
+                irq_temp                <= irq_i;
+                Gpr_Write_temp          <= Gpr_Write_i;
+                Csr_Write_temp          <= Csr_Write_i;
+                is_break_temp           <= is_break_i;
+                sram_read_write_temp    <= sram_read_write_i;
 
-                    // 面积优化
-                    pc_j_m_e_n_temp         <= pc_j_m_e_n_i;
-                    alu_a_data_temp         <= alu_a_data_i;
-                    alu_b_data_temp         <= alu_b_data_i;
-                    pc_add_imm_temp         <= pc_add_imm_i;
+                // 面积优化
+                pc_j_m_e_n_temp         <= pc_j_m_e_n_i;
+                alu_a_data_temp         <= alu_a_data_i;
+                alu_b_data_temp         <= alu_b_data_i;
+                pc_add_imm_temp         <= pc_add_imm_i;
 
-                    wdata_gpr_temp          <= wdata_gpr_i;
-                    wdata_csr_temp          <= wdata_csr_i;
+                wdata_gpr_temp          <= wdata_gpr_i;
+                wdata_csr_temp          <= wdata_csr_i;
 
-                    Mem_Mask_temp           <= Mem_Mask_i;
+                Mem_Mask_temp           <= Mem_Mask_i;
 
-                    pc_add_4_temp           <= pc_add_4_i;
-                // end 
+                pc_add_4_temp           <= pc_add_4_i;
             end
             // 没有新数据则一直保持数据
         end

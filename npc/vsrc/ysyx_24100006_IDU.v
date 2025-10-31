@@ -70,7 +70,6 @@ module ysyx_24100006_idu(
 
     ,output [2:0]   Mem_Mask
 
-    // ,input  [31:0]  pc_add_4_i
     ,output [31:0]  pc_add_4_o
 
     // 前递单元设计
@@ -110,7 +109,6 @@ module ysyx_24100006_idu(
     ysyx_24100006_CSR CSR(
         .clk(clk),
         .irq(irq_W),
-        // .irq_no(irq_no_W),
         .wdata(wdata_csr_W),
         .waddr(Csr_Write_Addr_W),
         .wen(Csr_Write_W),
@@ -123,11 +121,6 @@ module ysyx_24100006_idu(
 	// immediate sign-extend (combinational)
     wire [2:0] Imm_Type;
     wire [31:0] sext_imm_wire;
-    // ysyx_24100006_imm_sext imm_sext(
-    //     .inst(instruction),
-    //     .Imm_Type(Imm_Type),
-    //     .sext_imm(sext_imm_wire)
-    // );
 
     wire [31:0]immI;
 	wire [31:0]immU;
@@ -161,6 +154,10 @@ module ysyx_24100006_idu(
     wire        ctrl_is_fence_i;
     wire        ctrl_irq;
 
+    // 新增：来自 controller 的 jalr/mret 指示
+    wire        ctrl_is_jalr;
+    wire        ctrl_is_mret;
+
 	ysyx_24100006_controller_remake controller(
         .opcode(instruction[6:0]),
         .funct3(instruction[14:12]),
@@ -185,6 +182,9 @@ module ysyx_24100006_idu(
         .Mem_WMask(ctrl_Mem_WMask),
         .sram_read_write(ctrl_sram_read_write),
         .is_fence_i(ctrl_is_fence_i)
+        // 新增输出
+        ,.is_jalr(ctrl_is_jalr),
+        .is_mret(ctrl_is_mret)
     );
 
     // 前递单元设计
@@ -222,10 +222,17 @@ module ysyx_24100006_idu(
     assign irq_D       		= ctrl_irq;
 
     // 面积优化
-    assign pc_add_4_o           =   pc_D + 4;
-    wire [31:0] rs1_add_imm_D   =   (rs1_data_fw + sext_imm_wire) & (~32'b1);
-    assign pc_j_m_e_n_D         =   (instruction[6:0] == 7'b1100111) ? rs1_add_imm_D :               // JALR
-                                    (instruction[6:0] == 7'b1110011 && instruction[31:20] == 12'b001100000010) ? mepc_comb : pc_add_4_o;     // MRET，ECALL指令并不会产生跳转指令，因为属于异常处理
+    // assign pc_add_4_o           =   pc_D + 4;
+    // wire [31:0] rs1_add_imm_D   =   (rs1_data_fw + sext_imm_wire) & (~32'b1);
+    // assign pc_j_m_e_n_D         =   (instruction[6:0] == 7'b1100111) ? rs1_add_imm_D :               // JALR
+    //                                 (instruction[6:0] == 7'b1110011 && instruction[31:20] == 12'b001100000010) ? mepc_comb : pc_add_4_o;     // MRET，ECALL指令并不会产生跳转指令，因为属于异常处理
+
+    // 面积优化：PC 选择仅依赖控制信号，不再重复比较 opcode
+    assign pc_add_4_o           = {(pc_D[31:2] + 1'b1), 2'b00};
+    wire [31:0] rs1_add_imm_D   = (rs1_data_fw + sext_imm_wire) & (~32'b1);
+    assign pc_j_m_e_n_D         = ctrl_is_jalr ? rs1_add_imm_D :
+                                  ctrl_is_mret ? mepc_comb    :
+                                                 pc_add_4_o;
 
     assign alu_a_data_D     = (ctrl_AluSrcA == 1'b0) ? rs1_data_fw : pc_D;
     assign alu_b_data_D     = (ctrl_AluSrcB == 1'b0) ? rs2_data_fw : sext_imm_wire;

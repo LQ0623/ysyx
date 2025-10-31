@@ -24,7 +24,7 @@ void get_reg(){
     // 后面-1是因为GPR中没有0号寄存器，因此所有的寄存器对应CPU内部时都应该-1
     gpr[0] = 0;
     for(int i = 1;i < REGNUM; i++){
-        gpr[i] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ID__DOT__GPR__DOT__rf[i-1];
+        gpr[i] = cpu->rootp -> ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__u_ID__DOT__GPR__DOT__rf[i-1];
     }
     // if(pc == 0xa0000114 && cnt == 100){
     //     printf("pc is %08x,inst is %#x\n",pc,inst);

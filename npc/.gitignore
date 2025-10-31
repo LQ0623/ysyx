@@ -16,4 +16,5 @@ Icache_pipeline.v
 Icache_no_pipeline.v
 Icache_less_area.v
 Icache_less_area_2.v
+Icache_2_ins.v
 ysyx_24100006_xbar_arbiter_copy.v

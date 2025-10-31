@@ -21,12 +21,22 @@ module ysyx_24100006_clint (
     localparam S_WAIT_RR  = 1'b1;  // 等待读取就绪
     
     reg         state;
-    reg [63:0]  mtime;
 
     // mtime 计数器
+    reg [31:0] mtime_lo, mtime_hi;
+    reg carry;
     always @(posedge clk) begin
-        if (reset) mtime <= 64'h0;
-        else mtime <= mtime + 1;
+        if (reset) begin 
+            mtime_lo<=0; 
+            mtime_hi<=0; 
+            carry   <=0;
+        end
+        else begin
+            {carry, mtime_lo} <= mtime_lo + 32'd1;
+            if (carry) begin
+                mtime_hi <= mtime_hi + 32'd1;
+            end
+        end
     end
 
     // AXI 控制信号默认值
@@ -46,9 +56,9 @@ module ysyx_24100006_clint (
                         `ifdef VERILATOR_SIM
                             skip();
                         `endif
-                        axi_rdata   <= (state == S_WAIT_ARV && axi_araddr[11:2] == BASE_ADDR[11:2]) 
-                                    ? mtime[31:0] 
-                                    : mtime[63:32];
+                        axi_rdata   <= (state == S_WAIT_ARV && axi_araddr[2] == BASE_ADDR[2]) 
+                                    ? mtime_lo 
+                                    : mtime_hi;
                     end
                 end
                 

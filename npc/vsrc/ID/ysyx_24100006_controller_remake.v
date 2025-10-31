@@ -208,6 +208,9 @@ module ysyx_24100006_controller_remake(
     output [1:0] sram_read_write,
     /* 是否刷新icache */
     output  is_fence_i
+
+    ,output is_jalr
+    ,output is_mret
 );
 
 
@@ -220,7 +223,8 @@ module ysyx_24100006_controller_remake(
     wire csr_use_zimm= is_csr && funct3[2];  // CSRxxI 形式
     wire is_ecall    = is_system && (funct12 == `ysyx_24100006_ecall);
     assign is_ebreak = is_system && (funct12 == `ysyx_24100006_ebreak);
-    wire is_mret     = is_system && (funct12 == `ysyx_24100006_mret);
+    assign is_mret     = is_system && (funct12 == `ysyx_24100006_mret);
+    assign is_jalr     = (opcode == `ysyx_24100006_jalr);
 
     assign rs1_ren =
         ((opcode == `ysyx_24100006_I_type)  ||
@@ -242,7 +246,6 @@ module ysyx_24100006_controller_remake(
     //TAG 这样写有一个问题，ebreak如何跳转到结束，加了，但是不确定正确
 
     assign irq = (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_IRQ : `ysyx_24100006_NIRQ;
-    // assign irq_no = (opcode == `ysyx_24100006_SYSTEM && (funct3 == `ysyx_24100006_inv) && (funct12 == `ysyx_24100006_ecall)) ? `ysyx_24100006_MECALL : 0;    //  只有ecall语句会使用这个信号
     
     // ALU操作类型
     assign aluop = 
@@ -298,7 +301,6 @@ module ysyx_24100006_controller_remake(
         /* SYSTEM指令 */
         (opcode == `ysyx_24100006_SYSTEM) ? (
             (funct3 == `ysyx_24100006_csrrw || funct3 == `ysyx_24100006_csrrs) ? `ysyx_24100006_GPRW : 
-            // (funct3 == `ysyx_24100006_inv && funct12 == `ysyx_24100006_ebreak) ? npc_trap() : 
             `ysyx_24100006_GPRNW
         ) :
         /* 其他指令 */
@@ -353,9 +355,6 @@ module ysyx_24100006_controller_remake(
     // 跳转类型
     assign Jump = 
         ((opcode == `ysyx_24100006_jal) ? `ysyx_24100006_JAL :
-        // (opcode == `ysyx_24100006_jalr) ? `ysyx_24100006_JALR :
-        // (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_ecall) ? `ysyx_24100006_JUMPECALL :        // ecall指令算是异常处理，所以是一套单独的机制，不在这里进行跳转
-        // (opcode == `ysyx_24100006_SYSTEM && funct12 == `ysyx_24100006_mret) ? `ysyx_24100006_JUMPMRET :
         (opcode == `ysyx_24100006_B_type) ? (
             (funct3 == `ysyx_24100006_beq) ? `ysyx_24100006_JBEQ :
             (funct3 == `ysyx_24100006_bne) ? `ysyx_24100006_JBNE :
