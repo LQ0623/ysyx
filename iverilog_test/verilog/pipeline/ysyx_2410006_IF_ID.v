@@ -20,16 +20,12 @@ module ysyx_24100006_IF_ID(
     ,input  [31:0]  pc_i,
     output  [31:0]  pc_o
 
-
-    // ,input  [31:0]  pc_add_4_i
-    // ,output [31:0]  pc_add_4_o
 );
 
     // ================= Registers =================
     reg             valid_q;
 
     reg [31:0]      instruction_q;
-    // reg [31:0]      pc_add_4_q;
 
 
     reg [31:0]      pc_q;
@@ -43,7 +39,6 @@ module ysyx_24100006_IF_ID(
 
     // ================= Outputs ===================
     assign instruction_o = instruction_q;
-    // assign pc_add_4_o    = pc_add_4_q;
 
 
     assign pc_o          = pc_q;
@@ -75,23 +70,10 @@ module ysyx_24100006_IF_ID(
     always @(posedge clk) begin
         if (accept) begin
             instruction_q <= instruction_i;
-            // pc_add_4_q    <= pc_add_4_i;
 
             pc_q          <= pc_i;
 
         end
-// `ifdef VERILATOR_SIM
-//         else if (reset || flush_i) begin
-//             // 仅用于仿真波形可读性；综合时不需要清零，节省面积
-//             instruction_q <= 32'b0;
-//             pc_add_4_q    <= 32'b0;
-//             irq_q         <= 1'b0;
-//             irq_no_q      <= 4'b0;
-// `ifdef VERILATOR_SIM
-//             pc_q          <= 32'b0;
-// `endif
-//         end
-// `endif
     end
 
 endmodule

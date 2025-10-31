@@ -116,10 +116,10 @@ module testbench;
     end
 
     // 波形
-    initial begin
-        $dumpfile("wave.vcd");
-        $dumpvars(0, testbench);
-    end
+    // initial begin
+    //     $dumpfile("wave.vcd");
+    //     $dumpvars(0, testbench);
+    // end
 
     // 监控
     initial begin

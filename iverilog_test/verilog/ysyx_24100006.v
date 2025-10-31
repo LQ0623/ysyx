@@ -98,6 +98,33 @@ module ysyx_24100006(
     output wire [3:0]  io_slave_rid       // 事务 ID
 	
 `endif
+
+// 网表仿真的时候将uart接出去
+`ifndef VERILATOR_SIM
+	`ifdef NPC
+		,output        	uart_axi_arvalid,
+		input       	uart_axi_arready,
+		output [31:0]	uart_axi_araddr,
+		// 读数据通道
+		input          	uart_axi_rvalid,
+		output         	uart_axi_rready,
+		input  [1:0]	uart_axi_rresp,
+		input  [31:0]	uart_axi_rdata,
+		// 写地址通道
+		output			uart_axi_awvalid,
+		input			uart_axi_awready,
+		output [31:0]	uart_axi_awaddr,
+		// 写数据通道
+		output			uart_axi_wvalid,
+		input         	uart_axi_wready,
+		output [31:0] 	uart_axi_wdata,
+		output [3:0]   	uart_axi_wstrb,
+		// 写响应通道
+		input          	uart_axi_bvalid,
+		output         	uart_axi_bready,
+		input  [1:0]  	uart_axi_bresp
+	`endif
+`endif
 );
 
 `ifndef NPC
@@ -395,6 +422,7 @@ module ysyx_24100006(
 
 `ifdef NPC
 // TAG:NPC使用的ram
+`ifdef VERILATOR_SIM
 	ysyx_24100006_mem u_mem (
         // 系统时钟和复位
         .clk              (clock),
@@ -496,6 +524,7 @@ module ysyx_24100006(
 		// axi读取的数据
 		.axi_rdata		(uart_axi_rdata)
 	);
+`endif
 
 `endif
 
@@ -635,7 +664,6 @@ module ysyx_24100006(
 		.mem_axi_awlen    (axi_awlen_mem),
 		.mem_axi_awsize   (axi_awsize_mem),
 		.mem_axi_wstrb    (axi_wstrb_mem),
-		.mem_axi_wlast    (axi_wlast_mem),
 		.mem_axi_addr_suffix (axi_addr_suffix_mem),
 
 		// ================== SRAM从设备 ==================
@@ -735,7 +763,6 @@ module ysyx_24100006(
 		.mem_axi_awlen    (axi_awlen_mem),
 		.mem_axi_awsize   (axi_awsize_mem),
 		.mem_axi_wstrb    (axi_wstrb_mem),
-		.mem_axi_wlast    (axi_wlast_mem),
 		.mem_axi_addr_suffix (axi_addr_suffix_mem),
 
 		// ================== SRAM从设备 ==================
@@ -798,103 +825,6 @@ module ysyx_24100006(
 
 `endif
 
-// `ifndef NPC
-// 	// YSYXSOC使用的axi模块
-// 	ysyx_24100006_axi #(
-// 		.AXI_DATA_WIDTH    (32),
-// 		.AXI_ADDR_WIDTH    (32),
-// 		.AXI_ID_WIDTH      (4),
-// 		.AXI_STRB_WIDTH    (4),
-// 		.AXI_RESP_WIDTH    (2),
-// 		.AXI_LEN_WIDTH     (8),
-// 		.AXI_SIZE_WIDTH    (3),
-// 		.AXI_BURST_WIDTH   (2)
-// 	) axi4_inst (
-// 		// 全局信号
-// 		.clk                      (clock),
-// 		.reset                    (reset),
-		
-// 		//-----------------------------
-// 		// 用户侧接口 (CPU侧)
-// 		//-----------------------------
-// 		// 读地址通道
-// 		.axi_arvalid_i            (sram_axi_arvalid),
-// 		.axi_arready_o            (sram_axi_arready),
-// 		.axi_araddr_i             (sram_axi_araddr),
-		
-// 		// 读数据通道
-// 		.axi_rvalid_o             (sram_axi_rvalid),
-// 		.axi_rready_i             (sram_axi_rready),
-// 		.axi_rdata_o              (sram_axi_rdata),
-		
-// 		// 写地址通道
-// 		.axi_awvalid_i            (sram_axi_awvalid),
-// 		.axi_awready_o            (sram_axi_awready),
-// 		.axi_awaddr_i             (sram_axi_awaddr),
-		
-// 		// 写数据通道
-// 		.axi_wvalid_i             (sram_axi_wvalid),
-// 		.axi_wready_o             (sram_axi_wready),
-// 		.axi_wdata_i              (sram_axi_wdata),
-// 		.axi_wstrb_i              (sram_axi_wstrb),
-		
-// 		// 写响应通道
-// 		.axi_bvalid_o             (sram_axi_bvalid),
-// 		.axi_bready_i             (sram_axi_bready),
-		
-// 		// 突发配置
-// 		.axi_arlen_i              (sram_axi_arlen),
-// 		.axi_awlen_i              (sram_axi_awlen),
-// 		.axi_arsize_i             (sram_axi_arsize),
-// 		.axi_awsize_i             (sram_axi_awsize),
-// 		.axi_rlast_o              (sram_axi_rlast),
-// 		.axi_wlast_o              (sram_axi_wlast),
-		
-// 		//-----------------------------
-// 		// AXI4主设备接口 (物理总线侧)
-// 		//-----------------------------
-// 		// 写地址通道
-// 		.io_master_awready_i      (io_master_awready),
-// 		.io_master_awvalid_o      (io_master_awvalid),
-// 		.io_master_awaddr_o       (io_master_awaddr),
-// 		.io_master_awid_o         (io_master_awid),          	// 无对应信号，强制置零
-// 		.io_master_awlen_o        (io_master_awlen),
-// 		.io_master_awsize_o       (io_master_awsize),
-// 		.io_master_awburst_o      (io_master_awburst),			// 无对应信号，强制置零
-		
-// 		// 写数据通道
-// 		.io_master_wready_i       (io_master_wready),
-// 		.io_master_wvalid_o       (io_master_wvalid),
-// 		.io_master_wdata_o        (io_master_wdata),
-// 		.io_master_wstrb_o        (io_master_wstrb),
-// 		.io_master_wlast_o        (io_master_wlast),
-		
-// 		// 写响应通道
-// 		.io_master_bready_o       (io_master_bready),
-// 		.io_master_bvalid_i       (io_master_bvalid),
-// 		.io_master_bresp_i        (io_master_bresp),
-// 		.io_master_bid_i          (io_master_bid),          	// 无对应信号，强制置零
-		
-// 		// 读地址通道
-// 		.io_master_arready_i      (io_master_arready),
-// 		.io_master_arvalid_o      (io_master_arvalid),
-// 		.io_master_araddr_o       (io_master_araddr),
-// 		.io_master_arid_o         (io_master_arid),          	// 无对应信号，强制置零
-// 		.io_master_arlen_o        (io_master_arlen),
-// 		.io_master_arsize_o       (io_master_arsize),
-// 		.io_master_arburst_o      (io_master_arburst),          // 无对应信号，强制置零
-		
-// 		// 读数据通道
-// 		.io_master_rready_o       (io_master_rready),
-// 		.io_master_rvalid_i       (io_master_rvalid),
-// 		.io_master_rresp_i        (io_master_rresp),
-// 		.io_master_rdata_i        (io_master_rdata),
-// 		.io_master_rlast_i        (io_master_rlast),
-// 		.io_master_rid_i          (io_master_rid)           	// 无对应信号，强制置零
-// 	);
-
-// `endif
-
 `ifdef VERILATOR_SIM
 	// 这是为了diff test而加的npc信号
 	wire [31:0] npc_M, npc_E_old, npc_E_M, npc_M_W, npc_W;
@@ -939,16 +869,6 @@ module ysyx_24100006(
 		.out_ready      	(id_out_ready),		// 来自IDU
 		
 		.instruction_o  	(instruction_F_D)	// 输出到ID阶段
-
-		// 异常处理相关
-		// ,.irq_i				(irq_F)
-		// ,.irq_no_i			(irq_no_F)
-    	// ,.irq_o				(irq_F_D)
-		// ,.irq_no_o			(irq_no_F_D)
-
-		// 面积优化相关
-		// ,.pc_add_4_i		(pc_add_4_F)
-		// ,.pc_add_4_o		(pc_add_4_F_D)
 	);
 
 	// ID_EXE 模块实例化
@@ -972,7 +892,6 @@ module ysyx_24100006(
 		.Csr_Write_Addr_i	(Csr_Write_Addr_D),
 		.Gpr_Write_RD_i 	(Gpr_Write_RD_D),
 		.Jump_i         	(Jump_D),
-		// .irq_no_i       	(irq_no_D),
 		.is_fence_i_i   	(is_fence_i_D),
 		.irq_i          	(irq_D),
 		.Gpr_Write_i    	(Gpr_Write_D),
@@ -989,7 +908,6 @@ module ysyx_24100006(
 		.Csr_Write_Addr_o	(Csr_Write_Addr_D_E),
 		.Gpr_Write_RD_o 	(Gpr_Write_RD_D_E),
 		.Jump_o         	(Jump_D_E),
-		// .irq_no_o       	(irq_no_D_E),
 		.is_fence_i_o   	(is_fence_i_D_E),
 		.irq_o          	(irq_D_E),
 		.Gpr_Write_o    	(Gpr_Write_D_E),
@@ -1041,7 +959,6 @@ module ysyx_24100006(
 		.Gpr_Write_Addr_i	(Gpr_Write_Addr_E),
 		.Csr_Write_Addr_i	(Csr_Write_Addr_E),
 		.Gpr_Write_RD_i 	(Gpr_Write_RD_E),
-		// .irq_no_i       	(irq_no_E),
 		.irq_i          	(irq_E),
 		.Gpr_Write_i    	(Gpr_Write_E),
 		.Csr_Write_i    	(Csr_Write_E),
@@ -1058,7 +975,6 @@ module ysyx_24100006(
 		.Gpr_Write_Addr_o	(Gpr_Write_Addr_E_M),
 		.Csr_Write_Addr_o	(Csr_Write_Addr_E_M),
 		.Gpr_Write_RD_o 	(Gpr_Write_RD_E_M),
-		// .irq_no_o       	(irq_no_E_M),
 		.irq_o          	(irq_E_M),
 		.Gpr_Write_o    	(Gpr_Write_E_M),
 		.Csr_Write_o    	(Csr_Write_E_M),
@@ -1091,14 +1007,14 @@ module ysyx_24100006(
 		.ex_wen        		(Gpr_Write_E),
 
 		// MEM 阶段（忙判断：mem_out_valid | ~mem_out_ready）
-		.mem_out_valid 		(mem_in_valid),
+		.mem_out_valid 		(mem_out_valid),
 		.mem_out_ready 		(mem_out_ready),
 		.mem_rd        		(Gpr_Write_Addr_M),
 		.mem_wen       		(Gpr_Write_M),
 
 		.mem_stage_wen		(Gpr_Write_E_M),
 		.mem_stage_rd		(Gpr_Write_Addr_E_M),
-		.mem_in_valid		(mem_out_valid),
+		.mem_in_valid		(mem_in_valid),
 		.mem_stage_out_valid(Gpr_Write_M),
 
 		.stall_id      		(stall_id)
@@ -1143,7 +1059,6 @@ module ysyx_24100006(
 		.if_in_ready		(if_in_ready),
 
 		.inst_F				(inst_F)
-		// .pc_add_4_o			(pc_add_4_F)
 
 `ifdef VERILATOR_SIM
 		// Access Fault异常
@@ -1153,8 +1068,6 @@ module ysyx_24100006(
 		// 异常处理相关
 		,.csr_mtvec			(mtvec_D)
 		,.EXC				(irq_M)
-		// ,.irq				(irq_F)
-		// ,.irq_no			(irq_no_F)
 	);
 	
 	ysyx_24100006_idu u_ID(
@@ -1172,7 +1085,6 @@ module ysyx_24100006(
 
 		.instruction		(instruction_F_D),
 		.irq_W				(irq_M),
-		// .irq_no_W			(irq_no_M),
 		.Gpr_Write_Addr_W	(Gpr_Write_Addr_M),
 		.Csr_Write_Addr_W	(Csr_Write_Addr_M),
 		.Gpr_Write_W		(Gpr_Write_M),
@@ -1201,10 +1113,7 @@ module ysyx_24100006(
 		.mtvec				(mtvec_D)
 
 		// 异常处理相关
-		// ,.irq_F				(irq_F_D)
-		// ,.irq_no_F			(irq_no_F_D)
 		,.irq_D				(irq_D)
-		// ,.irq_no_D			(irq_no_D)
 
 		// 前递单元设计
 		,.forwardA			(forwardA)
@@ -1224,7 +1133,6 @@ module ysyx_24100006(
 		,.wdata_gpr_D		(wdata_gpr_D)
 		,.wdata_csr_D		(wdata_csr_D)
 
-		// ,.pc_add_4_i		(pc_add_4_F_D)
 		,.pc_add_4_o		(pc_add_4_D)
 	);
 
@@ -1244,7 +1152,6 @@ module ysyx_24100006(
 		
 		.is_fence_i			(is_fence_i_D_E),
 		.irq_E				(irq_D_E),
-		// .irq_no_E			(irq_no_D_E),
 		.aluop				(alu_op_D_E),
 
 		.Jump				(Jump_D_E),
@@ -1267,7 +1174,6 @@ module ysyx_24100006(
 		.alu_result			(alu_result_E),
 
 		.irq_M				(irq_E),
-		// .irq_no_M			(irq_no_E),
 		.Gpr_Write_M		(Gpr_Write_E),
 		.Csr_Write_M		(Csr_Write_E),
 		.Gpr_Write_Addr_M	(Gpr_Write_Addr_E),
@@ -1315,7 +1221,6 @@ module ysyx_24100006(
 		.sram_read_write	(sram_read_write_E_M),
 		.alu_result_M		(alu_result_E_M),
 		.irq_M				(irq_E_M),
-		// .irq_no_M			(irq_no_E_M),
 		.Gpr_Write_M		(Gpr_Write_E_M),
 		.Csr_Write_M		(Csr_Write_E_M),
 		.Gpr_Write_Addr_M	(Gpr_Write_Addr_E_M),
@@ -1349,7 +1254,6 @@ module ysyx_24100006(
 		.axi_awlen			(axi_awlen_mem),
 		.axi_awsize			(axi_awsize_mem),
 		.axi_wstrb			(axi_wstrb_mem),
-		.axi_wlast			(axi_wlast_mem),
 		.axi_addr_suffix	(axi_addr_suffix_mem),
 
 		// 模块握手信号
@@ -1360,7 +1264,6 @@ module ysyx_24100006(
 		.is_load			(is_load),
 
 		.irq_W				(irq_M),
-		// .irq_no_W			(irq_no_M),
 		.Gpr_Write_W		(Gpr_Write_M),
 		.Csr_Write_W		(Csr_Write_M),
 		.Gpr_Write_Addr_W	(Gpr_Write_Addr_M),
@@ -1381,7 +1284,7 @@ module ysyx_24100006(
 	);
 
 
-`ifndef __ICARUS__
+`ifdef VERILATOR_SIM
 
 	reg 		diff;
 	reg [31:0]	diff_npc;

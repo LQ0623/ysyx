@@ -15,7 +15,6 @@ module ysyx_24100006_xbar_arbiter #(
     // 读数据通道
     output              ifu_axi_rvalid,
     input               ifu_axi_rready,
-    // output  [1:0]       ifu_axi_rresp,
     output  [31:0]      ifu_axi_rdata,
     // AXI新增信号
     input   [7:0]       ifu_axi_arlen,
@@ -51,7 +50,6 @@ module ysyx_24100006_xbar_arbiter #(
     input   [7:0]       mem_axi_awlen,
     input   [2:0]       mem_axi_awsize,
     input   [3:0]       mem_axi_wstrb,
-    input               mem_axi_wlast,
     input   [1:0]       mem_axi_addr_suffix,
 
     // ================== 从设备接口 ==================
@@ -138,9 +136,9 @@ module ysyx_24100006_xbar_arbiter #(
                 ARB_MEMU_READ   = 3'b010,
                 ARB_MEMU_WRITE  = 3'b100;
 
-    parameter   IDLE = 0, BUSY = 1;
+    parameter   IDLE = 1'b0, BUSY = 1'b1;
 
-    reg [1:0] axi_state;
+    reg         axi_state;
     reg [2:0] targeted_module;
     wire [31:0] real_sram_data;
 
@@ -216,7 +214,7 @@ module ysyx_24100006_xbar_arbiter #(
 
     // ================== 地址解码 ==================
 `ifndef NPC
-    wire sel_clint  =   (mem_axi_araddr[31:16] == CLINT_ADDR[31:16] && targeted_module == ARB_MEMU_READ);
+    wire sel_clint  =   (mem_axi_araddr[31:12] == CLINT_ADDR[31:12] && targeted_module == ARB_MEMU_READ);
     wire sel_uart   =   (mem_axi_araddr[31:12] == UART_ADDR[31:12] && targeted_module == ARB_MEMU_READ);
     wire sel_spi    =   (mem_axi_araddr[31:12] == SPI_ADDR[31:12] && targeted_module == ARB_MEMU_READ) || 
                         (ifu_axi_araddr[31:12] == SPI_ADDR[31:12] && targeted_module == ARB_IFU_READ);
@@ -258,17 +256,6 @@ module ysyx_24100006_xbar_arbiter #(
 
     wire [1:0] sram_addr_suffix = (targeted_module == ARB_MEMU_READ) ? mem_axi_addr_suffix : 2'b0;
 
-    // 写入的实际数据，数据需要移位的
-    wire [31:0] real_axi_wdata = 
-        (mem_axi_wstrb == 4'b0001) ? {24'b0, mem_axi_wdata[7:0]} :
-        (mem_axi_wstrb == 4'b0010) ? {16'b0, mem_axi_wdata[7:0], 8'b0} :
-        (mem_axi_wstrb == 4'b0100) ? {8'b0, mem_axi_wdata[7:0], 16'b0} :
-        (mem_axi_wstrb == 4'b1000) ? {mem_axi_wdata[7:0], 24'b0} :
-        (mem_axi_wstrb == 4'b0011) ? {16'b0, mem_axi_wdata[15:0]} :
-        (mem_axi_wstrb == 4'b0110) ? {8'b0, mem_axi_wdata[15:0], 8'b0} :
-        (mem_axi_wstrb == 4'b1100) ? {mem_axi_wdata[15:0], 16'b0} :
-        (mem_axi_wstrb == 4'b1111) ? mem_axi_wdata : 32'b0;
-
     // SRAM写通道
     wire sram_awvalid = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awvalid : 1'b0;
     wire [31:0] sram_awaddr = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;
@@ -279,7 +266,6 @@ module ysyx_24100006_xbar_arbiter #(
     wire [7:0] sram_awlen = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awlen : 8'h0;
     wire [2:0] sram_awsize = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awsize : 3'h0;
     wire [3:0] sram_wstrb = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wstrb : 4'h0;
-    wire sram_wlast = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wlast : 1'b0;
 
     // ================== 读数据通道寄存器 ==================
     
@@ -296,7 +282,7 @@ module ysyx_24100006_xbar_arbiter #(
     assign sram_axi_awvalid = sel_sram ? sram_awvalid : 0;
     assign sram_axi_awaddr = sel_sram ? sram_awaddr : 32'h0;
     assign sram_axi_wvalid = sel_sram ? sram_wvalid : 0;
-    assign sram_axi_wdata = sel_sram ? real_axi_wdata : 32'h0;
+    assign sram_axi_wdata = sel_sram ? mem_axi_wdata : 32'h0;
     assign sram_axi_bready = sel_sram ? sram_bready : 0;
 
 `ifdef NPC
@@ -369,7 +355,7 @@ module ysyx_24100006_xbar_arbiter #(
     assign sram_axi_awlen = sram_awlen;
     assign sram_axi_awsize = sram_awsize;
     assign sram_axi_wstrb = sram_wstrb;
-    assign sram_axi_wlast = sram_wlast;
+    assign sram_axi_wlast = 1'b1;
 
 `ifdef VERILATOR_SIM
     // Acess Fault信号

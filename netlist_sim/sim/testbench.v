@@ -476,6 +476,74 @@ module testbench;
         .uart_axi_bresp(uart_axi_bresp)
     );
 
+
+    wire [31:0] mtime_lo,mtime_hi;
+    // 将展平的位信号组合成64位寄存器值
+    assign mtime_lo[0]  = u_npc.u_clint.\mtime_lo[0] ;
+    assign mtime_lo[1]  = u_npc.u_clint.\mtime_lo[1] ;
+    assign mtime_lo[2]  = u_npc.u_clint.\mtime_lo[2] ;
+    assign mtime_lo[3]  = u_npc.u_clint.\mtime_lo[3] ;
+    assign mtime_lo[4]  = u_npc.u_clint.\mtime_lo[4] ;
+    assign mtime_lo[5]  = u_npc.u_clint.\mtime_lo[5] ;
+    assign mtime_lo[6]  = u_npc.u_clint.\mtime_lo[6] ;
+    assign mtime_lo[7]  = u_npc.u_clint.\mtime_lo[7] ;
+    assign mtime_lo[8]  = u_npc.u_clint.\mtime_lo[8] ;
+    assign mtime_lo[9]  = u_npc.u_clint.\mtime_lo[9] ;
+    assign mtime_lo[10] = u_npc.u_clint.\mtime_lo[10] ;
+    assign mtime_lo[11] = u_npc.u_clint.\mtime_lo[11] ;
+    assign mtime_lo[12] = u_npc.u_clint.\mtime_lo[12] ;
+    assign mtime_lo[13] = u_npc.u_clint.\mtime_lo[13] ;
+    assign mtime_lo[14] = u_npc.u_clint.\mtime_lo[14] ;
+    assign mtime_lo[15] = u_npc.u_clint.\mtime_lo[15] ;
+    assign mtime_lo[16] = u_npc.u_clint.\mtime_lo[16] ;
+    assign mtime_lo[17] = u_npc.u_clint.\mtime_lo[17] ;
+    assign mtime_lo[18] = u_npc.u_clint.\mtime_lo[18] ;
+    assign mtime_lo[19] = u_npc.u_clint.\mtime_lo[19] ;
+    assign mtime_lo[20] = u_npc.u_clint.\mtime_lo[20] ;
+    assign mtime_lo[21] = u_npc.u_clint.\mtime_lo[21] ;
+    assign mtime_lo[22] = u_npc.u_clint.\mtime_lo[22] ;
+    assign mtime_lo[23] = u_npc.u_clint.\mtime_lo[23] ;
+    assign mtime_lo[24] = u_npc.u_clint.\mtime_lo[24] ;
+    assign mtime_lo[25] = u_npc.u_clint.\mtime_lo[25] ;
+    assign mtime_lo[26] = u_npc.u_clint.\mtime_lo[26] ;
+    assign mtime_lo[27] = u_npc.u_clint.\mtime_lo[27] ;
+    assign mtime_lo[28] = u_npc.u_clint.\mtime_lo[28] ;
+    assign mtime_lo[29] = u_npc.u_clint.\mtime_lo[29] ;
+    assign mtime_lo[30] = u_npc.u_clint.\mtime_lo[30] ;
+    assign mtime_lo[31] = u_npc.u_clint.\mtime_lo[31] ;
+    assign mtime_hi[0] = u_npc.u_clint.\mtime_hi[0] ;
+    assign mtime_hi[1] = u_npc.u_clint.\mtime_hi[1] ;
+    assign mtime_hi[2] = u_npc.u_clint.\mtime_hi[2] ;
+    assign mtime_hi[3] = u_npc.u_clint.\mtime_hi[3] ;
+    assign mtime_hi[4] = u_npc.u_clint.\mtime_hi[4] ;
+    assign mtime_hi[5] = u_npc.u_clint.\mtime_hi[5] ;
+    assign mtime_hi[6] = u_npc.u_clint.\mtime_hi[6] ;
+    assign mtime_hi[7] = u_npc.u_clint.\mtime_hi[7] ;
+    assign mtime_hi[8] = u_npc.u_clint.\mtime_hi[8] ;
+    assign mtime_hi[9] = u_npc.u_clint.\mtime_hi[9] ;
+    assign mtime_hi[10] = u_npc.u_clint.\mtime_hi[10] ;
+    assign mtime_hi[11] = u_npc.u_clint.\mtime_hi[11] ;
+    assign mtime_hi[12] = u_npc.u_clint.\mtime_hi[12] ;
+    assign mtime_hi[13] = u_npc.u_clint.\mtime_hi[13] ;
+    assign mtime_hi[14] = u_npc.u_clint.\mtime_hi[14] ;
+    assign mtime_hi[15] = u_npc.u_clint.\mtime_hi[15] ;
+    assign mtime_hi[16] = u_npc.u_clint.\mtime_hi[16] ;
+    assign mtime_hi[17] = u_npc.u_clint.\mtime_hi[17] ;
+    assign mtime_hi[18] = u_npc.u_clint.\mtime_hi[18] ;
+    assign mtime_hi[19] = u_npc.u_clint.\mtime_hi[19] ;
+    assign mtime_hi[20] = u_npc.u_clint.\mtime_hi[20] ;
+    assign mtime_hi[21] = u_npc.u_clint.\mtime_hi[21] ;
+    assign mtime_hi[22] = u_npc.u_clint.\mtime_hi[22] ;
+    assign mtime_hi[23] = u_npc.u_clint.\mtime_hi[23] ;
+    assign mtime_hi[24] = u_npc.u_clint.\mtime_hi[24] ;
+    assign mtime_hi[25] = u_npc.u_clint.\mtime_hi[25] ;
+    assign mtime_hi[26] = u_npc.u_clint.\mtime_hi[26] ;
+    assign mtime_hi[27] = u_npc.u_clint.\mtime_hi[27] ;
+    assign mtime_hi[28] = u_npc.u_clint.\mtime_hi[28] ;
+    assign mtime_hi[29] = u_npc.u_clint.\mtime_hi[29] ;
+    assign mtime_hi[30] = u_npc.u_clint.\mtime_hi[30] ;
+    assign mtime_hi[31] = u_npc.u_clint.\mtime_hi[31] ;
+
     
     wire [31:0] pc_F;
     

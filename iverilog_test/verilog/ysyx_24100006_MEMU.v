@@ -56,7 +56,6 @@ module ysyx_24100006_memu(
     output  reg [7:0]   axi_awlen,
     output  reg [2:0]   axi_awsize,
     output  reg [3:0]   axi_wstrb,
-    output  reg         axi_wlast,
 
     // 用于分辨原始的地址的后两位
     output  reg [1:0]   axi_addr_suffix,
@@ -121,6 +120,38 @@ module ysyx_24100006_memu(
     assign mem_out_ready = (state[0] == 1'b0);
     assign mem_in_valid  = (state[1] == 1'b1);
 
+    wire [3:0] wstrb = (Mem_Mask_M == 3'b000) ? // SB
+                        ((alu_result_M[1:0]==2'b00) ? 4'b0001 :
+                            (alu_result_M[1:0]==2'b01) ? 4'b0010 :
+                            (alu_result_M[1:0]==2'b10) ? 4'b0100 :
+                                                        4'b1000) :
+                        (Mem_Mask_M == 3'b001) ?       // SH
+                        ((alu_result_M[1:0]==2'b00) ? 4'b0011 :
+                            (alu_result_M[1:0]==2'b01) ? 4'b0110 :
+                            (alu_result_M[1:0]==2'b10) ? 4'b1100 :
+                                                        4'b0000) :
+                        (Mem_Mask_M == 3'b011) ?       // SW
+                        ((alu_result_M[1:0]==2'b00) ? 4'b1111 : 4'b0000) :
+                                                4'b0000;
+
+    wire [31:0] real_axi_wdata = 
+        (wstrb == 4'b0001) ? {24'b0, wdata_gpr_M[7:0]} :
+        (wstrb == 4'b0010) ? {16'b0, wdata_gpr_M[7:0], 8'b0} :
+        (wstrb == 4'b0100) ? {8'b0, wdata_gpr_M[7:0], 16'b0} :
+        (wstrb == 4'b1000) ? {wdata_gpr_M[7:0], 24'b0} :
+        (wstrb == 4'b0011) ? {16'b0, wdata_gpr_M[15:0]} :
+        (wstrb == 4'b0110) ? {8'b0, wdata_gpr_M[15:0], 8'b0} :
+        (wstrb == 4'b1100) ? {wdata_gpr_M[15:0], 16'b0} :
+        (wstrb == 4'b1111) ? wdata_gpr_M : 32'b0;
+
+    wire [2:0] arsize   = (Mem_Mask_M==3'b000 || Mem_Mask_M==3'b001) ? 3'b000 :
+                                                (Mem_Mask_M==3'b010 || Mem_Mask_M==3'b011) ? 3'b001 :
+                                                                                              3'b010;
+
+    wire [2:0] awsize   = (Mem_Mask_M==3'b000) ? 3'b000 :
+                                                (Mem_Mask_M==3'b001) ? 3'b001 :
+                                                                       3'b010;
+
     always @(posedge clk) begin
         if (reset) begin
             // axi 握手信号初始化
@@ -136,7 +167,7 @@ module ysyx_24100006_memu(
             axi_awlen   <= 8'b0;
             axi_awsize  <= 3'b010;
             axi_wstrb   <= 4'b0;
-            axi_wlast   <= 1'b0;
+            // axi_wlast   <= 1'b1;
 
             axi_addr_suffix<= 2'b0;
             locked_sram_read_write<=0;
@@ -146,7 +177,7 @@ module ysyx_24100006_memu(
             case(state)
                 // ================== S_IDLE ==================
                 S_IDLE: begin
-                    locked_sram_read_write <= 2'b00;
+                    // locked_sram_read_write <= 2'b00;
                     if (mem_out_valid && mem_out_ready) begin
                         if (sram_read_write[0] == 1'b0 && sram_read_write[1] == 1'b0) begin
                             // 无访存，直接进入发送
@@ -159,37 +190,21 @@ module ysyx_24100006_memu(
                             if (sram_read_write[0] == 1'b1) begin
                                 // READ
                                 axi_araddr   <= alu_result_M;
-                                axi_arsize   <= (Mem_Mask_M==3'b000 || Mem_Mask_M==3'b001) ? 3'b000 :
-                                                (Mem_Mask_M==3'b010 || Mem_Mask_M==3'b011) ? 3'b001 :
-                                                                                              3'b010;
+                                axi_arsize   <= arsize;
                                 axi_addr_suffix <= alu_result_M[1:0];
                                 axi_arvalid  <= 1'b1;
                                 axi_rready   <= 1'b0;      // 等地址握手完成再置 1
                             end else begin
                                 // WRITE（地址+数据同拍发）
                                 axi_awaddr   <= alu_result_M;
-                                axi_awsize   <= (Mem_Mask_M==3'b000) ? 3'b000 :
-                                                (Mem_Mask_M==3'b001) ? 3'b001 :
-                                                                       3'b010;
+                                axi_awsize   <= awsize;
                                 axi_awvalid  <= 1'b1;
 
-                                axi_wdata    <= wdata_gpr_M;
+                                axi_wdata    <= real_axi_wdata;
                                 axi_wvalid   <= 1'b1;
-                                axi_wlast    <= 1'b1;
+                                // axi_wlast    <= 1'b1;
                                 // 写掩码（保持原实现）
-                                axi_wstrb    <=  (Mem_Mask_M == 3'b000) ? // SB
-                                                    ((alu_result_M[1:0]==2'b00) ? 4'b0001 :
-                                                     (alu_result_M[1:0]==2'b01) ? 4'b0010 :
-                                                     (alu_result_M[1:0]==2'b10) ? 4'b0100 :
-                                                                                   4'b1000) :
-                                                 (Mem_Mask_M == 3'b001) ?       // SH
-                                                    ((alu_result_M[1:0]==2'b00) ? 4'b0011 :
-                                                     (alu_result_M[1:0]==2'b01) ? 4'b0110 :
-                                                     (alu_result_M[1:0]==2'b10) ? 4'b1100 :
-                                                                                   4'b0000) :
-                                                 (Mem_Mask_M == 3'b011) ?       // SW
-                                                    ((alu_result_M[1:0]==2'b00) ? 4'b1111 : 4'b0000) :
-                                                                            4'b0000;
+                                axi_wstrb    <=  wstrb;
                                 axi_bready   <= 1'b0;      // AW/W 完成后再置 1
                             end
                             state <= S_ACCESS;
@@ -218,9 +233,9 @@ module ysyx_24100006_memu(
                         end
                         if (axi_wready) begin
                             axi_wvalid  <= 1'b0;
-                            axi_wlast   <= 1'b0;
-                            axi_wstrb   <= 4'b0;
-                            axi_wdata   <= 32'b0;
+                            // axi_wlast   <= 1'b0;
+                            // axi_wstrb   <= 4'b0;
+                            // axi_wdata   <= 32'b0;
                         end
                         if (!axi_bready && axi_awvalid==1'b0 && axi_wvalid==1'b0) begin
                             // 地址/数据都被接收后，开始等待响应
@@ -243,8 +258,8 @@ module ysyx_24100006_memu(
                         state <= S_IDLE;
 
                         // 恢复 AXI 缺省
-                        axi_arsize <= 3'b010;
-                        axi_awsize <= 3'b010;
+                        // axi_arsize <= 3'b010;
+                        // axi_awsize <= 3'b010;
                     end
                 end
 
@@ -350,21 +365,40 @@ module ysyx_24100006_memu(
 
     // 前递单元设计（保持原样）
     reg cnt;
-    always @(posedge clk) begin
-        if(reset) begin
-            cnt <= 1'b0;
-        end else begin
-            if(mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)begin
-                cnt <= 1'b1;
-            end
-            if((mem_out_ready == 1'b1 && mem_out_valid == 1'b1 && sram_read_write[0] == 1'b0) || (mem_out_valid == 0 && axi_rvalid == 1)) begin
-                cnt <= 1'b0;
-            end
-        end
-    end
+    // always @(posedge clk) begin
+    //     if(reset) begin
+    //         cnt <= 1'b0;
+    //     end else begin
+    //         if(mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)begin
+    //             cnt <= 1'b1;
+    //         end
+    //         if((mem_out_ready == 1'b1 && mem_out_valid == 1'b1 && sram_read_write[0] == 1'b0) || (mem_out_valid == 0 && axi_rvalid == 1)) begin
+    //             cnt <= 1'b0;
+    //         end
+    //     end
+    // end
 
     // (mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)这个是为了判断mem_out_valid == 1'b1时是否需要阻塞
-    assign exe_mem_is_load  = ((sram_read_write[0] == 1'b1 && cnt != 0) || (mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)) ? 1'b1 : 1'b0;
+    // assign exe_mem_is_load  = ((sram_read_write[0] == 1'b1 && cnt == 1) || (mem_out_valid == 1'b1 && mem_out_ready == 1'b1 && sram_read_write[0] == 1'b1)) ? 1'b1 : 1'b0;
+
+    // 下面是面积优化版本
+    always @(posedge clk) begin
+        if (reset) begin
+            cnt <= 1'b0;
+        end
+        else begin
+            // 置位条件：写操作握手成功
+            if (mem_out_valid && mem_out_ready && sram_read_write[0]) begin
+                cnt <= 1'b1;
+            end
+            // 清零条件：读操作握手成功或AXI响应有效
+            if ((mem_out_ready && mem_out_valid && !sram_read_write[0]) || 
+                (!mem_out_valid && axi_rvalid)) begin
+                    cnt <= 1'b0;
+                end
+        end
+    end
+    assign exe_mem_is_load  = ((cnt == 1) || (mem_out_valid == 1'b1 && mem_out_ready == 1'b1 )) && sram_read_write[0] == 1'b1 ? 1'b1 : 1'b0;
     assign mem_fw_data      = wdata_gpr_W;
 
 `ifndef __ICARUS__

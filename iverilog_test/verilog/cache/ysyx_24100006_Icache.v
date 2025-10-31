@@ -241,8 +241,7 @@ module ysyx_24100006_Icache #(
                 // ---------------- RESP ----------------
                 S_RESP: begin
 `ifdef VERILATOR_SIM
-                    hit             <= 1'b0;
-                    cache_fill_end  <= 1'b0;
+                    cache_fill_end <= 1'b0;
 `endif
                     // 在此状态保持 cpu_rvalid_o=1，直到 CPU 以 rready 握手取走
                 end
