@@ -75,11 +75,11 @@ word_t paddr_read(paddr_t addr, int len) {
 #endif
   // TAG:如果要运行NEMU,需要先注释soc的读写,因为有地址和nemu的冲突了
   // TAG:如果要作为NPC的ref，那么需要注释掉下面的soc有关的内容
-  // if (in_socMem(addr)) return soc_read(addr, len);
-  // if (in_socDevR(addr)){
-  //   skip = true;
-  //   return socDev_read(addr, len);
-  // }
+  if (in_socMem(addr)) return soc_read(addr, len);
+  if (in_socDevR(addr)){
+    skip = true;
+    return socDev_read(addr, len);
+  }
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
   // nemu当参考端的时候，没有device的支持
   IFDEF(CONFIG_REF_DEVICE, skip=true;return 0;)
@@ -95,12 +95,12 @@ void paddr_write(paddr_t addr, int len, word_t data) {
 #endif
   // TAG:如果要运行NEMU,需要先注释soc的读写,因为有地址和nemu的冲突了
   // TAG:如果要作为NPC的ref，那么需要注释掉下面的soc有关的内容
-  // if (in_socMem(addr))  { soc_write(addr, len, data); return; }
-  // if (in_socDevW(addr)) { 
-  //   skip = true;
-  //   socDev_write(addr, len, data); 
-  //   return;
-  // }
+  if (in_socMem(addr))  { soc_write(addr, len, data); return; }
+  if (in_socDevW(addr)) { 
+    skip = true;
+    socDev_write(addr, len, data); 
+    return;
+  }
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
   // nemu当参考端的时候，没有device的支持
   IFDEF(CONFIG_REF_DEVICE, skip=true;return ;)
