@@ -38,10 +38,7 @@ module ysyx_24100006_uart #(
     output  reg [31:0]  axi_rdata
     
 );
-`ifndef __ICARUS__
-    import "DPI-C" function void skip();
-`endif
-
+    
     parameter   S_IDLE          = 0, 
                 S_READ_ADDR     = 1, 
                 S_READ_DATA     = 2, 
@@ -95,9 +92,6 @@ module ysyx_24100006_uart #(
                     axi_wready          <= 1'b0;
                     if(axi_awvalid == 1'b1 && axi_awready == 1'b1 && axi_wvalid == 1'b1 && axi_wready == 1'b1) begin
                         // 写入数据
-                    `ifndef __ICARUS__
-                        skip();
-                    `endif
                         $write("%c",axi_wdata[7:0]);
                         axi_bresp       <= 2'b00;
                         axi_bvalid      <= 1'b1;
