@@ -11,6 +11,8 @@
 !README.md
 !.gitignore
 !init.sh
+!/patch/*
 /fceux-am
 /nvboard
 /am-kernels
+iverilog_test_bak

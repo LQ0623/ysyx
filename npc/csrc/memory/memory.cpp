@@ -514,10 +514,10 @@ extern "C" int pmem_read(int paddr){
 	}
 
 	if(paddr == RTC_ADDR+4) {
-		timer = get_time(); 
 		return (uint32_t)(timer >> 32);
 	}
 	else if(paddr == RTC_ADDR) {
+		timer = get_time(); 
 		return (uint32_t)timer;
 	}
 	else if(paddr == KBD_ADDR){

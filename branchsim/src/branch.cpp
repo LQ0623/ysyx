@@ -7,6 +7,10 @@
 #define BITS(x, hi, lo) (((x) >> (lo)) & BITMASK((hi) - (lo) + 1)) // similar to x[hi:lo] in verilog
 #define SEXT(x, len) ({ struct { int64_t n : len; } __x = { .n = x }; (uint64_t)__x.n; })
 
+static uint64_t jal_cnt = 0;
+static uint64_t b_cnt = 0;
+static uint64_t jalr_cnt = 0;
+
 bool BranchPredictor::parse_inst(uint32_t pc, uint32_t i, string* op, uint32_t* dest)
 {
     int opcode = BITS(i, 6, 0);
@@ -19,14 +23,17 @@ bool BranchPredictor::parse_inst(uint32_t pc, uint32_t i, string* op, uint32_t* 
     {
         case 0b1100111: //jalr
             *op = "jalr";
+            jalr_cnt++;
             *dest = 0;
             break;
         case 0b1101111: //jal
             *op = "jal";
+            jal_cnt++;
             *dest = pc + immJ;
             break;
         case 0b1100011: //b type
             *dest = pc + immB;
+            b_cnt++;
             switch (func3)
             {
                 case 0b000:
@@ -90,10 +97,16 @@ void BranchPredictor::updateBTB(uint32_t pc, uint32_t target)
 
 void BranchPredictor::statistic()
 {
+    log("The number of jal instructions is %lu , and the proportion of jal instructions is %.2f%%\n", jal_cnt, 100.0 * jal_cnt/count);
+    log("The number of b-type instructions is %lu , and the proportion of b-type instructions is %.2f%%\n", b_cnt, 100.0 * b_cnt/count);
+    log("The number of jalr instructions is %lu , and the proportion of jalr instructions is %.2f%%\n", jalr_cnt, 100.0 * b_cnt/count);
     log("count           = %lu\n", count);
     log("correct count   = %lu\n", correctCnt);
     log("incorrect count = %lu\n", mispredCnt);
     log("accuracy        = %.2f%%\n", 100.0 * correctCnt / count);
+    printf("The number of jal instructions is %lu , and the proportion of jal instructions is %.2f%%\n", jal_cnt, 100.0 * jal_cnt/count);
+    printf("The number of b-type instructions is %lu , and the proportion of b-type instructions is %.2f%%\n", b_cnt, 100.0 * b_cnt/count);
+    printf("The number of jalr instructions is %lu , and the proportion of jalr instructions is %.2f%%\n", jalr_cnt, 100.0 * jalr_cnt/count);
     printf("count           = %lu\n", count);
     printf("correct count   = %lu\n", correctCnt);
     printf("incorrect count = %lu\n", mispredCnt);

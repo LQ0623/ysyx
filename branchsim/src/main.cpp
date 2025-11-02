@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
     if (!fp) assert(0);
     AlwaysTakenPredictor *atbp = new AlwaysTakenPredictor("./build/alwaysTaken.log", 0);
     AlwaysNotTakenPredictor *antbp = new AlwaysNotTakenPredictor("./build/alwaysNotTaken.log", 0);
-    BTFNPredictor *btfnbp = new BTFNPredictor("./build/btfn.log", 4);
+    BTFNPredictor *btfnbp = new BTFNPredictor("./build/btfn.log", 4096);
     uint32_t inst;
     uint32_t pc;
     int temp;
@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
     }
     delete atbp;
     delete antbp;
+    delete btfnbp;
 
     return 0;
 }

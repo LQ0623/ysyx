@@ -7,7 +7,7 @@ bool BTFNPredictor::predict(uint32_t pc, uint32_t inst)
         string op;
         uint32_t dest;
         bool legal = parse_inst(pc, inst, &op, &dest);
-        std::cout<<inst<<"\t"<<op<<std::endl;
+        // std::cout<<inst<<"\t"<<op<<std::endl;
         if(!legal) assert(0);
         if(dest <= pc){
             return true;

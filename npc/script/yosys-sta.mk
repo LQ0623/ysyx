@@ -5,13 +5,18 @@ PROJ_PATH = $(CURDIR)/..
 
 IEDA = $(PROJ_PATH)/yosys-sta/bin/iEDA
 DESIGN ?= ysyx_24100006
+# DEFINES ?= -DNPC
+DEFINES ?= 
+
 SDC_FILE ?= $(PROJ_PATH)/vsrc/cpu.sdc
 # RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v")
 RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v" \
 				-not -path "$(PROJ_PATH)/vsrc/MEM/ysyx_24100006_mem.v"	\
 				-not -path "$(PROJ_PATH)/vsrc/MEM/ysyx_24100006_uart.v" \
 				-not -path "$(PROJ_PATH)/vsrc/IF/ysyx_24100006_im.v" \
-				-not -path "$(PROJ_PATH)/vsrc/cache/Icache_gpt.v")
+				-not -path "$(PROJ_PATH)/vsrc/cache/Icache_gpt.v" \
+				-not -path "$(PROJ_PATH)/vsrc/axi/ysyx_24100006_axi_arbiter.v" \
+				-not -path "$(PROJ_PATH)/vsrc/axi/ysyx_24100006_axi_xbar.v" )
 # RTL_FILES ?= $(PROJ_PATH)/vsrc/EX/ysyx_24100006_alu.v $(PROJ_PATH)/vsrc/template/ysyx_24100006_MuxKey.v
 export CLK_FREQ_MHZ ?= 430
 
@@ -27,7 +32,7 @@ init:
 syn: $(NETLIST_SYN_V)
 $(NETLIST_SYN_V): $(RTL_FILES) $(SCRIPT_DIR)/yosys.tcl
 	mkdir -p $(@D)
-	echo tcl $(SCRIPT_DIR)/yosys.tcl $(DESIGN) \"$(RTL_FILES)\" $@ | yosys -l $(@D)/yosys.log -s -
+	echo tcl $(SCRIPT_DIR)/yosys.tcl $(DESIGN) \"$(RTL_FILES)\" $@ $(DEFINES) | yosys -l $(@D)/yosys.log -s -
 
 fix-fanout: $(NETLIST_FIXED_V)
 $(NETLIST_FIXED_V): $(SCRIPT_DIR)/fix-fanout.tcl $(SDC_FILE) $(NETLIST_SYN_V)

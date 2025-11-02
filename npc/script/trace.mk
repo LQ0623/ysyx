@@ -13,6 +13,10 @@ MICROBENCH_DIR = $(AM_KERNEL_HOME)/benchmarks/microbench
 perf:
 	make -C $(MICROBENCH_DIR) ARCH=riscv32e-ysyxsoc run mainargs=train
 
+#rtt
+RTT_DIR = /home/lq/rtt/rt-thread-am/bsp/abstract-machine
+rtt:
+	make -C $(RTT_DIR) ARCH=riscv32e-ysyxsoc run
 
 # 下面为面积可视化的配置
 # 配置参数
