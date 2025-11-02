@@ -1,6 +1,9 @@
 /**
     AXI-Lite接口的UART功能：本质上就是使用MEM那一套，只是不能读，只能使用$write进行写操作
 */
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
 // TAG:如果rresp返回的是01,则表示读了不可读的部分
 module ysyx_24100006_uart #(
     parameter BASE_ADDR = 32'ha000_03f8     // UART基地址,然后可以向后写8个字节
@@ -38,10 +41,7 @@ module ysyx_24100006_uart #(
     output  reg [31:0]  axi_rdata
     
 );
-`ifndef __ICARUS__
-    import "DPI-C" function void skip();
-`endif
-
+    
     parameter   S_IDLE          = 0, 
                 S_READ_ADDR     = 1, 
                 S_READ_DATA     = 2, 
@@ -95,9 +95,6 @@ module ysyx_24100006_uart #(
                     axi_wready          <= 1'b0;
                     if(axi_awvalid == 1'b1 && axi_awready == 1'b1 && axi_wvalid == 1'b1 && axi_wready == 1'b1) begin
                         // 写入数据
-                    `ifndef __ICARUS__
-                        skip();
-                    `endif
                         $write("%c",axi_wdata[7:0]);
                         axi_bresp       <= 2'b00;
                         axi_bvalid      <= 1'b1;

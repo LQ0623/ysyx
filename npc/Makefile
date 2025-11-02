@@ -48,4 +48,75 @@ COLOR_NONE  		= \033[0m
 clean:
 	-rm -rf $(BUILD_DIR) tools/performance-trace/*.png tools/performance-trace/*.txt
 
-.PHONY:clean run 
+
+# CI使用
+
+
+# 生成经过预处理的Verilog文件，方便静态时序分析工具进行分析
+verilog: $(BUILD_DIR)
+	iverilog -E -D__ICARUS__ vsrc/ysyx_24100006.v -o $(BUILD_DIR)/ysyx_24100006.v
+
+
+# iverilog仿真相关
+IVERILOG = iverilog
+VVP = vvp
+OBJCOPY = objcopy
+IVERILOG_FLAGS = -g2012 -Wall
+NPC ?= 1
+DEFINES :=
+ifeq ($(NPC),1)
+  DEFINES += -DNPC -DVERILATOR_SIM
+endif
+
+
+# 源文件
+IVSRC = ./vsrc/ysyx_24100006_i_testbench.v
+IVSRC += ./vsrc/ysyx_24100006.v
+IVSRC += ./vsrc/ysyx_24100006_mem.v
+IVSRC += ./vsrc/ysyx_24100006_uart.v
+NETLIST_VSRC = ./vsrc/ysyx_24100006_net_testbench.v
+NETLIST ?= ./vsrc/ysyx_24100006.netlist.syn.v
+NETLIST_VSRC += $(NETLIST)
+NETLIST_VSRC += ./vsrc/ysyx_24100006_mem.v
+NETLIST_VSRC += ./vsrc/ysyx_24100006_uart.v
+CELLS ?= ./vsrc/cells.v
+NETLIST_VSRC += $(CELLS)
+
+# 编译结果存放
+ICOMPILED = $(BUILD_DIR)/ysyx_24100006_iverilog.vpp
+ICOMPILED-NETLIST = $(BUILD_DIR)/ysyx_24100006_iverilog_netlist.vpp
+MEMORY_HEX = $(BUILD_DIR)/memory_iverilog.hex
+VMA_ADJUST ?= 0x0
+
+MEMORY_HEX = $(BUILD_DIR)/memory_iverilog.hex
+VMA_ADJUST ?= 0x0
+
+$(MEMORY_HEX): $(IMG)
+	@if [ ! -f "$(IMG)" ]; then \
+		echo -e "$(COLOR_RED)Error: IMG file not found: $(IMG)$(COLOR_NONE)"; \
+		echo "Please make sure the AM application is built first:"; \
+		echo "  make -C ~/ysyx-workbench/am-kernels/tests/am-tests ARCH=riscv32e-npc"; \
+		exit 1; \
+	fi
+	mkdir -p $(BUILD_DIR)
+	$(OBJCOPY) -I binary -O verilog --adjust-vma=$(VMA_ADJUST) $(IMG) $(MEMORY_HEX)
+
+# 四值仿真的规则
+$(ICOMPILED): $(IVSRC)
+	$(IVERILOG) $(IVERILOG_FLAGS) $(DEFINES) -o $@ $^
+
+run_sim_iverilog: $(ICOMPILED)
+	$(VVP) $(ICOMPILED) +img=$(MEMORY_HEX)
+
+sim-iverilog: $(MEMORY_HEX) $(ICOMPILED) run_sim_iverilog
+
+# 网表仿真结果
+$(ICOMPILED-NETLIST): $(NETLIST_VSRC)
+	$(IVERILOG) $(IVERILOG_FLAGS) -o $@ $^
+
+run_sim_iverilog_netlist: $(ICOMPILED-NETLIST)
+	$(VVP) $(ICOMPILED-NETLIST) +img=$(MEMORY_HEX)
+
+sim-iverilog-netlist: $(MEMORY_HEX) $(ICOMPILED-NETLIST) run_sim_iverilog_netlist
+
+.PHONY:clean run run_sim_iverilog sim-iverilog sim-iverilog-netlist verilog

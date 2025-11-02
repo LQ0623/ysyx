@@ -1,6 +1,9 @@
 /**
     使用DPI-C进行内存读写
 */
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
 module ysyx_24100006_mem(
     input               clk,
     input               reset,
@@ -116,14 +119,14 @@ module ysyx_24100006_mem(
                     axi_arready         <= 1'b0;
                     if(axi_arvalid == 1'b1 && axi_arready == 1'b1) begin
                         // 锁存地址和突发参数
-                        current_raddr   <= axi_araddr;
+                        current_raddr   <= axi_araddr & (~32'd3) ;
                         burst_length    <= axi_arlen;
                         burst_counter   <= 8'b0;
                         
                         axi_rvalid      <= 1'b1;
 `ifdef __ICARUS__
                         if (axi_araddr >= BASE_ADDR && axi_araddr < BASE_ADDR + MEM_BYTES - 3) begin
-                            mem_idx = axi_araddr - BASE_ADDR;
+                            mem_idx = axi_araddr & (~32'd3)  - BASE_ADDR;
                             axi_rdata <= {mem[mem_idx+3], mem[mem_idx+2], mem[mem_idx+1], mem[mem_idx+0]};
                         end else begin
                             axi_rdata <= 32'h0;
@@ -181,7 +184,7 @@ module ysyx_24100006_mem(
                     if(axi_awvalid == 1'b1 && axi_awready == 1'b1 && axi_wvalid == 1'b1 && axi_wready == 1'b1) begin
 `ifdef __ICARUS__
                         if (axi_awaddr >= BASE_ADDR && axi_awaddr < BASE_ADDR + MEM_BYTES - 3) begin
-                            mem_idx = axi_awaddr - BASE_ADDR;
+                            mem_idx = axi_awaddr & (~32'd3)  - BASE_ADDR;
                             if (axi_wstrb[0]) mem[mem_idx+0] <= axi_wdata[7:0];
                             if (axi_wstrb[1]) mem[mem_idx+1] <= axi_wdata[15:8];
                             if (axi_wstrb[2]) mem[mem_idx+2] <= axi_wdata[23:16];
