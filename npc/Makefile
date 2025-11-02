@@ -54,6 +54,7 @@ clean:
 
 # 生成经过预处理的Verilog文件，方便静态时序分析工具进行分析
 verilog: $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)
 	iverilog -E -D__ICARUS__ vsrc/ysyx_24100006.v -o $(BUILD_DIR)/ysyx_24100006.v
 
 
