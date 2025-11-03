@@ -6,12 +6,13 @@ PROJ_PATH = $(CURDIR)/..
 IEDA = $(PROJ_PATH)/yosys-sta/bin/iEDA
 DESIGN ?= ysyx_24100006
 # DEFINES ?= -DNPC
-DEFINES ?= 
+DEFINES ?= -D__ICARUS__
 
 SDC_FILE ?= $(PROJ_PATH)/vsrc/cpu.sdc
 # RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v")
 RTL_FILES ?= $(shell find $(PROJ_PATH)/vsrc -name "*.v" \
 				-not -path "$(PROJ_PATH)/vsrc/ysyx_24100006_mem.v"	\
+				-not -path "$(PROJ_PATH)/vsrc/ysyx_24100006_i_testbench.v"	\
 				-not -path "$(PROJ_PATH)/vsrc/ysyx_24100006_uart.v" \
 				-not -path "$(PROJ_PATH)/vsrc/IF/ysyx_24100006_im.v" \
 				-not -path "$(PROJ_PATH)/vsrc/cache/Icache_gpt.v" \

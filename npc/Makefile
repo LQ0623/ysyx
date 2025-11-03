@@ -70,13 +70,15 @@ ifeq ($(NPC),1)
 endif
 
 
-# 源文件
+# 四值仿真源文件
 IVSRC = ./vsrc/ysyx_24100006_i_testbench.v
 IVSRC += ./vsrc/ysyx_24100006.v
 IVSRC += ./vsrc/ysyx_24100006_mem.v
 IVSRC += ./vsrc/ysyx_24100006_uart.v
-NETLIST_VSRC = ./vsrc/ysyx_24100006_net_testbench.v
-NETLIST ?= ./vsrc/ysyx_24100006.netlist.syn.v
+
+# 网表仿真源文件
+NETLIST_VSRC = ./ysyx_24100006_net_testbench.v
+NETLIST ?= ./ysyx_24100006.netlist.syn.v
 NETLIST_VSRC += $(NETLIST)
 NETLIST_VSRC += ./vsrc/ysyx_24100006_mem.v
 NETLIST_VSRC += ./vsrc/ysyx_24100006_uart.v
@@ -120,4 +122,4 @@ run_sim_iverilog_netlist: $(ICOMPILED-NETLIST)
 
 sim-iverilog-netlist: $(MEMORY_HEX) $(ICOMPILED-NETLIST) run_sim_iverilog_netlist
 
-.PHONY:clean run run_sim_iverilog sim-iverilog sim-iverilog-netlist verilog
+.PHONY:clean run $(MEMORY_HEX) run_sim_iverilog sim-iverilog sim-iverilog-netlist verilog 

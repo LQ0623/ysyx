@@ -12,7 +12,6 @@
 module ysyx_24100006(
 	input			clock,
     input			reset
-`ifndef NPC
 	,
 
 	input 			io_interrupt,
@@ -107,38 +106,10 @@ module ysyx_24100006(
     output wire [31:0] io_slave_rdata,    // 数据
     output wire        io_slave_rlast,    // 最后一个数据包
     output wire [3:0]  io_slave_rid       // 事务 ID
-	
-`endif
 
-// 网表仿真的时候将uart接出去
-`ifndef VERILATOR_SIM
-	`ifdef NPC
-		,output        	uart_axi_arvalid,
-		input       	uart_axi_arready,
-		output [31:0]	uart_axi_araddr,
-		// 读数据通道
-		input          	uart_axi_rvalid,
-		output         	uart_axi_rready,
-		input  [1:0]	uart_axi_rresp,
-		input  [31:0]	uart_axi_rdata,
-		// 写地址通道
-		output			uart_axi_awvalid,
-		input			uart_axi_awready,
-		output [31:0]	uart_axi_awaddr,
-		// 写数据通道
-		output			uart_axi_wvalid,
-		input         	uart_axi_wready,
-		output [31:0] 	uart_axi_wdata,
-		output [3:0]   	uart_axi_wstrb,
-		// 写响应通道
-		input          	uart_axi_bvalid,
-		output         	uart_axi_bready,
-		input  [1:0]  	uart_axi_bresp
-	`endif
-`endif
+
 );
 
-`ifndef NPC
 	//-----------------------------
 	// 所有 output 信号强制置零
 	//-----------------------------
@@ -153,7 +124,6 @@ module ysyx_24100006(
 	assign io_slave_rdata     = 32'h0;  // 32-bit
 	assign io_slave_rlast     = 1'b0;   // 1-bit
 	assign io_slave_rid       = 4'h0;   // 4-bit
-`endif
 
 	// 模块的信号
 	// Icache -> EXEU
@@ -431,113 +401,6 @@ module ysyx_24100006(
 		.axi_rdata		(clint_axi_rdata)
 	);
 
-`ifdef NPC
-// TAG:NPC使用的ram
-`ifdef VERILATOR_SIM
-	ysyx_24100006_mem u_mem (
-        // 系统时钟和复位
-        .clk              (clock),
-        .reset            (reset),
-        
-        // AXI 地址接口
-        .axi_araddr       (sram_axi_araddr),
-        .axi_awaddr       (sram_axi_awaddr),
-        
-        // AXI 数据接口
-        .axi_wdata        (sram_axi_wdata),
-        .axi_wstrb        (sram_axi_wstrb),  // 字节掩码
-        
-        // AXI 控制信号 - 读通道
-        .axi_arvalid      (sram_axi_arvalid),
-        .axi_arready      (sram_axi_arready),  // 从模块输出
-        
-        .axi_rready       (sram_axi_rready),
-        .axi_rvalid       (sram_axi_rvalid),  // 从模块输出
-        .axi_rresp        (sram_axi_rresp),   // 从模块输出
-        .axi_rdata        (sram_axi_rdata),   // 从模块输出
-        
-        // AXI 控制信号 - 写通道
-        .axi_awvalid      (sram_axi_awvalid),
-        .axi_awready      (sram_axi_awready), // 从模块输出
-        
-        .axi_wvalid       (sram_axi_wvalid),
-        .axi_wready       (sram_axi_wready),  // 从模块输出
-        
-        // AXI 控制信号 - 响应通道
-        .axi_bready       (sram_axi_bready),
-        .axi_bvalid       (sram_axi_bvalid),  // 从模块输出
-        .axi_bresp        (sram_axi_bresp),    // 从模块输出
-
-		// 新增信号
-		.axi_arlen		  (sram_axi_arlen),
-		.axi_arsize 	  (sram_axi_arsize),
-		.axi_rlast	 	  (sram_axi_rlast),
-		.axi_awlen	  	  (sram_axi_awlen),
-		.axi_awsize		  (sram_axi_awsize),
-		.axi_wlast		  (sram_axi_wlast)
-    );
-// TAG: 实例化NPC使用的UART
-// 实例化 UART 模块
-
-	// 读地址通道
-	wire       		uart_axi_arvalid;
-    wire       		uart_axi_arready;
-    wire [31:0]  	uart_axi_araddr;
-    // 读数据通道
-    wire         	uart_axi_rvalid;
-    wire        	uart_axi_rready;
-    wire [1:0]		uart_axi_rresp;
-    wire [31:0]   	uart_axi_rdata;
-    // 写地址通道
-    wire         	uart_axi_awvalid;
-    wire          	uart_axi_awready;
-    wire [31:0]  	uart_axi_awaddr;
-    // 写数据通道
-    wire          	uart_axi_wvalid;
-    wire        	uart_axi_wready;
-    wire [31:0] 	uart_axi_wdata;
-    wire [3:0]   	uart_axi_wstrb;
-    // 写响应通道
-    wire         	uart_axi_bvalid;
-    wire        	uart_axi_bready;
-    wire [1:0]  	uart_axi_bresp;
-
-    ysyx_24100006_uart uart(
-		.clk			(clock),
-		.reset			(reset),
-		
-		// axi 写入和读取地址
-		.axi_araddr		(uart_axi_araddr),
-		.axi_awaddr		(uart_axi_awaddr),
-		// axi 写入数据和写入使用的掩码
-		.axi_wdata		(uart_axi_wdata),
-		.axi_wstrb		(uart_axi_wstrb),
-		// axi控制信号
-		// read data addr
-		.axi_arvalid	(uart_axi_arvalid),
-		.axi_arready	(uart_axi_arready),
-		// read data
-		.axi_rready		(uart_axi_rready),
-		.axi_rvalid		(uart_axi_rvalid),
-		// write data addr
-		.axi_awvalid	(uart_axi_awvalid),
-		.axi_awready	(uart_axi_awready),
-		// write data
-		.axi_wvalid		(uart_axi_wvalid),
-		.axi_wready		(uart_axi_wready),
-		// response
-		.axi_bready		(uart_axi_bready),
-		.axi_bvalid		(uart_axi_bvalid),
-		.axi_bresp		(uart_axi_bresp),
-
-		// axi读取的回应
-		.axi_rresp		(uart_axi_rresp),
-		// axi读取的数据
-		.axi_rdata		(uart_axi_rdata)
-	);
-`endif
-
-`endif
 
 	// Icache
 	wire			axi_arvalid_icache;
@@ -628,7 +491,6 @@ module ysyx_24100006(
 	wire [1:0] 	Access_Fault;
 `endif
 
-`ifndef NPC
 
 	// 没有的axi信号全部强制置零
 	assign io_master_awid    	= 0;                     // 无对应信号，强制置零
@@ -700,26 +562,6 @@ module ysyx_24100006(
 		.sram_axi_wstrb   (io_master_wstrb),
 		.sram_axi_wlast   (io_master_wlast),
 
-		// ================== UART从设备 ==================
-	`ifdef NPC
-		.uart_axi_awvalid (uart_axi_awvalid),
-		.uart_axi_awready (uart_axi_awready),
-		.uart_axi_awaddr  (uart_axi_awaddr),
-		.uart_axi_wvalid  (uart_axi_wvalid),
-		.uart_axi_wready  (uart_axi_wready),
-		.uart_axi_wdata   (uart_axi_wdata),
-		.uart_axi_wstrb   (uart_axi_wstrb),
-		.uart_axi_bvalid  (uart_axi_bvalid),
-		.uart_axi_bready  (uart_axi_bready),
-		.uart_axi_bresp   (uart_axi_bresp),
-		.uart_axi_arvalid (uart_axi_arvalid),
-		.uart_axi_arready (uart_axi_arready),
-		.uart_axi_araddr  (uart_axi_araddr),
-		.uart_axi_rvalid  (uart_axi_rvalid),
-		.uart_axi_rready  (uart_axi_rready),
-		.uart_axi_rdata   (uart_axi_rdata),
-		.uart_axi_rresp   (uart_axi_rresp),
-	`endif
 
 		// ================== CLINT从设备 ==================
 		.clint_axi_arvalid (clint_axi_arvalid),
@@ -734,107 +576,6 @@ module ysyx_24100006(
 `endif
 	);
 
-`else
-		// AXI交叉开关仲裁器
-	ysyx_24100006_xbar_arbiter #(
-		.SRAM_ADDR(32'h8000_0000),  // 设置SRAM基地址
-		.SPI_ADDR(32'h1000_1000)    // 设置SPI基地址
-	) u_xbar_arbiter (
-		// 时钟和复位
-		.clk		(clock),
-		.reset        	(reset),
-		
-		// ================== IFU接口 ==================
-		.ifu_axi_arvalid (axi_arvalid_icache),
-		.ifu_axi_arready (axi_arready_icache),
-		.ifu_axi_araddr  (axi_araddr_icache),
-		.ifu_axi_rvalid  (axi_rvalid_icache),
-		.ifu_axi_rready  (axi_rready_icache),
-		.ifu_axi_rdata   (axi_rdata_icache),
-		.ifu_axi_arlen   (axi_arlen_icache),
-		.ifu_axi_rlast   (axi_rlast_icache),
-
-		// ================== MEMU接口 ==================
-		.mem_axi_arvalid  (axi_arvalid_mem),
-		.mem_axi_arready  (axi_arready_mem),
-		.mem_axi_araddr   (axi_araddr_mem),
-		.mem_axi_rvalid   (axi_rvalid_mem),
-		.mem_axi_rready   (axi_rready_mem),
-		.mem_axi_rdata    (axi_rdata_mem),
-		.mem_axi_awvalid  (axi_awvalid_mem),
-		.mem_axi_awready  (axi_awready_mem),
-		.mem_axi_awaddr   (axi_awaddr_mem),
-		.mem_axi_wvalid   (axi_wvalid_mem),
-		.mem_axi_wready   (axi_wready_mem),
-		.mem_axi_wdata    (axi_wdata_mem),
-		.mem_axi_bvalid   (axi_bvalid_mem),
-		.mem_axi_bready   (axi_bready_mem),
-		.mem_axi_arlen    (axi_arlen_mem),
-		.mem_axi_arsize   (axi_arsize_mem),
-		.mem_axi_awlen    (axi_awlen_mem),
-		.mem_axi_awsize   (axi_awsize_mem),
-		.mem_axi_wstrb    (axi_wstrb_mem),
-		.mem_axi_addr_suffix (axi_addr_suffix_mem),
-
-		// ================== SRAM从设备 ==================
-		.sram_axi_awvalid (sram_axi_awvalid),
-		.sram_axi_awready (sram_axi_awready),
-		.sram_axi_awaddr  (sram_axi_awaddr),
-		.sram_axi_wvalid  (sram_axi_wvalid),
-		.sram_axi_wready  (sram_axi_wready),
-		.sram_axi_wdata   (sram_axi_wdata),
-		.sram_axi_bvalid  (sram_axi_bvalid),
-		.sram_axi_bready  (sram_axi_bready),
-		.sram_axi_arvalid (sram_axi_arvalid),
-		.sram_axi_arready (sram_axi_arready),
-		.sram_axi_araddr  (sram_axi_araddr),
-		.sram_axi_rvalid  (sram_axi_rvalid),
-		.sram_axi_rready  (sram_axi_rready),
-		.sram_axi_rdata   (sram_axi_rdata),
-		.sram_axi_arlen   (sram_axi_arlen),
-		.sram_axi_arsize  (sram_axi_arsize),
-		.sram_axi_rlast   (sram_axi_rlast),
-		.sram_axi_awlen   (sram_axi_awlen),
-		.sram_axi_awsize  (sram_axi_awsize),
-		.sram_axi_wstrb   (sram_axi_wstrb),
-		.sram_axi_wlast   (sram_axi_wlast),
-
-		// ================== UART从设备 ==================
-	`ifdef NPC
-		.uart_axi_awvalid (uart_axi_awvalid),
-		.uart_axi_awready (uart_axi_awready),
-		.uart_axi_awaddr  (uart_axi_awaddr),
-		.uart_axi_wvalid  (uart_axi_wvalid),
-		.uart_axi_wready  (uart_axi_wready),
-		.uart_axi_wdata   (uart_axi_wdata),
-		.uart_axi_wstrb   (uart_axi_wstrb),
-		.uart_axi_bvalid  (uart_axi_bvalid),
-		.uart_axi_bready  (uart_axi_bready),
-		.uart_axi_bresp   (uart_axi_bresp),
-		.uart_axi_arvalid (uart_axi_arvalid),
-		.uart_axi_arready (uart_axi_arready),
-		.uart_axi_araddr  (uart_axi_araddr),
-		.uart_axi_rvalid  (uart_axi_rvalid),
-		.uart_axi_rready  (uart_axi_rready),
-		.uart_axi_rdata   (uart_axi_rdata),
-		.uart_axi_rresp   (uart_axi_rresp),
-	`endif
-
-		// ================== CLINT从设备 ==================
-		.clint_axi_arvalid (clint_axi_arvalid),
-		.clint_axi_araddr  (clint_axi_araddr),
-		.clint_axi_rvalid  (clint_axi_rvalid),
-		.clint_axi_rready  (clint_axi_rready),
-		.clint_axi_rdata   (clint_axi_rdata)
-
-`ifdef VERILATOR_SIM
-		// ================== 访问错误信号 ==================
-		,.Access_Fault 		(Access_Fault)
-`endif
-	);
-
-
-`endif
 
 `ifdef VERILATOR_SIM
 	// 这是为了diff test而加的npc信号
@@ -1315,6 +1056,7 @@ module ysyx_24100006(
 
 	// TAG:一些仿真使用的参数:使用下面的方式需要将csrc/CircuitSim/dpi.cpp的函数取消注释，但是这样访问会拖慢仿真速度
 `ifndef __ICARUS__
+`ifdef VERILATOR_SIM
 	import "DPI-C" function void get_inst(input int inst);
 	import "DPI-C" function void get_pc(input int pc);
 	import "DPI-C" function void get_npc(input int npc);
@@ -1332,10 +1074,12 @@ module ysyx_24100006(
 		get_npc_w(diff_npc);
 	end
 `endif
+`endif
 
 
 	// TAGS:Performance Counters
 `ifndef __ICARUS__
+`ifdef VERILATOR_SIM
 import "DPI-C" function void axi_handshake(
 	input bit valid, 
 	input bit ready, 
@@ -1372,6 +1116,7 @@ import "DPI-C" function void cache_access_time(input bit arvalid,input bit rvali
 		// 计算cache命中的总时间
 		cache_access_time(axi_arvalid_if, axi_rvalid_if);
 	end
+`endif
 `endif
 endmodule
 
@@ -2035,11 +1780,13 @@ module ysyx_24100006_memu(
     assign mem_fw_data      = wdata_gpr_W;
 
 `ifndef __ICARUS__
+// `ifdef VERILATOR_SIM
 import "DPI-C" function void npc_trap ();
 always @(*) begin
     if(is_break_o == 1 && mem_in_valid == 1'b1)
         npc_trap();
 end
+// `endif
 `endif
 
 endmodule
@@ -2115,6 +1862,7 @@ module ysyx_24100006_CSR #(
   end
 
 `ifndef __ICARUS__
+`ifdef VERILATOR_SIM
 import "DPI-C" function void get_csr(
 	input int mstatus, 
 	input int mtvec, 
@@ -2125,6 +1873,7 @@ import "DPI-C" function void get_csr(
     get_csr(32'h00001800, mtvec, 32'hb, mepc);
   end
 
+`endif
 `endif
 
 
@@ -2775,10 +2524,12 @@ module ysyx_24100006_ifu(
 
 
 `ifndef __ICARUS__
+`ifdef VERILATOR_SIM
 	import "DPI-C" function void get_PCW(input bit PCW);
 	always @(*) begin
 		get_PCW(if_in_valid);
 	end
+`endif
 `endif
 
 endmodule
@@ -2870,31 +2621,6 @@ module ysyx_24100006_xbar_arbiter #(
     output  [3:0]  sram_axi_wstrb,
     output         sram_axi_wlast,
 
-`ifdef NPC
-    // UART从设备
-    output        uart_axi_awvalid,
-    input         uart_axi_awready,
-    output [31:0] uart_axi_awaddr,
-    
-    output        uart_axi_wvalid,
-    input         uart_axi_wready,
-    output [31:0] uart_axi_wdata,
-    output [3:0]  uart_axi_wstrb,
-    
-    input         uart_axi_bvalid,
-    output        uart_axi_bready,
-    input  [1:0]  uart_axi_bresp,
-
-    output        uart_axi_arvalid,
-    input         uart_axi_arready,
-    output [31:0] uart_axi_araddr,
-    
-    input         uart_axi_rvalid,
-    output        uart_axi_rready,
-    input  [31:0] uart_axi_rdata,
-    input  [1:0]  uart_axi_rresp,
-`endif
-
 
     output        clint_axi_arvalid,
     output [31:0] clint_axi_araddr,
@@ -2931,7 +2657,6 @@ module ysyx_24100006_xbar_arbiter #(
     wire [31:0] real_sram_data;
 
     // 仲裁状态机
-`ifndef NPC
     always @(posedge clk) begin
         if(reset) begin
             axi_state <= IDLE;
@@ -2964,41 +2689,6 @@ module ysyx_24100006_xbar_arbiter #(
             endcase
         end
     end
-`else
-    // NPC需要判断UART的写入是否完成
-    always @(posedge clk) begin
-        if(reset) begin
-            axi_state <= IDLE;
-            targeted_module <= ARB_IDLE;
-        end else begin
-            case(axi_state)
-                IDLE: begin
-                    if(mem_axi_awvalid) begin
-                        axi_state <= BUSY;
-                        targeted_module <= ARB_MEMU_WRITE;
-                    end else if(ifu_axi_arvalid) begin
-                        axi_state <= BUSY;
-                        targeted_module <= ARB_IFU_READ;
-                    end else if(mem_axi_arvalid) begin
-                        axi_state <= BUSY;
-                        targeted_module <= ARB_MEMU_READ;
-                    end
-                end
-                BUSY: begin
-                    if((targeted_module == ARB_IFU_READ || targeted_module == ARB_MEMU_READ) && 
-                       ((sram_axi_rready && sram_axi_rvalid && sram_axi_rlast) || (clint_axi_rready && clint_axi_rvalid))) begin
-                        axi_state <= IDLE;
-                        targeted_module <= ARB_IDLE;
-                    end else if(targeted_module == ARB_MEMU_WRITE && 
-                               ((sram_axi_bready && sram_axi_bvalid) || (uart_axi_bready && uart_axi_bvalid)) ) begin
-                        axi_state <= IDLE;
-                        targeted_module <= ARB_IDLE;
-                    end
-                end
-            endcase
-        end
-    end
-`endif
 
     // ================== 地址解码 ==================
 `ifndef NPC
@@ -3008,8 +2698,8 @@ module ysyx_24100006_xbar_arbiter #(
                         (ifu_axi_araddr[31:12] == SPI_ADDR[31:12] && targeted_module == ARB_IFU_READ);
     wire sel_sram   =    ~sel_clint;
 `else
-    wire sel_uart   = (mem_axi_awaddr >= UART_ADDR && mem_axi_awaddr < (UART_ADDR + 32'h0000_0008) && targeted_module == ARB_MEMU_WRITE);
-    wire sel_clint  = (mem_axi_araddr >= CLINT_ADDR && mem_axi_araddr < (CLINT_ADDR + 32'h0000_0008) && targeted_module == ARB_MEMU_READ);
+    wire sel_uart   = (mem_axi_awaddr[31:28] == UART_ADDR[31:28] && mem_axi_awaddr[8] == 1'b1 && targeted_module == ARB_MEMU_WRITE);
+    wire sel_clint  = (mem_axi_araddr[31:28] == CLINT_ADDR[31:28] && mem_axi_awaddr[8] == 1'b0 && targeted_module == ARB_MEMU_READ);
     wire sel_sram   = ~sel_uart & ~sel_clint;
     wire sel_spi    = 1'b0;
 `endif
@@ -3046,14 +2736,14 @@ module ysyx_24100006_xbar_arbiter #(
 
     // SRAM写通道
     wire sram_awvalid = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awvalid : 1'b0;
-    wire [31:0] sram_awaddr = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;
+    wire [31:0] sram_awaddr = mem_axi_awaddr;
     wire sram_wvalid = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wvalid : 1'b0;
     wire sram_bready = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_bready : 1'b0;
 
     // AXI新增信号
-    wire [7:0] sram_awlen = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awlen : 8'h0;
-    wire [2:0] sram_awsize = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awsize : 3'h0;
-    wire [3:0] sram_wstrb = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wstrb : 4'h0;
+    wire [7:0] sram_awlen = mem_axi_awlen;
+    wire [2:0] sram_awsize = mem_axi_awsize;
+    wire [3:0] sram_wstrb = mem_axi_wstrb;
 
     // ================== 读数据通道寄存器 ==================
     
@@ -3067,75 +2757,35 @@ module ysyx_24100006_xbar_arbiter #(
     // ================== 交叉开关逻辑 ==================
     // 写通道路由
     // SRAM
-    assign sram_axi_awvalid = sel_sram ? sram_awvalid : 0;
-    assign sram_axi_awaddr = sel_sram ? sram_awaddr : 32'h0;
-    assign sram_axi_wvalid = sel_sram ? sram_wvalid : 0;
-    assign sram_axi_wdata = sel_sram ? mem_axi_wdata : 32'h0;
-    assign sram_axi_bready = sel_sram ? sram_bready : 0;
-
-`ifdef NPC
-    // UART
-    assign uart_axi_awvalid = sel_uart ? mem_axi_awvalid : 0;
-    assign uart_axi_awaddr = sel_uart ? mem_axi_awaddr : 32'h0;
-    assign uart_axi_wvalid = sel_uart ? mem_axi_wvalid : 0;
-    assign uart_axi_wdata = sel_uart ? mem_axi_wdata : 32'h0;
-    assign uart_axi_wstrb = sel_uart ? mem_axi_wstrb : 4'h0;
-    assign uart_axi_bready = sel_uart ? mem_axi_bready : 0;
-`endif
+    assign sram_axi_awvalid = !sel_clint ? sram_awvalid : 0;
+    assign sram_axi_awaddr = sram_awaddr;
+    assign sram_axi_wvalid = !sel_clint ? sram_wvalid : 0;
+    assign sram_axi_wdata = mem_axi_wdata;
+    assign sram_axi_bready = !sel_clint ? sram_bready : 0;
 
     // 读通道路由
     // SRAM
     assign sram_axi_arvalid = sel_sram ? sram_arvalid : 0;
-    assign sram_axi_araddr = sel_sram ? sram_araddr : 32'h0;
+    assign sram_axi_araddr = sram_araddr;
     assign sram_axi_rready = sel_sram ? sram_rready : 0;
 
-`ifdef NPC
-    // UART
-    assign uart_axi_arvalid = 0;
-    assign uart_axi_araddr = 32'h0;
-    assign uart_axi_rready = 0;
-`endif
 
     // CLINT
     assign clint_axi_arvalid = sel_clint ? mem_axi_arvalid : 0;
-    assign clint_axi_araddr = sel_clint ? mem_axi_araddr : 32'h0;
+    assign clint_axi_araddr = mem_axi_araddr;
     assign clint_axi_rready = sel_clint ? mem_axi_rready : 0;
 
     // ================== 响应合并 ==================
-`ifndef NPC
-    // 响应合并（无NPC）
     assign ifu_axi_arready = sel_sram ? ifu_arready : 0;
     assign ifu_axi_rvalid = sel_sram ? ifu_rvalid : 0;
     assign ifu_axi_rlast = sel_sram ? ifu_rlast : 0;
 
-    assign mem_axi_arready = sel_sram ? mem_arready : 
-                            sel_clint ? 1'b1 : 0;
-    assign mem_axi_rvalid = sel_sram ? mem_rvalid : 
-                           sel_clint ? clint_axi_rvalid : 0;
+    assign mem_axi_arready = sel_clint ? 1'b1 : mem_arready;
+    assign mem_axi_rvalid = sel_clint ? clint_axi_rvalid : mem_rvalid;
 
-    assign mem_axi_awready = sel_sram ? mem_awready : 0;
-    assign mem_axi_wready = sel_sram ? mem_wready : 0;
-    assign mem_axi_bvalid = sel_sram ? mem_bvalid : 0;
-`else
-    // 响应合并（有NPC）
-    assign ifu_axi_arready = sel_sram ? ifu_arready : 0;
-    assign ifu_axi_rvalid = sel_sram ? ifu_rvalid : 0;
-    assign ifu_axi_rlast = sel_sram ? ifu_rlast : 0;
-
-    assign mem_axi_arready = sel_sram ? mem_arready : 
-                            sel_uart ? uart_axi_arready : 
-                            sel_clint ? 1'b1 : 0;
-    assign mem_axi_rvalid = sel_sram ? mem_rvalid : 
-                           sel_uart ? uart_axi_rvalid : 
-                           sel_clint ? clint_axi_rvalid : 0;
-
-    assign mem_axi_awready = sel_sram ? mem_awready : 
-                            sel_uart ? uart_axi_awready : 0;
-    assign mem_axi_wready = sel_sram ? mem_wready : 
-                           sel_uart ? uart_axi_wready : 0;
-    assign mem_axi_bvalid = sel_sram ? mem_bvalid : 
-                           sel_uart ? uart_axi_bvalid : 0;
-`endif
+    assign mem_axi_awready = !sel_clint ? mem_awready : 0;
+    assign mem_axi_wready = !sel_clint ? mem_wready : 0;
+    assign mem_axi_bvalid = !sel_clint ? mem_bvalid : 0;
 
     // ================== AXI信号传递 ==================
     assign sram_axi_arlen = sram_arlen;
@@ -4208,11 +3858,13 @@ module ysyx_24100006_Icache #(
 
 // -------------------- TAGS:Performance Counters -----------------
 `ifndef __ICARUS__
+`ifdef VERILATOR_SIM
     import "DPI-C" function void cache_miss_time(
         input bit start_fill,
         input bit end_fill
     );
     always @(*) cache_miss_time(cache_fill_start, cache_fill_end);
+`endif
 `endif
 
 endmodule
@@ -4222,7 +3874,9 @@ endmodule
 // FILE 15: ./ysyx-workbench/npc/vsrc/MEM/ysyx_24100006_clint.v
 // ===========================
 `ifndef __ICARUS__
+`ifdef VERILATOR_SIM
 import "DPI-C" function void skip();
+`endif
 `endif
 module ysyx_24100006_clint (
     input               clk,
@@ -4279,7 +3933,9 @@ module ysyx_24100006_clint (
                         state       <= S_WAIT_RR;
                         
                         `ifndef __ICARUS__
+                        `ifdef VERILATOR_SIM
                             skip();
+                        `endif
                         `endif
                         axi_rdata   <= (state == S_WAIT_ARV && axi_araddr[2] == BASE_ADDR[2]) 
                                     ? mtime_lo 
