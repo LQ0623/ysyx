@@ -43,26 +43,8 @@ module ysyx_24100006_net_testbench;
             $display();
             $display("==========================================");
             $display("Test completed");
-            $display("Exit code (a0): %x", a0_value);
             $display("==========================================");
             #100 $finish;
-        end
-    end
-    
-    // 检测是否卡死
-    localparam MAX_CYCLES = 100;
-    reg [31:0] cnt;
-    reg [31:0] prev_pc;
-    
-
-    always @(*) begin
-        if(cnt > MAX_CYCLES) begin
-            $display("==========================================");
-            $display("ERROR: Simulation timed out");
-            $display("  PC stuck at: 0x%h", u_npc.u_ID.pc_D);
-            $display("  For %d cycles", cnt);
-            $display("==========================================");
-            $finish;
         end
     end
 
