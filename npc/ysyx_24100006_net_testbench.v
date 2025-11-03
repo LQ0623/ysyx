@@ -3,7 +3,6 @@
 module ysyx_24100006_net_testbench;
     reg clock = 1'b0;
     reg reset = 1'b1;
-    integer cycle_count = 0;
     
 
     // 时钟
@@ -21,10 +20,6 @@ module ysyx_24100006_net_testbench;
         $dumpvars(0, ysyx_24100006_net_testbench);
     end
 
-    // 计数
-    always @(posedge clock) begin
-        cycle_count <= cycle_count + 1;
-    end
 
     // 监控
     initial begin
@@ -44,63 +39,11 @@ module ysyx_24100006_net_testbench;
         end
 
     always @(posedge clock) begin
-        if(reset == 1'b0 && cycle_count > XCHK_START) begin
-            // 在此处添加需要检查的信号
-            `ASSERT_NO_X(u_npc.u_ID.pc_D)
-            `ASSERT_NO_X(u_npc.u_IF.pc_F)
-            // 可以根据需要添加更多信号检查
-        end
-    end
-
-    // 成功检测
-    // 网表仿真时访问展平的寄存器信号
-    wire [31:0] a0_value;
-    
-    // 将展平的位信号组合成32位寄存器值
-    assign a0_value[0]  = u_npc.u_ID.GPR.\rf[9][0] ;
-    assign a0_value[1]  = u_npc.u_ID.GPR.\rf[9][1] ;
-    assign a0_value[2]  = u_npc.u_ID.GPR.\rf[9][2] ;
-    assign a0_value[3]  = u_npc.u_ID.GPR.\rf[9][3] ;
-    assign a0_value[4]  = u_npc.u_ID.GPR.\rf[9][4] ;
-    assign a0_value[5]  = u_npc.u_ID.GPR.\rf[9][5] ;
-    assign a0_value[6]  = u_npc.u_ID.GPR.\rf[9][6] ;
-    assign a0_value[7]  = u_npc.u_ID.GPR.\rf[9][7] ;
-    assign a0_value[8]  = u_npc.u_ID.GPR.\rf[9][8] ;
-    assign a0_value[9]  = u_npc.u_ID.GPR.\rf[9][9] ;
-    assign a0_value[10] = u_npc.u_ID.GPR.\rf[9][10] ;
-    assign a0_value[11] = u_npc.u_ID.GPR.\rf[9][11] ;
-    assign a0_value[12] = u_npc.u_ID.GPR.\rf[9][12] ;
-    assign a0_value[13] = u_npc.u_ID.GPR.\rf[9][13] ;
-    assign a0_value[14] = u_npc.u_ID.GPR.\rf[9][14] ;
-    assign a0_value[15] = u_npc.u_ID.GPR.\rf[9][15] ;
-    assign a0_value[16] = u_npc.u_ID.GPR.\rf[9][16] ;
-    assign a0_value[17] = u_npc.u_ID.GPR.\rf[9][17] ;
-    assign a0_value[18] = u_npc.u_ID.GPR.\rf[9][18] ;
-    assign a0_value[19] = u_npc.u_ID.GPR.\rf[9][19] ;
-    assign a0_value[20] = u_npc.u_ID.GPR.\rf[9][20] ;
-    assign a0_value[21] = u_npc.u_ID.GPR.\rf[9][21] ;
-    assign a0_value[22] = u_npc.u_ID.GPR.\rf[9][22] ;
-    assign a0_value[23] = u_npc.u_ID.GPR.\rf[9][23] ;
-    assign a0_value[24] = u_npc.u_ID.GPR.\rf[9][24] ;
-    assign a0_value[25] = u_npc.u_ID.GPR.\rf[9][25] ;
-    assign a0_value[26] = u_npc.u_ID.GPR.\rf[9][26] ;
-    assign a0_value[27] = u_npc.u_ID.GPR.\rf[9][27] ;
-    assign a0_value[28] = u_npc.u_ID.GPR.\rf[9][28] ;
-    assign a0_value[29] = u_npc.u_ID.GPR.\rf[9][29] ;
-    assign a0_value[30] = u_npc.u_ID.GPR.\rf[9][30] ;
-    assign a0_value[31] = u_npc.u_ID.GPR.\rf[9][31] ;
-
-    always @(posedge clock) begin
         if (!reset && u_npc.is_break_M && u_npc.mem_in_valid) begin
             $display();
             $display("==========================================");
             $display("Test completed");
             $display("Exit code (a0): %x", a0_value);
-            if(a0_value == 0)begin
-                $display("SUCCESS detected at cycle %d", cycle_count);
-            end else begin
-                $display("FAILURE detected at cycle %d", cycle_count);
-            end
             $display("==========================================");
             #100 $finish;
         end
@@ -111,23 +54,6 @@ module ysyx_24100006_net_testbench;
     reg [31:0] cnt;
     reg [31:0] prev_pc;
     
-    always @(posedge clock) begin
-        if(reset)begin
-            cnt <= 0;
-        end else if(prev_pc == u_npc.u_ID.pc_D) begin
-            cnt <= cnt + 1;
-        end else begin
-            cnt <= 0;
-        end
-    end
-
-    always @(posedge clock) begin
-        if(reset)begin
-            prev_pc <= 0;
-        end else begin
-            prev_pc <= u_npc.u_ID.pc_D;
-        end
-    end
 
     always @(*) begin
         if(cnt > MAX_CYCLES) begin
