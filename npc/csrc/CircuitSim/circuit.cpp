@@ -8,7 +8,9 @@
 
 CPU *cpu;
 
+#ifdef CONFIG_ITRACE
 extern "C" void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+#endif
 static void statistic();
 void difftest_step();
 
@@ -68,6 +70,7 @@ void assert_fail_msg() {
 /**
  * 反汇编以及写文件
  */
+#ifdef CONFIG_ITRACE
 void instruction_disassemble(char *p, uint8_t *inst){
 	char *ps = p;
 	p += snprintf(p, LOG_BUF_SIZE, "%#x:",pc);
@@ -85,6 +88,7 @@ void instruction_disassemble(char *p, uint8_t *inst){
 	
 	disassemble(p, ps + LOG_BUF_SIZE - p, (uint64_t)pc, inst, ilen);
 }
+#endif
 
 /**
  * DiffTest

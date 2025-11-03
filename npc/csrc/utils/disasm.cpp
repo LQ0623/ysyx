@@ -1,3 +1,4 @@
+#ifdef CONFIG_ITRACE
 #include <dlfcn.h>
 #include <capstone/capstone.h>
 #include <common.h>
@@ -47,3 +48,4 @@ extern "C" void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int
     }
     cs_free_dl(insn, count);
 }
+#endif

@@ -17,7 +17,9 @@ void init_log(const char *log_file);
 void init_ftrace(char *elf_file);
 void init_difftest(char *ref_so_file, long img_size);
 void init_device();
+#ifdef CONFIG_ITRACE
 extern "C" void init_disasm();
+#endif
 
 
 static void welcome() {
@@ -105,7 +107,7 @@ void init_monitor(int argc, char *argv[]){
       init_ftrace(elf_file);
     #endif
 
-    #ifdef CONFIG_TRACE
+    #ifdef CONFIG_ITRACE
       init_disasm();
     #endif
 
