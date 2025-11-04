@@ -189,26 +189,18 @@ void cpu_exec(uint64_t n){
 
 	while(n > 0){
 		
-		timer_start = get_time();
 		exec_once();
-		timer_end	= get_time();
 		g_timer		+= timer_end - timer_start;
 		
 		snpc = pc + 4;
 		get_reg();
 		
 		// 多周期CPU运行的指令的数量应该是if_valid有效一次记录一次
-		if(if_valid == 1){
-			g_nr_guest_inst ++;
-		}
 		cycle++;		// 记录运行的周期数
 
 		// 记录每种指令的运行时间
 		// (可以使用verilator的contextp->time()获取当前的仿真时间减去开始指令时的仿真时间然后除2，这是因为在我的代码中时2ps一个周期)
 		// 上面的方式需要和波形强相关，所以我直接使用当前周期数来当作时间，加2是因为在使用DPI-C的时候，没有计数
-		if(wb_ready == 0){
-			avg_cycle[ins_type] += (cycle - ins_start_time + 2);
-		}
 
 		#ifdef CONFIG_TRACE
 			trace_and_difftest();
@@ -220,17 +212,6 @@ void cpu_exec(uint64_t n){
 		IFDEF(CONFIG_DEVICE, device_update());
 		n--;
 
-		// 判断指令的运行周期是否超过上限(存在卡死的情况)
-		if(prev_inst == inst){
-			ins_counter++;
-			if(ins_counter >= MAX_NUM_CYC){
-				printf("pc is %08x,inst is %#x\n",pc,inst);
-				panic("The number of instruction execution cycles is %d, it exceeds the maximum execution cycle", ins_counter);
-			}
-		}else if(inst != 0){
-			ins_counter = 0;
-			prev_inst = inst;
-		}
 	}
 }
 
@@ -303,10 +284,10 @@ extern "C" void npc_trap(){
 	bool success;
 	word_t code = isa_reg_str2val("a0",&success);
 	if(code == 0)
-		Log("\033[1;32mHIT GOOD TRAP\033[0m");
+		printf("\033[1;32mHIT GOOD TRAP\033[0m\n");
 	else
-		Log("\033[1;31mHIT BAD TRAP\033[0m exit code = %x",code);
-	Log("trap in %#x",pc);
-	statistic();
+		printf("\033[1;31mHIT BAD TRAP\033[0m exit code = %x\n",code);
+	printf("trap in %#x\n",pc);
+	// statistic();
 	exit(0);
 }

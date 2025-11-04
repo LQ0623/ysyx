@@ -298,9 +298,7 @@ void init_sdram(){
 }
 
 uint8_t *guest_to_host(uint32_t paddr){
-	if(in_mrom(paddr)){
-		return mrom + (paddr - MROM_BASE);
-	} else if(in_flash(paddr)){
+	if(in_flash(paddr)){
 		return flash + (paddr - FLASH_BASE);
 	}
 	#ifdef CONFIG_SOC

@@ -33,7 +33,7 @@ static void welcome() {
 
 static long load_img() {
   if (img_file == NULL) {    
-    Log("No image is given. Use the default build-in image.");
+    // Log("No image is given. Use the default build-in image.");
     return 72; // built-in image size
   }
 
@@ -43,7 +43,7 @@ static long load_img() {
   fseek(fp, 0, SEEK_END);
   long size = ftell(fp);
 
-  Log("The image is %s, size = %ld", img_file, size);
+  // Log("The image is %s, size = %ld", img_file, size);
   fflush(stdout);
 
   fseek(fp, 0, SEEK_SET);
@@ -89,7 +89,7 @@ void init_monitor(int argc, char *argv[]){
     /* Parse arguments. */
     parse_args(argc, argv);
 
-    init_log(log_file);
+    // init_log(log_file);
     #ifndef CONFIG_SOC
       init_mem(0x7fffffff);
     #endif
@@ -102,6 +102,7 @@ void init_monitor(int argc, char *argv[]){
     init_sdram();
 
     long img_size = load_img();
+    printf("load end\n");
 
     #ifdef CONFIG_FTRACE
       init_ftrace(elf_file);
@@ -128,5 +129,5 @@ void init_monitor(int argc, char *argv[]){
     nvboard_bind_all_pins(cpu);
     nvboard_init();
 #endif
-    welcome();
+    // welcome();
 }

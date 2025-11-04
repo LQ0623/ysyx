@@ -1055,70 +1055,8 @@ module ysyx_24100006(
 `endif
 
 
-	// TAG:一些仿真使用的参数:使用下面的方式需要将csrc/CircuitSim/dpi.cpp的函数取消注释，但是这样访问会拖慢仿真速度
-`ifndef __ICARUS__
-`ifdef VERILATOR_SIM
-	import "DPI-C" function void get_inst(input int inst);
-	import "DPI-C" function void get_pc(input int pc);
-	import "DPI-C" function void get_npc(input int npc);
-	import "DPI-C" function void get_if_valid(input bit new_inst);	// 是否是新指令
-	import "DPI-C" function void get_wb_ready(input bit wb_ready);
-	import "DPI-C" function void get_pc_w(input int pc_w);
-	import "DPI-C" function void get_npc_w(input int npc_w);
-	always @(*) begin
-		get_inst(axi_rdata_if);
-		get_pc(pc_F);
-		get_npc(npc_E_F);					// pc先不进行diff test，因为这个进行diff test找不到信号与之对应了
-		get_if_valid(if_in_valid);
-		get_wb_ready(diff);			// 用于diff test，这个结合npc_temp信号刚好，因为wb_out_valid有效的时候还没有写入，所以需要使用wb_in_valid
-		get_pc_w(pc_M_W);
-		get_npc_w(diff_npc);
-	end
-`endif
-`endif
 
 
-	// TAGS:Performance Counters
-`ifndef __ICARUS__
-`ifdef VERILATOR_SIM
-import "DPI-C" function void axi_handshake(
-	input bit valid, 
-	input bit ready, 
-	input bit last, 
-	input int operate_type
-);
-import "DPI-C" function void exeu_finish(input bit valid);
-import "DPI-C" function void idu_instr_type(
-	input bit valid,
-	input int opcode
-);
-import "DPI-C" function void ins_start(input bit new_ins_valid);
-import "DPI-C" function void lsu_read_latency(input bit arvalid, input bit rvalid);
-import "DPI-C" function void lsu_write_latency(input bit awvalid, input bit bvalid);
-import "DPI-C" function void cache_hit(input bit valid, input bit hit);
-import "DPI-C" function void cache_access_time(input bit arvalid,input bit rvalid);
-
-	always @(*) begin
-		axi_handshake(axi_rvalid_if	, axi_rready_if	, 1'b1	, 1);
-		axi_handshake(axi_rvalid_mem, axi_rready_mem, axi_rlast_mem	, 2);
-		axi_handshake(axi_wvalid_mem, axi_wready_mem, axi_wlast_mem	, 3);
-
-		exeu_finish(exe_in_valid);
-		idu_instr_type(id_in_valid, {25'b0, instruction_F_D[6:0]});
-
-		// 获取当前的指令的开始时间(用axi总线取指有效作为开始)
-		ins_start(axi_arvalid_if);
-
-		lsu_read_latency(axi_arvalid_mem	, axi_rvalid_mem);
-		lsu_write_latency(axi_awvalid_mem	, axi_bvalid_mem);
-		
-		// 判断cahce是否命中
-		cache_hit(if_in_valid ,icache_hit);
-		// 计算cache命中的总时间
-		cache_access_time(axi_arvalid_if, axi_rvalid_if);
-	end
-`endif
-`endif
 endmodule
 
 // ==========================================
@@ -1875,21 +1813,6 @@ module ysyx_24100006_CSR #(
     endcase
   end
 
-`ifndef __ICARUS__
-`ifdef VERILATOR_SIM
-import "DPI-C" function void get_csr(
-	input int mstatus, 
-	input int mtvec, 
-	input int mcause, 
-	input int mepc
-);
-  always @(*) begin
-    get_csr(32'h00001800, mtvec, 32'hb, mepc);
-  end
-
-`endif
-`endif
-
 
 
 
@@ -2552,14 +2475,6 @@ module ysyx_24100006_ifu(
 `endif
 
 
-`ifndef __ICARUS__
-`ifdef VERILATOR_SIM
-	import "DPI-C" function void get_PCW(input bit PCW);
-	always @(*) begin
-		get_PCW(if_in_valid);
-	end
-`endif
-`endif
 
 endmodule
 // ===========================
@@ -3919,16 +3834,6 @@ module ysyx_24100006_Icache #(
         endcase
     end
 
-// -------------------- TAGS:Performance Counters -----------------
-`ifndef __ICARUS__
-`ifdef VERILATOR_SIM
-    import "DPI-C" function void cache_miss_time(
-        input bit start_fill,
-        input bit end_fill
-    );
-    always @(*) cache_miss_time(cache_fill_start, cache_fill_end);
-`endif
-`endif
 
 endmodule
 
