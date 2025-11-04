@@ -15,10 +15,10 @@ module ysyx_24100006_net_testbench;
     end
 
     // 波形
-    initial begin
-        $dumpfile("wave_net.vcd");
-        $dumpvars(0, ysyx_24100006_net_testbench);
-    end
+    // initial begin
+    //     $dumpfile("wave_net.vcd");
+    //     $dumpvars(0, ysyx_24100006_net_testbench);
+    // end
 
 
     // 监控

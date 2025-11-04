@@ -5,9 +5,6 @@
 // FILE 1: ./ysyx-workbench/npc/vsrc/ysyx_24100006.v
 // ===========================
 
-`ifdef __ICARUS__
-	`timescale 1ns/1ps
-`endif
 
 module ysyx_24100006(
 	input			clock,
