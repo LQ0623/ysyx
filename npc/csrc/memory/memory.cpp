@@ -262,11 +262,11 @@ void generate_pattern_data() {
 
 void init_flash(){
 	// TAG:下面三行是测试flash_read使用的，可以删除
-	printf("generate START\n");
-	generate_pattern_data();
-	printf("generate END\n");
+	// printf("generate START\n");
+	// generate_pattern_data();
+	// printf("generate END\n");
 	flash = (uint8_t *)malloc(FLASH_SIZE * sizeof(uint8_t));
-	memset(flash, 0, FLASH_SIZE);
+	// memset(flash, 0, FLASH_SIZE);
 	// memcpy(flash, flash_src_data, FLASH_SIZE);
 	// memcpy(flash, img_char_test, sizeof(img_char_test));
 	memcpy(flash, img, sizeof(img));
@@ -277,7 +277,7 @@ void init_flash(){
 
 void init_psram(){
 	psram = (uint8_t *)malloc(PSRAM_SIZE * sizeof(uint8_t));
-	memset(psram, 0, PSRAM_SIZE);
+	// memset(psram, 0, PSRAM_SIZE);
 	memcpy(psram, img, sizeof(img));
 	
 	if(psram == NULL) assert(0);

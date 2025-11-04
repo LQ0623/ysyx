@@ -54,7 +54,7 @@ module ysyx_24100006_mem(
     // Icarus: 纯 Verilog 行为内存
     // ------------------------------
     localparam BASE_ADDR = 32'h8000_0000;
-    localparam MEM_BYTES = 256*1024*1024;   // 16MB
+    localparam MEM_BYTES = 512*1024*1024;   // 16MB
     reg [7:0] mem [0:MEM_BYTES-1];         // 字节寻址
 
     // 运行时通过 +img=xxx.hex 指定镜像；默认 "program.hex"
