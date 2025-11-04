@@ -69,6 +69,8 @@ ifeq ($(NPC),1)
   DEFINES += -DNPC -DVERILATOR_SIM
 endif
 
+NET_DEFINES ?= -DNET
+
 
 # 四值仿真源文件
 IVSRC = ./vsrc/ysyx_24100006_i_testbench.v
@@ -115,7 +117,7 @@ sim-iverilog: $(MEMORY_HEX) $(ICOMPILED) run_sim_iverilog
 
 # 网表仿真结果
 $(ICOMPILED-NETLIST): $(NETLIST_VSRC)
-	$(IVERILOG) $(IVERILOG_FLAGS) -o $@ $^
+	$(IVERILOG) $(IVERILOG_FLAGS) $(NET_DEFINES) -o $@ $^
 
 run_sim_iverilog_netlist: $(ICOMPILED-NETLIST)
 	$(VVP) $(ICOMPILED-NETLIST) +img=$(MEMORY_HEX)

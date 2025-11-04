@@ -2,7 +2,9 @@
     AXI-Lite接口的UART功能：本质上就是使用MEM那一套，只是不能读，只能使用$write进行写操作
 */
 `ifdef __ICARUS__
+`ifndef NET
 	`timescale 1ns/1ps
+`endif
 `endif
 // TAG:如果rresp返回的是01,则表示读了不可读的部分
 module ysyx_24100006_uart #(

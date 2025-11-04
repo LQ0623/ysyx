@@ -3,7 +3,9 @@
 */
 
 `ifdef __ICARUS__
+`ifndef NET
 	`timescale 1ns/1ps
+`endif
 `endif
 
 module ysyx_24100006_mem(

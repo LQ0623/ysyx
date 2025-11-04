@@ -1,8 +1,6 @@
-`timescale 1ns/1ps
-
 module ysyx_24100006_net_testbench;
-    reg clock = 1'b0;
-    reg reset = 1'b1;
+    reg clock;
+    reg reset;
     
 
     // 时钟
@@ -10,8 +8,10 @@ module ysyx_24100006_net_testbench;
 
     // 复位（对齐若干个上升沿）
     initial begin
-        repeat (20) @(posedge clock);
-        reset = 1'b0;
+        clock = 0;
+		reset = 0;
+        #15 reset = 1;
+		#50 reset = 0;
     end
 
     // 波形
@@ -28,15 +28,6 @@ module ysyx_24100006_net_testbench;
         $display("Reset released at time %t", $time);
         $display("Running in compatibility mode");
     end
-
-    // ========= X 检查器 =========
-    localparam XCHK_START = 100;
-
-    `define ASSERT_NO_X(sig) \
-        if ((^sig) === 1'bx) begin \
-            $display("[%0t] **X detected**: %s", $time, `"sig`"); \
-            $stop; \
-        end
 
     always @(posedge clock) begin
         if (!reset && u_npc.is_break_M && u_npc.mem_in_valid) begin
