@@ -5,6 +5,10 @@
 // FILE 1: ./ysyx-workbench/npc/vsrc/ysyx_24100006.v
 // ===========================
 
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 
 module ysyx_24100006(
 	input			clock,
@@ -1123,6 +1127,11 @@ endmodule
 /**
     译码模块
 */
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 // TAG: 这里不知道是否需要把irq和irq_no传出去，然后在WB级在写回
 module ysyx_24100006_idu(
 	input 			clk,
@@ -1376,6 +1385,11 @@ endmodule
 /**
     访问内存模块
 */
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_memu(
     input               clk,
     input               reset,
@@ -1799,7 +1813,10 @@ endmodule
   - MSTATUS/MVENDORID/MARCHID 直接组合逻辑返回常量
   - 写入与中断处理放在同一 always 块中（irq 优先）
 */
-`timescale 1ns/1ps
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
 
 `define ysyx_24100006_MSTATUS   12'h300
 `define ysyx_24100006_MTVEC     12'h305
@@ -1882,6 +1899,11 @@ endmodule
 
 // FILE 5: ./ysyx-workbench/npc/vsrc/ID/ysyx_24100006_GPR.v
 // ===========================
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_GPR #(
   parameter ADDR_WIDTH = 4,
   parameter DATA_WIDTH = 32
@@ -2085,6 +2107,11 @@ endmodule
 /**
     主要是重构一下controller模块
 */
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_controller_remake(
 
     input [6:0]opcode,
@@ -2353,6 +2380,11 @@ endmodule
 /**
     取指模块
 */
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_ifu(
     input clk,
     input reset,
@@ -2536,6 +2568,11 @@ endmodule
 // ===========================
 // 这个模块是xbar和arbiter一起的，后面需要重新写
 // 把xbar和arbiter的修改字段的功能全部写到内部去
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_xbar_arbiter #(
     parameter SRAM_ADDR     = 32'h8000_0000,
     parameter SPI_ADDR      = 32'h1000_1000
@@ -2804,6 +2841,11 @@ endmodule
 // ===========================
 // 冲刷流水线：清空有效位即可；数据在 valid=0 时视为无效，不必清零（节省复位/冲刷多路选择器面积）
 // TODO: PCW信号不用向外暴露了（保持现有接口，不新增端口）
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_IF_ID(
     input           clk,
     input           reset,
@@ -2887,6 +2929,11 @@ endmodule
 // FILE 10: ./ysyx-workbench/npc/vsrc/pipeline/ysyx_2410006_MEM_WB.v
 // ===========================
 // 最后的那个reset不能删除或者被设置为仅仿真有效，不然就会运行rtt出错
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_MEM_WB(
     input           clk,
     input           reset,
@@ -3049,6 +3096,11 @@ endmodule
 // FILE 11: ./ysyx-workbench/npc/vsrc/pipeline/ysyx_2410006_ID_EXE.v
 // ===========================
 // 冲刷流水线就是将所有的存储的数据都置为0
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_ID_EXE(
     input           clk,
     input           reset,
@@ -3282,6 +3334,11 @@ endmodule
 // ===========================
 // 冲刷流水线就是将所有的存储的数据都置为0
 // TODO：要想是否可以建一个新的模块来算这个，放在IFU的前面，这个应该存在问题，因为最开始的几拍就流不起来了
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_EXE_MEM(
     input           clk,
     input           reset,
@@ -3477,6 +3534,11 @@ endmodule
 
 // FILE 13: ./ysyx-workbench/npc/vsrc/pipeline/ysyx_24100006_hazard.v
 // ===========================
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_hazard(
     // data hazard
 input         clk,
@@ -3574,6 +3636,10 @@ endmodule
 // - 回填：4 拍 AXI burst
 // - 命中路径保留 1 拍等待（S_HIT_WAIT），便于与同步RAM等价时序；也可直接去掉以减1拍
 // ============================================================
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
 
 module ysyx_24100006_Icache #(
     parameter SRAM_BASE_ADDR = 32'h0f00_0000,
@@ -3875,6 +3941,11 @@ endmodule
 import "DPI-C" function void skip();
 `endif
 `endif
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_clint (
     input               clk,
     input               reset,
@@ -3952,6 +4023,11 @@ endmodule
 
 // FILE 16: ./ysyx-workbench/npc/vsrc/EX/ysyx_24100006_alu.v
 // ===========================
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_alu (
     input  [31:0] rs_data,
     input  [31:0] rt_data,
@@ -4063,6 +4139,11 @@ endmodule
 /**
     执行模块
 */
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_exeu(
 	input 			clk,
     input 			reset,

@@ -1,6 +1,11 @@
 /**
     使用DPI-C进行内存读写
 */
+
+`ifdef __ICARUS__
+	`timescale 1ns/1ps
+`endif
+
 module ysyx_24100006_mem(
     input               clk,
     input               reset,
