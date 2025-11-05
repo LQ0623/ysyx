@@ -290,6 +290,11 @@ void init_sdram(){
 	sdramChip2 = (uint8_t *)malloc(SDRAM_SIZE * sizeof(uint8_t));
 	sdramChip3 = (uint8_t *)malloc(SDRAM_SIZE * sizeof(uint8_t));
 
+	memset(sdramChip0, 0, SDRAM_SIZE * sizeof(uint8_t));
+	memset(sdramChip1, 0, SDRAM_SIZE * sizeof(uint8_t));
+	memset(sdramChip2, 0, SDRAM_SIZE * sizeof(uint8_t));
+	memset(sdramChip3, 0, SDRAM_SIZE * sizeof(uint8_t));
+
 	if(sdramChip0 == NULL) assert(0);
 	if(sdramChip1 == NULL) assert(0);
 	if(sdramChip2 == NULL) assert(0);

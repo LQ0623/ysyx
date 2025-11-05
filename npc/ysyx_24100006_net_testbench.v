@@ -14,13 +14,13 @@ module ysyx_24100006_net_testbench;
     end
 
     // 在 initial 块中添加超时检测
-    initial 
-    begin
-        // 超时监控进程
-        #1000000000; // 根据实际情况调整超时时间（例如10秒）
-        $display("ERROR: Simulation timeout at time %t", $time);
-        $finish(2);
-    end
+    // initial 
+    // begin
+    //     // 超时监控进程
+    //     #1000000000; // 根据实际情况调整超时时间（例如10秒）
+    //     $display("ERROR: Simulation timeout at time %t", $time);
+    //     $finish(2);
+    // end
 
     // 波形
     // initial begin

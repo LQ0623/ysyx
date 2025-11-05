@@ -26,41 +26,51 @@ SECTIONS {
   /* first stage Bootloader 段（位于 Flash） */
   .text.fsbootloader :
   {
+    . = ALIGN(4);
     *(entry)
     _fsbl = .;
     *(.text.fsbl)
     _efsbl = .;
+    . = ALIGN(4);
   } > flash AT > flash : fsbl
 
   /* second stage Bootloader 段（位于 SRAM */
   .text.ssbootloader :
   {
+    . = ALIGN(4);
     _ssbl = .;
     *(.text.ssbl)
     _essbl = .;
+    . = ALIGN(4);
   } > sram AT > flash : ssbl
 
   /* 代码段（运行在 SDRAM） */
   .text : {
+    . = ALIGN(0x4);
     _text = .;
     *(.text*)
     _etext = .;
+    . = ALIGN(4);
   } > sdram AT > flash : text
 
   /* 只读数据段（运行在 SDRAM） */
   .rodata : {
+    . = ALIGN(0x4);
     _rodata = .;
     *(.rodata*)
     *(.srodata*)
     _erodata = .;
+    . = ALIGN(4);
   } > sdram AT > flash : ro
 
   /* 数据段（运行在 SDRAM） */
   .data : {
+    . = ALIGN(0x4);
     _data = .;
     *(.data*)
     *(.sdata*)
     _edata = .;
+    . = ALIGN(4);
   } > sdram AT > flash : data
 
   /* 判断 RTT 中是否定义了 data_extra 和 bss_extra */
@@ -71,11 +81,13 @@ SECTIONS {
 
   /* BSS 段（运行在 SDRAM） */
   .bss (NOLOAD) : {
+    . = ALIGN(4);
     _bss_start = .;
     *(.bss*)
     *(.sbss*)
     *(.scommon)
     _bss_end = .;
+    . = ALIGN(4);
   } > sdram
 
   /* 判断 RTT 中是否定义了 data_extra 和 bss_extra */
