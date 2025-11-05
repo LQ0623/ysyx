@@ -2,13 +2,29 @@
 
 module testbench;
     reg clock = 1'b0;
-    reg reset = 1'b1;
+    reg reset;
     integer cycle_count = 0;
     
     // mainargs 参数和地址（可选）
     reg [511:0] mainargs = "t"; // 默认参数 't'
     reg [31:0] mainargs_addr = 32'h80001810; // 默认地址
     reg use_mainargs = 0; // 是否使用参数功能
+
+    initial begin
+        clock = 0;
+		reset = 1;
+        #25 reset = 0;
+    end
+
+    // 在 initial 块中添加超时检测
+    initial 
+    begin
+        // 超时监控进程
+        #1000000000; // 根据实际情况调整超时时间（例如10秒）
+        $display("ERROR: Simulation timeout at time %t", $time);
+        $finish(2);
+    end
+
 
     // 时钟
     always #5 clock = ~clock;  // 100MHz

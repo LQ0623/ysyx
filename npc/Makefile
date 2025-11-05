@@ -93,8 +93,6 @@ ICOMPILED-NETLIST = $(BUILD_DIR)/ysyx_24100006_iverilog_netlist.vpp
 MEMORY_HEX = $(BUILD_DIR)/memory_iverilog.hex
 VMA_ADJUST ?= 0x0
 
-MEMORY_HEX = $(BUILD_DIR)/memory_iverilog.hex
-VMA_ADJUST ?= 0x0
 
 $(MEMORY_HEX): $(IMG)
 	@if [ ! -f "$(IMG)" ]; then \

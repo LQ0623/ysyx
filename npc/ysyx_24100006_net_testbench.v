@@ -9,9 +9,17 @@ module ysyx_24100006_net_testbench;
     // 复位（对齐若干个上升沿）
     initial begin
         clock = 0;
-		reset = 0;
-        #15 reset = 1;
-		#50 reset = 0;
+		reset = 1;
+        #25 reset = 0;
+    end
+
+    // 在 initial 块中添加超时检测
+    initial 
+    begin
+        // 超时监控进程
+        #1000000000; // 根据实际情况调整超时时间（例如10秒）
+        $display("ERROR: Simulation timeout at time %t", $time);
+        $finish(2);
     end
 
     // 波形
