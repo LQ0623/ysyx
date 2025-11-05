@@ -2647,8 +2647,8 @@ module ysyx_24100006_xbar_arbiter #(
                         (ifu_axi_araddr[31:12] == SPI_ADDR[31:12] && targeted_module == ARB_IFU_READ);
     wire sel_sram   =    ~sel_clint;
 `else
-    wire sel_uart   = (mem_axi_awaddr[31:28] == UART_ADDR[31:28] && mem_axi_awaddr[8] == 1'b1 && targeted_module == ARB_MEMU_WRITE);
-    wire sel_clint  = (mem_axi_araddr[31:28] == CLINT_ADDR[31:28] && mem_axi_awaddr[8] == 1'b0 && targeted_module == ARB_MEMU_READ);
+    wire sel_uart   = (mem_axi_awaddr[31:28] == UART_ADDR[31:28] && targeted_module == ARB_MEMU_WRITE);
+    wire sel_clint  = (mem_axi_araddr[31:28] == CLINT_ADDR[31:28] && targeted_module == ARB_MEMU_READ);
     wire sel_sram   = ~sel_uart & ~sel_clint;
     wire sel_spi    = 1'b0;
 `endif

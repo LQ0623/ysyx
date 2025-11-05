@@ -380,46 +380,79 @@ module testbench;
 		.axi_rdata		(uart_axi_rdata)
 	);
 
-    // 实例化 CPU 模块
-    ysyx_24100006 u_npc (
+    wire			io_master_awready;
+	wire			io_master_awvalid;
+	wire  [31:0]    io_master_awaddr;
+	wire  [7:0]  	io_master_awlen;
+	wire  [2:0]  	io_master_awsize;
+
+	// 写数据通道
+	wire			io_master_wready;
+	wire            io_master_wvalid;
+	wire  [31:0]    io_master_wdata;
+	wire  [3:0]  	io_master_wstrb;
+	wire  		    io_master_wlast;
+
+	// 写响应通道
+	wire			io_master_bready;
+	wire			io_master_bvalid;
+	wire   [1:0]  	io_master_bresp;
+	wire   [3:0]  	io_master_bid;
+
+	// 读地址通道
+	wire            io_master_arready;
+	wire            io_master_arvalid;
+	wire  [31:0]    io_master_araddr;
+	wire  [7:0]  	io_master_arlen;
+	wire  [2:0]  	io_master_arsize;
+
+	// 读数据通道
+	wire  		    io_master_rready;
+	wire            io_master_rvalid;
+	wire   [1:0]  	io_master_rresp;
+	wire   [31:0]   io_master_rdata;
+	wire            io_master_rlast;
+
+    // 实例化 DUT
+    ysyx_24100006 u_npc(
         .clock(clock),
         .reset(reset),
         .io_interrupt(1'b0),  // 中断信号接地
 
         // AXI4 主设备接口连接到 u_mem
-        .io_master_awready(u_mem_axi_awready),
-        .io_master_awvalid(u_mem_axi_awvalid),
-        .io_master_awaddr(u_mem_axi_awaddr),
+        .io_master_awready(io_master_awready),
+        .io_master_awvalid(io_master_awvalid),
+        .io_master_awaddr(io_master_awaddr),
         .io_master_awid(),    // 悬空（u_mem 无对应接口）
-        .io_master_awlen(u_mem_axi_awlen),
-        .io_master_awsize(u_mem_axi_awsize),
+        .io_master_awlen(io_master_awlen),
+        .io_master_awsize(io_master_awsize),
         .io_master_awburst(), // 悬空（u_mem 无对应接口）
 
-        .io_master_wready(u_mem_axi_wready),
-        .io_master_wvalid(u_mem_axi_wvalid),
-        .io_master_wdata(u_mem_axi_wdata),
-        .io_master_wstrb(u_mem_axi_wstrb),
-        .io_master_wlast(u_mem_axi_wlast),
+        .io_master_wready(io_master_wready),
+        .io_master_wvalid(io_master_wvalid),
+        .io_master_wdata(io_master_wdata),
+        .io_master_wstrb(io_master_wstrb),
+        .io_master_wlast(io_master_wlast),
 
-        .io_master_bready(u_mem_axi_bready),
-        .io_master_bvalid(u_mem_axi_bvalid),
-        .io_master_bresp(u_mem_axi_bresp),
-        .io_master_bid(),     // 悬空（u_mem 无对应接口）
+        .io_master_bready(io_master_bready),
+        .io_master_bvalid(io_master_bvalid),
+        .io_master_bresp(io_master_bresp),
+        .io_master_bid(4'b0),     // 悬空（u_mem 无对应接口）
 
-        .io_master_arready(u_mem_axi_arready),
-        .io_master_arvalid(u_mem_axi_arvalid),
-        .io_master_araddr(u_mem_axi_araddr),
+        .io_master_arready(io_master_arready),
+        .io_master_arvalid(io_master_arvalid),
+        .io_master_araddr(io_master_araddr),
         .io_master_arid(),    // 悬空（u_mem 无对应接口）
-        .io_master_arlen(u_mem_axi_arlen),
-        .io_master_arsize(u_mem_axi_arsize),
+        .io_master_arlen(io_master_arlen),
+        .io_master_arsize(io_master_arsize),
         .io_master_arburst(), // 悬空（u_mem 无对应接口）
 
-        .io_master_rready(u_mem_axi_rready),
-        .io_master_rvalid(u_mem_axi_rvalid),
-        .io_master_rresp(u_mem_axi_rresp),
-        .io_master_rdata(u_mem_axi_rdata),
-        .io_master_rlast(u_mem_axi_rlast),
-        .io_master_rid(),     // 悬空（u_mem 无对应接口）
+        .io_master_rready(io_master_rready),
+        .io_master_rvalid(io_master_rvalid),
+        .io_master_rresp(io_master_rresp),
+        .io_master_rdata(io_master_rdata),
+        .io_master_rlast(io_master_rlast),
+        .io_master_rid(4'b0),     // 悬空（u_mem 无对应接口）
 
         // Slave 接口输入接地/输出悬空
         .io_slave_awready(),  // 输出悬空
@@ -454,27 +487,64 @@ module testbench;
         .io_slave_rresp(),    // 输出悬空
         .io_slave_rdata(),    // 输出悬空
         .io_slave_rlast(),    // 输出悬空
-        .io_slave_rid(),       // 输出悬空
-
-        // UART AXI接口连接
-        .uart_axi_arvalid(uart_axi_arvalid),
-        .uart_axi_arready(uart_axi_arready),
-        .uart_axi_araddr(uart_axi_araddr),
-        .uart_axi_rvalid(uart_axi_rvalid),
-        .uart_axi_rready(uart_axi_rready),
-        .uart_axi_rresp(uart_axi_rresp),
-        .uart_axi_rdata(uart_axi_rdata),
-        .uart_axi_awvalid(uart_axi_awvalid),
-        .uart_axi_awready(uart_axi_awready),
-        .uart_axi_awaddr(uart_axi_awaddr),
-        .uart_axi_wvalid(uart_axi_wvalid),
-        .uart_axi_wready(uart_axi_wready),
-        .uart_axi_wdata(uart_axi_wdata),
-        .uart_axi_wstrb(uart_axi_wstrb),
-        .uart_axi_bvalid(uart_axi_bvalid),
-        .uart_axi_bready(uart_axi_bready),
-        .uart_axi_bresp(uart_axi_bresp)
+        .io_slave_rid()       // 输出悬空
     );
+
+
+    // 地址分发逻辑
+    parameter UART_ADDR         = 32'ha000_03f8;
+    wire sel_uart_read          = ( io_master_araddr >= UART_ADDR && io_master_araddr <= UART_ADDR + 32'h0000_0008);
+    wire sel_uart_write         = ( io_master_awaddr >= UART_ADDR && io_master_awaddr <= UART_ADDR + 32'h0000_0008);
+    wire sel_mem_read           = ~sel_uart_read;
+    wire sel_mem_write          = ~sel_uart_write;
+
+    // 主设备到从设备的信号分发
+    // 读地址通道
+    assign u_mem_axi_arvalid    = sel_mem_read & io_master_arvalid;
+    assign uart_axi_arvalid     = sel_uart_read & io_master_arvalid;
+    assign u_mem_axi_araddr     = io_master_araddr;
+    assign uart_axi_araddr      = io_master_araddr;
+    assign u_mem_axi_arlen      = io_master_arlen;
+    assign u_mem_axi_arsize     = io_master_arsize;
+
+    // 写地址通道  
+    assign u_mem_axi_awvalid    = sel_mem_write & io_master_awvalid;
+    assign uart_axi_awvalid     = sel_uart_write & io_master_awvalid;
+    assign u_mem_axi_awaddr     = io_master_awaddr;
+    assign uart_axi_awaddr      = io_master_awaddr;
+    assign u_mem_axi_awlen      = io_master_awlen;
+    assign u_mem_axi_awsize     = io_master_awsize;
+
+    // 写数据通道
+    assign u_mem_axi_wvalid     = io_master_wvalid && sel_mem_write;
+    assign uart_axi_wvalid      = io_master_wvalid && sel_uart_write;
+    assign u_mem_axi_wdata      = io_master_wdata;
+    assign uart_axi_wdata       = io_master_wdata;
+    assign u_mem_axi_wstrb      = io_master_wstrb;
+    assign uart_axi_wstrb       = io_master_wstrb;
+    assign u_mem_axi_wlast      = io_master_wlast;
+
+    // 控制信号（从设备到主设备）
+    assign io_master_arready    = sel_uart_read ? uart_axi_arready : u_mem_axi_arready;
+    assign io_master_awready    = sel_uart_write ? uart_axi_awready : u_mem_axi_awready;
+    assign io_master_wready     = sel_uart_write ? uart_axi_wready : u_mem_axi_wready;
+
+    // 读响应通道
+    assign io_master_rvalid     = sel_uart_read ? uart_axi_rvalid : u_mem_axi_rvalid;
+    assign io_master_rresp      = sel_uart_read ? uart_axi_rresp : u_mem_axi_rresp;
+    assign io_master_rdata      = sel_uart_read ? uart_axi_rdata : u_mem_axi_rdata;
+    assign io_master_rlast      = sel_uart_read ? 1'b1 : u_mem_axi_rlast; // UART 单次传输，rlast 固定为1
+
+    // 写响应通道
+    assign io_master_bvalid     = sel_uart_write ? uart_axi_bvalid : u_mem_axi_bvalid;
+    assign io_master_bresp      = sel_uart_write ? uart_axi_bresp : u_mem_axi_bresp;
+
+    // 主设备到从设备的控制信号
+    assign u_mem_axi_rready     = io_master_rready && sel_mem_read;
+    assign uart_axi_rready      = io_master_rready && sel_uart_read;
+    assign u_mem_axi_bready     = io_master_bready && sel_mem_write;
+    assign uart_axi_bready      = io_master_bready && sel_uart_write;
+
 
 
     wire [31:0] mtime_lo,mtime_hi;
