@@ -66,12 +66,11 @@ module ysyx_24100006_mem(
         $display("[mem] loading image: %0s", IMG);
         // 注意：objcopy 需 --adjust-vma -0x80000000 让地址从 0 开始
         $readmemh(IMG, mem);
-        `ifdef NET
-            $display("mainargs[0] is %c",mem[32'h7040]);
-            $display("mainargs[1] is %c",mem[32'h7041]);
-            $display("mainargs[2] is %c",mem[32'h7042]);
-            $display("mainargs[3] is %c",mem[32'h7043]);
-        `endif
+        // 读取microbench的mainargs
+        $display("mainargs[0] is %c",mem[32'h7040]);
+        $display("mainargs[1] is %c",mem[32'h7041]);
+        $display("mainargs[2] is %c",mem[32'h7042]);
+        $display("mainargs[3] is %c",mem[32'h7043]);
     end
 
     // 内部信号用于直接内存访问
