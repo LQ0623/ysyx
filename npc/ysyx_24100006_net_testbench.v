@@ -82,8 +82,8 @@ module ysyx_24100006_net_testbench;
         .reset(reset),
 
         // AXI 接口信号
-        .axi_araddr(u_mem_axi_araddr),
-        .axi_awaddr(u_mem_axi_awaddr),
+        .axi_araddr({4'b0, u_mem_axi_araddr[27:0]}),
+        .axi_awaddr({4'b0, u_mem_axi_awaddr[27:0]}),
         .axi_wdata(u_mem_axi_wdata),
         .axi_wstrb(u_mem_axi_wstrb),
 

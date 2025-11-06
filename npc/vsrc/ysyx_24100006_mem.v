@@ -55,7 +55,11 @@ module ysyx_24100006_mem(
     // ------------------------------
     // Icarus: 纯 Verilog 行为内存
     // ------------------------------
+`ifdef NET
+    localparam BASE_ADDR = 32'h0000_0000;
+`else
     localparam BASE_ADDR = 32'h8000_0000;
+`endif
     localparam MEM_BYTES = 256*1024*1024;   // 16MB
     reg [7:0] mem [0:MEM_BYTES-1];         // 字节寻址
 
