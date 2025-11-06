@@ -67,10 +67,18 @@ module ysyx_24100006_mem(
         // 注意：objcopy 需 --adjust-vma -0x80000000 让地址从 0 开始
         $readmemh(IMG, mem);
         // 读取microbench的mainargs
-        $display("mainargs[0] is %c",mem[32'h7040]);
-        $display("mainargs[1] is %c",mem[32'h7041]);
-        $display("mainargs[2] is %c",mem[32'h7042]);
-        $display("mainargs[3] is %c",mem[32'h7043]);
+        $display("mainargs[0] is %c",mem[32'h6ffc]);
+        $display("mainargs[1] is %c",mem[32'h6ffd]);
+        $display("mainargs[2] is %c",mem[32'h6ffe]);
+        $display("mainargs[3] is %c",mem[32'h6fff]);
+        $display("mainargs[3] is %c",mem[32'h7000]);
+        $display("mainargs[3] is %c",mem[32'h7001]);
+        $display("mainargs[3] is %c",mem[32'h7002]);
+        $display("mainargs[3] is %c",mem[32'h7003]);
+        $display("mainargs[3] is %c",mem[32'h7004]);
+        $display("mainargs[3] is %c",mem[32'h7005]);
+        $display("mainargs[3] is %c",mem[32'h7006]);
+        $display("mainargs[3] is %c",mem[32'h7007]);
     end
 
     // 内部信号用于直接内存访问
