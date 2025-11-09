@@ -258,14 +258,14 @@ module ysyx_24100006_xbar_arbiter #(
 
     // SRAM写通道
     wire sram_awvalid = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awvalid : 1'b0;
-    wire [31:0] sram_awaddr = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awaddr : 32'b0;
+    wire [31:0] sram_awaddr = mem_axi_awaddr;
     wire sram_wvalid = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wvalid : 1'b0;
     wire sram_bready = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_bready : 1'b0;
 
     // AXI新增信号
-    wire [7:0] sram_awlen = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awlen : 8'h0;
-    wire [2:0] sram_awsize = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_awsize : 3'h0;
-    wire [3:0] sram_wstrb = (targeted_module == ARB_MEMU_WRITE) ? mem_axi_wstrb : 4'h0;
+    wire [7:0] sram_awlen = mem_axi_awlen;
+    wire [2:0] sram_awsize = mem_axi_awsize;
+    wire [3:0] sram_wstrb = mem_axi_wstrb;
 
     // ================== 读数据通道寄存器 ==================
     
@@ -280,9 +280,9 @@ module ysyx_24100006_xbar_arbiter #(
     // 写通道路由
     // SRAM
     assign sram_axi_awvalid = sel_sram ? sram_awvalid : 0;
-    assign sram_axi_awaddr = sel_sram ? sram_awaddr : 32'h0;
+    assign sram_axi_awaddr = sram_awaddr;
     assign sram_axi_wvalid = sel_sram ? sram_wvalid : 0;
-    assign sram_axi_wdata = sel_sram ? mem_axi_wdata : 32'h0;
+    assign sram_axi_wdata = mem_axi_wdata;
     assign sram_axi_bready = sel_sram ? sram_bready : 0;
 
 `ifdef NPC
@@ -298,7 +298,7 @@ module ysyx_24100006_xbar_arbiter #(
     // 读通道路由
     // SRAM
     assign sram_axi_arvalid = sel_sram ? sram_arvalid : 0;
-    assign sram_axi_araddr = sel_sram ? sram_araddr : 32'h0;
+    assign sram_axi_araddr = sram_araddr;
     assign sram_axi_rready = sel_sram ? sram_rready : 0;
 
 `ifdef NPC
@@ -310,7 +310,7 @@ module ysyx_24100006_xbar_arbiter #(
 
     // CLINT
     assign clint_axi_arvalid = sel_clint ? mem_axi_arvalid : 0;
-    assign clint_axi_araddr = sel_clint ? mem_axi_araddr : 32'h0;
+    assign clint_axi_araddr = mem_axi_araddr;
     assign clint_axi_rready = sel_clint ? mem_axi_rready : 0;
 
     // ================== 响应合并 ==================
@@ -320,10 +320,8 @@ module ysyx_24100006_xbar_arbiter #(
     assign ifu_axi_rvalid = sel_sram ? ifu_rvalid : 0;
     assign ifu_axi_rlast = sel_sram ? ifu_rlast : 0;
 
-    assign mem_axi_arready = sel_sram ? mem_arready : 
-                            sel_clint ? 1'b1 : 0;
-    assign mem_axi_rvalid = sel_sram ? mem_rvalid : 
-                           sel_clint ? clint_axi_rvalid : 0;
+    assign mem_axi_arready = sel_clint ? 1'b1 : mem_arready;
+    assign mem_axi_rvalid = sel_clint ? clint_axi_rvalid : mem_rvalid;
 
     assign mem_axi_awready = sel_sram ? mem_awready : 0;
     assign mem_axi_wready = sel_sram ? mem_wready : 0;

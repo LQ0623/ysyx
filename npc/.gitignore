@@ -9,6 +9,7 @@
 !*.cpp
 !.gitignore
 !README.md
+!ysyxSoC.nxdc
 build/
 yosys-sta/
 result

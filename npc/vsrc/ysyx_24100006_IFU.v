@@ -91,6 +91,7 @@ module ysyx_24100006_ifu(
 			// 当 icache 刷新完毕后，回到空闲状态
 			// 以防止在刷新过程中进入取指状态
 			if(icache_flush_done)begin
+				axi_arvalid <= 1'b0;
 				state <= S_IDLE;
 			end
 
