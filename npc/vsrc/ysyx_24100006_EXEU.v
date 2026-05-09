@@ -107,9 +107,14 @@ module ysyx_24100006_exeu(
 	wire j1 = Jump[1];
 	wire j0 = Jump[0];
 
-	wire cmp = alu_result_temp[0];  // 来自 ALU 的比较结果位
-	wire cond_eq = zf  ^ j0;        // BEQ(010): j0=0 -> zf； BNE(011): j0=1 -> ~zf
-	wire cond_lt = cmp ^ j0;        // BLT/BLTU(1x0): j0=0 -> cmp；BGE/BGEU(1x1): j0=1 -> ~cmp
+	// 频率优先：分支条件直接由 EXE 操作数生成，不再经过通用 ALU result mux。
+	// BEQ/BNE 使用异或归约；BLT/BGE 与 BLTU/BGEU 使用专用比较器。
+	wire branch_eq = ~|(alu_a_data_E ^ alu_b_data_E);
+	wire branch_ltu = (alu_a_data_E < alu_b_data_E);
+	wire branch_lts = (alu_a_data_E[31] ^ alu_b_data_E[31]) ? alu_a_data_E[31] : branch_ltu;
+	wire branch_lt = j1 ? branch_ltu : branch_lts;
+	wire cond_eq = branch_eq ^ j0;  // BEQ(010): j0=0 -> eq； BNE(011): j0=1 -> ~eq
+	wire cond_lt = branch_lt ^ j0;  // BLT/BLTU(1x0): j0=0 -> lt；BGE/BGEU(1x1): j0=1 -> ~lt
 
 	// 当 j2=0：{000,001,010,011}
 	//   - j1=0 -> {000,001}：直接输出 j0（NJUMP=0, JAL=1）

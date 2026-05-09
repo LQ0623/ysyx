@@ -996,6 +996,7 @@ module ysyx_24100006(
 		.id_rs2        		(instruction_F_D[23:20]),
 		.id_rs1_ren    		(rs1_ren_D),   // 来自 IDU 新增输出
 		.id_rs2_ren    		(rs2_ren_D),
+		.id_is_jalr    		(instruction_F_D[6:0] == 7'b1100111),
 		.id_rd				(Gpr_Write_Addr_D),
 		.id_wen				(Gpr_Write_D),
 		.id_out_valid		(id_out_valid),

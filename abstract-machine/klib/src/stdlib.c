@@ -5,7 +5,9 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 static unsigned long int next = 1;
 // 分配的内存的首地址
+#if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
 static void* malloc_addr = NULL;
+#endif
 
 int rand(void) {
   // RAND_MAX assumed to be 32767
@@ -49,8 +51,11 @@ void *malloc(size_t size) {
     *p = '\0';
   }
 
-#endif
   return assign_addr;
+#else
+  (void)size;
+  return NULL;
+#endif
 }
 
 void free(void *ptr) {

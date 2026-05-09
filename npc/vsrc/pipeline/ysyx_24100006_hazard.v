@@ -6,6 +6,7 @@ input         clk,
     input  [3:0]   id_rs2,          // instruction[23:20]
     input          id_rs1_ren,
     input          id_rs2_ren,
+    input          id_is_jalr,
     input  [3:0]    id_rd,
     input           id_wen,
 input id_out_valid,         //什么时候需要阻塞
@@ -73,11 +74,18 @@ input is_load,
     wire raw_ex_load_rs =   (exe_mem_is_load == 1) && 
                             ((id_rs1_ren == 1  && (mem_stage_wen == 1 && ((id_rs1 == mem_stage_rd)))) ||
                             (id_rs2_ren == 1  && (mem_stage_wen == 1 && ((id_rs2 == mem_stage_rd)))));
+
+    // 频率优先：JALR 的 PC 目标在 ID 阶段计算。若 rs1 依赖流水线中尚未写回的结果，
+    // 不再让 JALR 目标地址走 EXE/MEM 前递长组合路径，而是多停顿直到 GPR 可读。
+    wire raw_ex_rs1_live = raw_ex_rs1 & ex_out_valid;
+    wire raw_mem_stage_rs1 = id_rs1_ren & mem_out_valid & mem_stage_wen & (mem_stage_rd != 4'd0) & (id_rs1 == mem_stage_rd);
+    wire raw_mem_rs1_live = raw_mem_rs1 & (is_load | mem_in_valid);
+    wire jalr_rs1_wait = id_is_jalr & id_out_valid & (raw_ex_rs1_live | raw_mem_rs1_live | raw_mem_stage_rs1);
             
     // 只需要判断在exe级发生冲突且是load指令以及mem级发生冲突且是load指令但还没有取出数据的情况就行，只有这两种情况才需要stall
     assign stall_id =   (raw_ex_rs1 && exe_is_load) && (mem_out_ready == 0 || ex_out_valid) ||    // EXE本身只用在结果有效的时候不冲突就行，后面的exe->exe/mem和exe/mem->mem的冲突由raw_ex_load_rs和raw_mem_ready_rs进行判断
                         (raw_ex_rs2 && exe_is_load) && (mem_out_ready == 0 || ex_out_valid) || 
                         (raw_mem_rs1 && is_load && mem_rvalid == 1'b0) || 
-                        (raw_mem_rs2 && is_load && mem_rvalid == 1'b0) || raw_ex_load_rs || raw_mem_ready_rs;
+                        (raw_mem_rs2 && is_load && mem_rvalid == 1'b0) || raw_ex_load_rs || raw_mem_ready_rs || jalr_rs1_wait;
 
 endmodule

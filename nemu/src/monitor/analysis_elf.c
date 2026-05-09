@@ -79,9 +79,6 @@ void analysis_elf(Func_Name_Collation* func_name,char* elf_file){
         Elf32_Sym symbol = symtab[i];
         // 判断是否为FUNC
         if(ELF32_ST_TYPE(symbol.st_info) == STT_FUNC){
-            // 计算符号名称的长度
-            size_t name_length = strlen(strtab + symbol.st_name) + 1;
-
             // 为符号名称分配内存
             // func_name[count].name = (char *)malloc(name_length);
             // if (!func_name[count].name) {
@@ -91,7 +88,7 @@ void analysis_elf(Func_Name_Collation* func_name,char* elf_file){
             // }
 
             // 拷贝符号名称
-            strncpy(func_name[count].name, strtab + symbol.st_name, name_length);
+            snprintf(func_name[count].name, sizeof(func_name[count].name), "%s", strtab + symbol.st_name);
 
             func_name[count].addr = symbol.st_value;
             func_name[count].size = symbol.st_size;

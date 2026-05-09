@@ -229,7 +229,7 @@ module ysyx_24100006_idu(
 
     // 面积优化：PC 选择仅依赖控制信号，不再重复比较 opcode
     assign pc_add_4_o           = {(pc_D[31:2] + 1'b1), 2'b00};
-    wire [31:0] rs1_add_imm_D   = (rs1_data_fw + sext_imm_wire) & (~32'b1);
+    wire [31:0] rs1_add_imm_D   = (rs1_data_comb + sext_imm_wire) & (~32'b1);
     assign pc_j_m_e_n_D         = ctrl_is_jalr ? rs1_add_imm_D :
                                   ctrl_is_mret ? mepc_comb    :
                                                  pc_add_4_o;
